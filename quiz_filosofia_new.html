@@ -1,0 +1,3146 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Filosofia - Sistema di Verifica</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .quiz-container {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .question {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+            transition: all 0.3s ease;
+        }
+        
+        .question:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .question.correct {
+            border-left-color: #27ae60;
+            background: linear-gradient(90deg, #d5f4e6 0%, #f8f9fa 100%);
+        }
+        
+        .question.incorrect {
+            border-left-color: #e74c3c;
+            background: linear-gradient(90deg, #fadbd8 0%, #f8f9fa 100%);
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #3498db;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .question-text {
+            font-size: 1.05em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+        
+        .options {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .option:hover {
+            border-color: #3498db;
+            transform: translateX(3px);
+        }
+        
+        .option.correct-answer {
+            border-color: #27ae60;
+            background: #d5f4e6;
+            font-weight: 500;
+        }
+        
+        .option.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .option.selected.correct {
+            border-color: #27ae60;
+            background: #d5f4e6;
+        }
+        
+        .option.selected.incorrect {
+            border-color: #e74c3c;
+            background: #fadbd8;
+        }
+        
+        .option input[type="radio"] {
+            margin: 0;
+            transform: scale(1.2);
+        }
+        
+        .result {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .result.correct {
+            color: #27ae60;
+        }
+        
+        .result.incorrect {
+            color: #e74c3c;
+        }
+        
+        .result-icon {
+            font-size: 1.2em;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db 0%, #27ae60 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .quiz-container {
+                padding: 15px;
+            }
+            
+            .question {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Quiz di Filosofia</h1>
+            <p>Sistema di verifica interattivo per l'esame</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalQuestions">0</div>
+                <div class="stat-label">Domande totali</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="correctAnswers">0</div>
+                <div class="stat-label">Risposte corrette</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="percentage">0%</div>
+                <div class="stat-label">Percentuale</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Cerca domande...">
+            <button class="btn btn-primary" onclick="checkAllAnswers()">✅ Verifica tutte</button>
+            <button class="btn btn-warning" onclick="resetQuiz()">🔄 Reset</button>
+            <button class="btn btn-success" onclick="showOnlyIncorrect()">❌ Solo sbagliate</button>
+        </div>
+        
+        <div class="quiz-container" id="quizContainer">
+            <!-- Le domande verranno generate qui -->
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+        "id": 1,
+        "text": "Lo spiritualismo:",
+        "options": [
+            "è un intellettualismo",
+            "è una dottrina del cogito",
+            "mette al centro l'esperienza coscienziale"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 2,
+        "text": "Gli opposti trascendentali di cui parla Guardini:",
+        "options": [
+            "fanno riferimento alla relazione strutturale tra poli, ne regolano i rapporti",
+            "fanno riferimento ai punti di naufragio del sistema degli opposti",
+            "fanno riferimento a concetti universali categorie"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 3,
+        "text": "Dal criterio di significanza formulato dai neopositivisti segue che:",
+        "options": [
+            "il linguaggio delle emozioni è privo di senso",
+            "nulla può esser detto",
+            "non vi sono scienze in senso proprio"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 4,
+        "text": "L'antropologia in Marx:",
+        "options": [
+            "si identifica con la teologia",
+            "ha carattere economico, storico e sociale",
+            "è parte del suo più ampio sistema metafisico"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 5,
+        "text": "Con la vita etica, secondo Kierkegaard, l'individuo:",
+        "options": [
+            "è solo apparentemente libero perché il mondo è retto, in realtà, da un rigido determinismo",
+            "è solo apparentemente libero perché resta dipendente da condizioni esteriori",
+            "Sceglie la libertà"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 7,
+        "text": "La psicologia, secondo Dilthey:",
+        "options": [
+            "deve partire dagli elementi singoli per risalire alla totalità della vita psichica",
+            "nel suo senso autentico, è spiegazione causale degli elementi psichici",
+            "deve avere come punto di partenza L'Erlebnis"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 8,
+        "text": "Il logos originario, per il secondo Heidegger:",
+        "options": [
+            "è una teoria del giudizio in grado di corrispondere all'essere",
+            "è il linguaggio che critica la tecnica, ma che dev'essere superato con l'abbandono del linguaggio a favore del silenzio",
+            "contiene in sé la contraddizione"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 9,
+        "text": "Il pensiero di Levinas riflette sul tema dell'Altro:",
+        "options": [
+            "Considerando l'alterità dell'altro come momento dialetticamente necessario e assimilabile nella coscienza del mio sé",
+            "considerando l'alterità dell'Altro come pura illusione, essendoci perfetta coincidenza tra l'io e l'Altro",
+            "considerando l'alterità dell'Altro come momento dialetticamente necessario e assimilabile nella coscienza del mio sé"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 10,
+        "text": "Per Schopenhauer il mondo come rappresentazione è:",
+        "options": [
+            "il mondo raggiungibile dall'ascesa",
+            "il mondo nel quale vive l'artista",
+            "il mondo fenomenico"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 11,
+        "text": "La coscienza per Sartre:",
+        "options": [
+            "è un'astrazione filosofica che necessita di essere accantonata",
+            "si dà sempre ed esclusivamente come essenza",
+            "non si dà come essenza ma nella sua dimensione esistenziale"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 12,
+        "text": "I valori, secondo Scheler:",
+        "options": [
+            "sono storici",
+            "sono materiali",
+            "sono a priori"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 13,
+        "text": "La filosofia, per il 'primo Wittgenstein' è:",
+        "options": [
+            "critica del linguaggio",
+            "scienza abduttiva",
+            "metafisica"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 14,
+        "text": "La verità gadameriana:",
+        "options": [
+            "è distinta dal concetto di 'correttezza' delle scienze esatte",
+            "è il risultato di un'analisi logica e rigorosa dei fatti",
+            "è ricondotta ai risultati del metodo induttivo"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 15,
+        "text": "La dialettica negativa di Adorno:",
+        "options": [
+            "si basa sull'identità hegeliana di ragione e realtà",
+            "svela le contraddizioni insite nel mondo",
+            "mira a razionalizzare l'irrazionale"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 16,
+        "text": "Quando Heidegger parla di temporalità come Zeitlichkeit intende:",
+        "options": [
+            "la temporalità come costituzione ontologica dell'Esserci",
+            "la temporalità pensata come condizione di possibilità della comprensione dell'essere",
+            "Entrambe le risposte sono corrette"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 17,
+        "text": "Per Schopenhauer la causalità:",
+        "options": [
+            "unisce lo spazio e il tempo",
+            "è la struttura del mondo come volontà",
+            "si identifica con la successione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 18,
+        "text": "Dionisiaco e apollineo in Nietzsche:",
+        "options": [
+            "sono entrambi istinti propri della natura",
+            "rappresentano due poli che non si presentano mai contemporaneamente nella storia",
+            "in quanto impulsi, si sottraggono entrambi alla ragione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 19,
+        "text": "Il mito nel pensiero di Simone Weil:",
+        "options": [
+            "ha un'eccezione positiva, poiché indica la costruzione di mondi immaginari che permettono di evadere dalla realtà, per questo il mito coincide pienamente con l'idolo",
+            "ha un'accezione negativa, poiché la perdita di contatto con il reale e la costruzione di mondi immaginari, per questo il mito coincide pienamente con l'idolo",
+            "nel suo significato originario ha un'accezione positiva poiché esprime sentimenti comuni all'umanità, intera, per questo il mito si distingue dall'idolo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 20,
+        "text": "Per la scuola di Marburgo, pensiero e realtà:",
+        "options": [
+            "non sono separati, perché il pensiero contribuisce alla creazione dell'io a realtà",
+            "sono assolutamente distinti, in quanto il pensiero appartiene all'ambito teoretico, la realtà a quello pratico",
+            "sono concepiti in modo indistinto: il pensiero è la realtà e viceversa"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 21,
+        "text": "L'intenzionalità, nelle Ricerche logiche di Husserl, esprime:",
+        "options": [
+            "la concezione, condivisa con Brentano, secondo cui d'essere propriamente intenzionali sono solo i fenomeni psichici",
+            "la relazione tra una coscienza e l'essenza della cosa",
+            "l'idea che la percezione sia riducibile all'attività del soggetto"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 22,
+        "text": "Secondo Freud, a svilupparsi al 5° anno di età è:",
+        "options": [
+            "l'Es",
+            "il Super Io",
+            "l'Io"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 23,
+        "text": "Il segno per Peirce:",
+        "options": [
+            "in nessun caso ha legami con la realtà che rappresenta",
+            "è indispensabile per pensare",
+            "ha una natura diadica"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 24,
+        "text": "Tra 'mistero' e 'problema', secondo Marcel:",
+        "options": [
+            "Vi è una dialettica necessaria: la risoluzione del 'mistero' implica necessariamente il chiarimento dei 'problemi' che lo precedono, senza il quale il 'mistero' risulta incomprensibile. il 'problema' è oggetto dell'intelletto mentre il chiarimento del 'mistero' spetta alla ragione",
+            "Vi è perfetta coincidenza di metodo, a cambiare è solo l'oggetto di indagine: Il 'problema' riguarda le scienze naturali, mentre il 'mistero' riguarda la filosofia. Entrambi sono pienamente comprensibili mediante ragione",
+            "Vi è una profonda distinzione: Il 'problema' è un insieme di dati che la ragione e il metodo scientifico possono indagare, mentre il 'mistero' è ciò che si dà costantemente, sfuggendo a qualsiasi forma di analisi e sintesi"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 25,
+        "text": "Ricoeur:",
+        "options": [
+            "riprende e condivide la distinzione gadameriana di verità e metodo",
+            "non conosceva gli scritti di Gadamer",
+            "mira all'integrazione tra verità e metodo, criticando la netta opposizione proposta da Gadamer"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 26,
+        "text": "Quali dei seguenti autori sono riconducibili al personalismo?",
+        "options": [
+            "Mounier e Maritain",
+            "Heidegger e Gadamer",
+            "Blondel e Marcel"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 27,
+        "text": "Cosa significa Hasard per Simone Weil?",
+        "options": [
+            "caso, casualità",
+            "necessità",
+            "libertà"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 28,
+        "text": "Cos'è la Kehrer per Heidegger?",
+        "options": [
+            "un mutamento principalmente metodologico",
+            "un radicale ripensamento del fine della filosofia",
+            "un mutamento che Heidegger nega di aver avuto, ma che gli viene attribuito"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 29,
+        "text": "Per Scheler formare l'individuo significa:",
+        "options": [
+            "plasmare il suo modus pensandi in conformità alla società di cui fa parte",
+            "favorire lo sviluppo armonico impresso in ogni individuo",
+            "offrirgli i dettami pratici e morali da seguire"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 30,
+        "text": "Esserci (dasein) in essere e tempo è il termine utilizzato per indicare:",
+        "options": [
+            "il concetto di essere",
+            "l'esistenza dell'uomo",
+            "qualsiasi di tipo di ente"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 31,
+        "text": "Secondo Husserl, la psicologia:",
+        "options": [
+            "non è una scienza",
+            "è una scienza dello spirito",
+            "è una scienza naturale"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 32,
+        "text": "Nel secondo Heidegger, la riduzione dell'essere a ente:",
+        "options": [
+            "è l'oblio della differenza tra essere ed ente",
+            "è la comprensione ultima che deve essere raggiunta dalla filosofia",
+            "è necessaria, perché tra essere ed ente non vi è differenza"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 33,
+        "text": "Dio, secondo Feuerbach:",
+        "options": [
+            "è il creatore dell'uomo con il quale condivide un'identica natura trascendentale",
+            "è una creazione dell'uomo. è un ente astratto sul quale, erroneamente, l'uomo traspone i caratteri della propria essenza",
+            "è causa finale"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 34,
+        "text": "Le regole dei giochi linguistici di Wittgenstein sono:",
+        "options": [
+            "soggettive",
+            "Pubbliche",
+            "scientifiche"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 35,
+        "text": "Il contenuto latente del sogno, secondo Freud:",
+        "options": [
+            "è ciò che permane in ogni sogno",
+            "opera una rimozione del significato manifesto del sogno",
+            "contiene il vero significato del sogno"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 36,
+        "text": "Quando Weil parla dei 'sognatori di giorno' fa riferimento:",
+        "options": [
+            "a coloro che perseguono ideologie e idolatrie, l'espressione ha un'accezione negativa",
+            "ai filosofi in generale, l'espressione ha un'accezione negativa",
+            "ai teologi in generale, l'espressione ha un'accezione positiva"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 37,
+        "text": "Guardini considera gli opposti polari:",
+        "options": [
+            "definendone il numero ordinandoli in serie precise",
+            "come un ammasso disordinato e caotico, di cui non è possibile indicare l'ordine e il numero",
+            "definiscono il numero ma senza indicare serie o gruppi che possano limitarne la libertà"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 38,
+        "text": "Dal principio di verificazione formulato dai neopositivisti deriva che:",
+        "options": [
+            "le proposizioni etiche sono equivalenti alle proposizioni delle scienze naturali",
+            "la filosofia è l'unica scienza possibile, in quanto al di sopra di ogni verifica",
+            "le proposizioni metafisiche, teologiche ed etiche sono insensate"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 39,
+        "text": "Quando Sartre afferma che l'esistenza è una passione inutile intende:",
+        "options": [
+            "che la libertà umana non trova mai il proprio compimento",
+            "che l'esistenza è un continuo calcolo",
+            "che non vale la pena vivere"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 40,
+        "text": "Per Mounier:",
+        "options": [
+            "la persona si realizza nella comunità di persone",
+            "la persona è già tale prima del suo ingresso in comunità",
+            "la comunità è un luogo di conflitto sociale"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 41,
+        "text": "La razionalizzazione della realtà operata dal sistema hegeliano, per Kierkegaard:",
+        "options": [
+            "rappresenta l'avvenuto superamento del paradosso cristiano ed è dunque il presupposto per giungere all'unità con Dio",
+            "aiuta a comprendere i fini che spingono l'uomo ad operare la scelta etica",
+            "finisce col negare il paradosso cristiano"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 42,
+        "text": "Quando si parla di antropologia si fa riferimento a riflessioni che hanno per oggetto:",
+        "options": [
+            "l'uomo",
+            "il mondo",
+            "Dio"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 43,
+        "text": "Lo scopo della riflessione condotta da Heidegger nelle pagine di Essere e Tempo è:",
+        "options": [
+            "la comprensione dell'esistenza concreta nella sua finitezza e tragicità",
+            "la concreta elaborazione del problema del senso dell'essere a partire dalla fatticità dell'esistenza",
+            "la comprensione del tempo come durata in opposizione al tempo misurabile"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 44,
+        "text": "Le forme simboliche sono concepite da Cassirer come:",
+        "options": [
+            "assolutamente stabili",
+            "assolutamente mutevoli",
+            "nello stesso tempo mutevoli e stabili"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 45,
+        "text": "La materia secondo Bergson:",
+        "options": [
+            "deriva da concatenazioni di causa ed effetto",
+            "deriva dalla mano creatrice di Dio",
+            "deriva dallo slancio vitale alla base di tutto ciò che è"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 46,
+        "text": "La nostra epoca per il secondo Heidegger:",
+        "options": [
+            "è l'epoca del tramonto ossia la fase terminale dell'oblio dell'essere cui potrà seguire il disvelamento",
+            "è a metà del percorso dell'oblio destinale dell'essere",
+            "è ormai nella fase destinale del disvelamento dell'essere"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 47,
+        "text": "I tre livelli di sintonizzazione della persona con il cosmo secondo Scheler sono:",
+        "options": [
+            "carnis, socialis, amoris",
+            "carnis, rerum, amoris",
+            "carnis, intellectualis e Dio"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 48,
+        "text": "Secondo il primo Wittgenstein il linguaggio:",
+        "options": [
+            "è la raffigurazione del mondo",
+            "non può dire nulla del mondo, non ha legami con esso",
+            "è mera copia del mondo"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 49,
+        "text": "Qual è secondo Dilthey la prima determinazione categoriale, fondamentale per tutte le altre:",
+        "options": [
+            "storia",
+            "vita",
+            "spirito"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 50,
+        "text": "Quale di questi autori fu il principale maestro di Simone Weil che ne influenzò il pensiero:",
+        "options": [
+            "Maurice Blondel",
+            "Alain, pseudonimo di Emile-Auguste Chatrier",
+            "Jean-Paul Sartre"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 51,
+        "text": "I dati di senso secondo Russell:",
+        "options": [
+            "sono oggetto di una conoscenza esperienziale",
+            "sono oggetto di una conoscenza inferenziale",
+            "sono oggetto di una conoscenza immediata"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 52,
+        "text": "Cosa intende Marcel con la seguente affermazione: 'un mistero è un problema che usurpa i propri dati':",
+        "options": [
+            "che il mistero getta nuova luce sui dati indagati dalla scienza",
+            "che il mistero non si presenta come insieme di dati e non può essere colto tramite metodo scientifico",
+            "che ogni procedimento logico-razionale deve essere validato dalla filosofia"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 53,
+        "text": "Per pre-comprensione, concetto che Gadamer riprende da Heidegger, si intende:",
+        "options": [
+            "una presunta conoscenza, senza alcun fondamento di verità",
+            "l'insieme di conoscenze pregresse e pregiudizi che anticipano le nostre nuove conoscenze",
+            "l'insieme di giudizi che compromettono una comprensione oggettiva dei fatti nuovi"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 54,
+        "text": "Cos'è il transfert secondo Freud:",
+        "options": [
+            "un fenomeno nocivo che compromette la risoluzione del trattamento",
+            "un obiettivo che si raggiunge faticosamente grazie alle doti del medico",
+            "un fenomeno che può essere determinante nella risoluzione del trattamento"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 55,
+        "text": "La figura del leone secondo Nietzsche è:",
+        "options": [
+            "il simbolo dell'uomo libero ma che riconosce ancora solo una libertà negativa (libertà da)",
+            "il simbolo dell'uomo che dice sì alla vita e ha la forza per disporsi ad una libertà positiva (libertà di)",
+            "una metafora che esprime figurativamente l'oltreuomo"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 56,
+        "text": "Il positivismo ha origine:",
+        "options": [
+            "in Francia nella prima metà dell'800",
+            "in Spagna nella seconda metà dell'800",
+            "in Germania nella seconda metà del 700"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 57,
+        "text": "Con l'intelletto, secondo Schopenhauer:",
+        "options": [
+            "conosciamo soltanto il mondo sensibile",
+            "consente il passaggio dal mondo come rappresentazione al mondo come volontà",
+            "accediamo alla realtà"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 58,
+        "text": "Secondo Ricoeur quale delle seguenti categorie risulta la più adeguata alla definizione della persona?",
+        "options": [
+            "il soggetto trascendentale",
+            "il sé plurale",
+            "la coscienza, nella sua trasparenza e stabilità"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 59,
+        "text": "La scuola di Marburgo:",
+        "options": [
+            "sviluppa una teoria dei valori",
+            "ha come principali esponenti Wilhelm Windelband e Heinrich Rickert",
+            "garantisce soggettività della conoscenza di base principalmente logico-procedurale"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 60,
+        "text": "La passione dell'essere umano per Sartre è:",
+        "options": [
+            "un misto di desiderio e sofferenza",
+            "la via per realizzare l'umano",
+            "la manifestazione degli istinti di cui siamo schiavi"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 61,
+        "text": "L'esigenza primaria di Kierkegaard è porre al centro:",
+        "options": [
+            "l'uomo in carne ed ossa",
+            "il soggetto astratto",
+            "lo spirito collettivo"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 62,
+        "text": "La logica delle relazioni di Russell studia:",
+        "options": [
+            "il processo psicologico attraverso cui si compiono fasi della conoscenza",
+            "proprietà soltanto linguistiche",
+            "proprietà strutturali dell'essere"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 63,
+        "text": "L'uomo secondo Dilthey è:",
+        "options": [
+            "essere volente e razionale",
+            "puro e semplice rappresentante",
+            "essere volente, senziente e rappresentante"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 64,
+        "text": "Da quale delle seguenti proprietà, secondo Dilthey sono caratterizzate le scienze dello spirito?",
+        "options": [
+            "il loro oggetto è il mondo dei rapporti individuali",
+            "il loro metodo della conoscenza è l'osservazione esterna",
+            "vige una connessione causale tra gli oggetti della ricerca"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 65,
+        "text": "Morale e religione, secondo Bergson:",
+        "options": [
+            "sono l'oppio dei popoli",
+            "sono espressioni di schiavitù e di debolezza dell'uomo",
+            "sono espressioni della creazione propria allo slancio vitale"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 66,
+        "text": "La persona per Simone Weil è:",
+        "options": [
+            "anima e corpo",
+            "solo corpo",
+            "anima corpo e mente"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 67,
+        "text": "Per Maritain:",
+        "options": [
+            "Il modo di essere della realtà nel concetto identico al modo di essere della realtà nella cosa",
+            "Il modo di essere nella realtà nella cosa dipende dal modo di essere della realtà nel concetto",
+            "Il modo di essere della realtà nel concetto è diverso dal modo di essere della realtà nella cosa"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 68,
+        "text": "La logica della relazione di Russell studia:",
+        "options": [
+            "anti-ontologica",
+            "realista",
+            "psicologista"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 69,
+        "text": "La volontà volente, secondo Blondel:",
+        "options": [
+            "è una tensione verso l'infinito, che attraversa e supera l'uomo spingendolo sempre oltre il finito",
+            "è la volontà dell'uomo che si contrappone alla volontà di Dio",
+            "è la volontà di cui parlava Schopenhauer, pur con qualche variazione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 70,
+        "text": "La supremazia dell'ente sull'essere, per il secondo Heidegger, è:",
+        "options": [
+            "la presa di consapevolezza della nullità dell'essere e il superamento di questa condizione",
+            "il risvolto della storia dell'oblio dell'essere",
+            "il fine definitivo dell'essere stesso"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 71,
+        "text": "Il pensiero di Kierkegaard:",
+        "options": [
+            "si rapporta al pensiero di Hegel in termini di continuità e prosecuzione",
+            "non fa in alcun modo riferimento pensiero di Hegel, Kierkegaard non era a conoscenza degli scritti di questo autore",
+            "si rapporta al pensiero di Hegel in termini radicalmente critici, proponendosi di superarne i limiti"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 72,
+        "text": "L'Esserci (Dasein) di cui parla Heidegger in Essere e tempo:",
+        "options": [
+            "è un ente tra gli altri",
+            "ha un primato ontico e ontologico sugli altri enti",
+            "ha un primato solamente ontico sugli altri enti"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 73,
+        "text": "La vita secondo Bergson:",
+        "options": [
+            "è divenire puro privo di forme, la cui evoluzione è totalmente inafferrabile ed imprevedibile",
+            "è il mutamento della materia la cui evoluzione è comprensibile in termini deterministici",
+            "è continua creazione di forme, la cui evoluzione non è lineare e sfugge al meccanicismo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 74,
+        "text": "Lo storicismo tedesco ritiene che tra spiegazione scientifica e comprensione storica vi sia:",
+        "options": [
+            "una differenza in quanto a oggetti della conoscenza, ma non in quanto a metodi",
+            "una profonda differenza di metodo",
+            "un rapporto di identità"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 75,
+        "text": "L'etica di Scheler:",
+        "options": [
+            "può essere definita materiale in quanto i valori non sono altro che percezioni sensibili della nostra coscienza",
+            "può essere definita materiale in quanto muove dalle cose",
+            "non può essere definita materiale in quanto è universale, ossia fondata su apriori"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 76,
+        "text": "L'arte, in Nietzsche:",
+        "options": [
+            "è il frutto del prevalere del dionisiaco sull'apollineo",
+            "è il frutto del prevalere dell'apollineo sul dionisiaco",
+            "è il frutto degli impulsi artistici, rappresentati sia dall'apollineo che dal dionisiaco"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 77,
+        "text": "La texte del Terzo in Lévinas è:",
+        "options": [
+            "un tema teologico",
+            "legata al tema della giustizia",
+            "assente"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 78,
+        "text": "Qual è il parere riservato da Gadamer all'espressione 'scienze dello spirito'?",
+        "options": [
+            "l'espressione è critica, in quanto inappropriata per ciò che intende esprimere",
+            "Gadamer non si esprime a riguardo",
+            "l'espressione è condivisa e fatta propria, insieme a 'scienze della natura'"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 79,
+        "text": "La filosofia secondo Ricoeur:",
+        "options": [
+            "deve tendere a un sempre maggiore rigore e oggettività, assumendo un metodo che le conferisca uno statuto epistemologico rilevante",
+            "vive della complementarità tra spiegazione e comprensione e del necessario rapporto con le scienze",
+            "appartiene alle scienze dello spirito e non ha rapporto alcuno con le scienze della natura e con il metodo"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 80,
+        "text": "Qual è, per il pensiero del secondo Heidegger, il fondamento che la filosofia dimentica di indagare?",
+        "options": [
+            "l'essere",
+            "la precedenza dell'esistenza sull'essenza",
+            "il Dasein"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 81,
+        "text": "Per Kierkegaard in che rapporto sono il dubbio e la disperazione?",
+        "options": [
+            "il dubbio è propedeutico alla disperazione",
+            "si distinguono perché il dubbio appartiene alla vita estetica e la disperazione alla vita etica",
+            "si distinguono perché il dubbio è solo intellettivo, la disperazione coinvolge l'intera persona"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 82,
+        "text": "Attraverso il metodo ricavato dalla teoria delle libere associazioni di Freud, si mira a:",
+        "options": [
+            "insegnare al paziente la cosiddetta 'arte dell'interpretazione'",
+            "indurre scariche emotive che, progressivamente, guariscano il paziente",
+            "trasformare l'inconscio nel conscio"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 83,
+        "text": "Nel pensiero di Simone Weil il metodo della ricerca filosofica può essere indicato come:",
+        "options": [
+            "un rigido determinismo che recupera le istanze positivistiche",
+            "un'esperienza del limite, contemplazione dei problemi insolubili come passività del pensiero in atto",
+            "un procedimento dialettico orientato alla sistematicità"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 84,
+        "text": "Quali caratteristiche presenta, per Schopenhauer, il dolore?",
+        "options": [
+            "equivale a una tensione senza scopo",
+            "è fugace",
+            "è un'illusione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 85,
+        "text": "L'ontologia weiliana è attraversata dalla tensione:",
+        "options": [
+            "tra l'ordine del bello e quello del brutto",
+            "tra l'ordine dell'utile e quello dell'inutile",
+            "tra l'ordine del necessario e quello del Bene"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 86,
+        "text": "Nelle Ricerche filosofiche, Wittgenstein:",
+        "options": [
+            "parla di una logica necessariamente vaga della natura, mediante l'interpretazione",
+            "riprende l'atomismo logico",
+            "parla dei significati come di entità ideali e interne al soggetto"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 87,
+        "text": "Nello stadio teologico di Comte:",
+        "options": [
+            "i fenomeni sono visti come prodotti di forze astratte",
+            "i fenomeni sono concepiti soltanto nelle loro leggi e relazioni",
+            "i fenomeni sono concepiti come prodotti di agenti soprannaturali"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 88,
+        "text": "Per Comte la dinamica sociale:",
+        "options": [
+            "indaga le leggi del progresso",
+            "studia le condizioni comuni a tutte le società in tutti i tempi",
+            "è una parte della psicologia"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 89,
+        "text": "Il punto di partenza del pensiero di Feuerbach è riconducibile:",
+        "options": [
+            "alla destra hegeliana",
+            "alla sinistra hegeliana",
+            "al pensiero di Nietzsche"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 90,
+        "text": "Degli oggetti fisici, secondo Russell, abbiamo:",
+        "options": [
+            "una conoscenza intuitiva e infallibile, a differenza di quella dei dati concettuali",
+            "una conoscenza diretta",
+            "una conoscenza per descrizione"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 91,
+        "text": "Quale tra i seguenti è l'autore de L'opposizione polare?",
+        "options": [
+            "Gabriel Marcel",
+            "Maurice Blondel",
+            "Romano Guardini"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 92,
+        "text": "Freud ritiene che lo spirito (Geist):",
+        "options": [
+            "sia immateriale, ma determinata e necessitata nelle scelte, al pari dei corpi",
+            "non esista",
+            "abbia una componente materiale, e sia l'unica garante del libero arbitrio, a differenza del corpo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 93,
+        "text": "L'ermeneutica di Gadamer è:",
+        "options": [
+            "Un'ermeneutica critica",
+            "Una ontologia ermeneutica",
+            "Una teoria dell'arte"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 94,
+        "text": "Il noema, per Husserl:",
+        "options": [
+            "è il soggetto percepente",
+            "è il percepito",
+            "è il percepire"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 95,
+        "text": "In relazione al pensiero di Marx, si parla di:",
+        "options": [
+            "pragmatismo",
+            "idealismo storico dialettico",
+            "materialismo storico dialettico"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 96,
+        "text": "Quando Heidegger parla di temporalità come Temporalität intende:",
+        "options": [
+            "la temporalità come costituzione ontologica dell'Esserci",
+            "la temporalità pensata come condizione di possibilità della comprensione dell'essere",
+            "Entrambe le risposte sono corrette"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 97,
+        "text": "Rispetto al pensiero di Husserl, Lévinas risulta insoddisfatto:",
+        "options": [
+            "della visione delle scienze europee, della quale non condivide il tono critico",
+            "della riduzione eidetica, il cui esito non supera pienamente lo psicologismo",
+            "del tema dell'intersoggettività, il cui esito è una forma di (assolutezza e autosufficienza della coscienza) o (egologia)"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 98,
+        "text": "La concezione dell'arte in Schopenhauer:",
+        "options": [
+            "non dice nulla dell'essenza delle cose",
+            "non ha un'accezione positiva",
+            "non coincide con quella platonica"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 99,
+        "text": "A proposito dell'empatia di cui parla Stein, quali delle seguenti affermazioni è vera?",
+        "options": [
+            "l'empatia ha un unico livello: la percezione spirituale con la quale empatizzo con la mia stessa interiorità",
+            "l'empatia ha due livelli: nel primo mi rendo conto del sentire dell'altro in maniera indiretta, mentre nel secondo avviene un ritorno alla propria interiorità in un ascolto empatico",
+            "l'empatia ha un unico livello: l'intuizione emozionale con quale mi rendo conto del sentire dell'altro in maniera diretta"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 100,
+        "text": "Il sapere assoluto, secondo Gadamer:",
+        "options": [
+            "è sapere andato perduto, appartenuto ai presocratici",
+            "è il traguardo che solo pochi prescelti possono raggiungere",
+            "è impossibile da raggiungere e incoerente con l'idea di ermeneutica stessa di Gadamer"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 101,
+        "text": "Il nichilismo, secondo Nietzsche:",
+        "options": [
+            "è l'incapacità di scorgere un senso nel mondo",
+            "è la condizione in cui riversa chi è oppresso dalle menzogne di cui è ricca la società contemporanea",
+            "svela che il mondo è caotico e privo di senso"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 102,
+        "text": "Per il secondo Heidegger, il linguaggio, nella storia della filosofia da Platone in poi è:",
+        "options": [
+            "Medium tra essere ed esserci",
+            "Al servizio del pensiero",
+            "Dire originario"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 103,
+        "text": "Il concetto-sostanza descritto da Cassirer è:",
+        "options": [
+            "il concetto il cui significato può anche essere definito come significazione",
+            "il concetto-funzione a cui si opera una de-organizzazione dei contenuti del pensiero",
+            "il concetto usato da Aristotele e da Locke"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 104,
+        "text": "Il metodo di immanenza di cui parla Blondel:",
+        "options": [
+            "Permette di comprendere la realtà finita e immanente esclusivamente a partire da sé stessa, senza implicare alcuna causalità di tipo trascendente",
+            "Permette di comprendere il soprannaturale come ciò che è immanente e interiore all'uomo, pur restando oggetto di dono da parte di dio",
+            "Permette di comprendere il soprannaturale come ciò che trascende ed esclude il finito"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 105,
+        "text": "Secondo Cassirer l'oggetto dev'essere concepito:",
+        "options": [
+            "Come una sostanza assolutamente indifferente al soggetto che percepisce",
+            "Come un elemento assolutamente singolare e originale nella sua individualità, dunque irriducibile a concetto",
+            "Come un elemento ordinabile secondo serie"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 106,
+        "text": "Secondo Bergson, le scienze della natura non sono in grado di comprendere:",
+        "options": [
+            "il tempo quantitativo, omogeneo e discontinuo",
+            "il tempo come durata",
+            "il tempo in generale"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 107,
+        "text": "Essere e tempo fu pubblicato lo stesso anno di:",
+        "options": [
+            "L'essere e il nulla, di Sartre",
+            "Giornale metafisico, di Marcel",
+            "Ricerche Logiche, di Husserl"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 108,
+        "text": "Cos'è la storia antiquaria, secondo Nietzsche?",
+        "options": [
+            "la storia di chi crede che il passato l'insieme di fatti ormai vetusti, trascorsi, che non possono insegnare alcunché a coloro che vivono nel presente",
+            "la storia dei manuali",
+            "la storia di chi si sente erede di una tradizione"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 109,
+        "text": "Per Schopenhauer, come per il secondo Heidegger:",
+        "options": [
+            "il noumeno/l'essere coincide con la totalità degli enti/esserci",
+            "la poesia è strumento di avvicinamento al noumeno/essere",
+            "il percorso di avvicinamento al noumeno/essere è determinato dall'adesione al principium individuationis"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 110,
+        "text": "La teoria della conoscenza di Cassirer si può anche definire:",
+        "options": [
+            "empirismo",
+            "idealismo assoluto",
+            "fenomenologia"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 111,
+        "text": "Il logos heideggeriano, nella seconda fase della sua riflessione, è:",
+        "options": [
+            "la dimora dell'essere",
+            "la dimora dell'esserci",
+            "la dimora dell'indifferenza di essere ed esserci"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 112,
+        "text": "La conoscenza di un oggetto, secondo Pierce consiste:",
+        "options": [
+            "nella conoscenza delle sue proprietà essenziali, depurate dai suoi accidenti",
+            "in una riflessione astratta e a priori",
+            "nella conoscenza degli effetti pratici che quell'oggetto ha o può avere"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 113,
+        "text": "L' 'Io' di cui parla Freud è:",
+        "options": [
+            "Un calderone di impulsi ribollenti",
+            "Istanza mediatrice tra forze contrastanti",
+            "La sede della coscienza morale"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 114,
+        "text": "Per il 'secondo Wittgenstein', il significato di una parola risiede:",
+        "options": [
+            "nella corrispondenza esatta del termine con l'oggetto che designa",
+            "nella sua definizione scientifica",
+            "nell'uso che se ne fa"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 115,
+        "text": "Con riferimento al pensiero di Marx, cosa si intende con struttura e sovrastruttura?",
+        "options": [
+            "la struttura è riferita ai rapporti economici, rispetto ai quali tutto il resto risulta sovrastrutturale",
+            "struttura e sovrastruttura sono i termini con i quali Marx spiega, rispettivamente, forze produttive e rapporti di produzione",
+            "Marx non usa questi termini"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 116,
+        "text": "Lo storicismo tedesco ritiene che la storia sia:",
+        "options": [
+            "frutto del volere di Dio",
+            "opera degli uomini",
+            "processo spirituale, destinale e autonomo rispetto all'agire degli individui"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 117,
+        "text": "In quale altro modo Husserl chiama la sua 'fenomenologia pura'?",
+        "options": [
+            "psicologia descrittiva",
+            "psicoanalisi",
+            "psicologia empirica"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 118,
+        "text": "Secondo Comte, la previsione:",
+        "options": [
+            "è impossibile: da una conoscenza singola non si può dedurre nulla circa eventi futuri",
+            "è obiettivo e risultato della scienza",
+            "è elemento rischioso e inutile ai fini dell'agire"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 119,
+        "text": "I tre stadi di cui parla Kierkegaard, sono:",
+        "options": [
+            "estetico, etico, religioso",
+            "teologico, metafisico, positivo",
+            "fisico, morale, intellettivo"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 120,
+        "text": "La socialità per Maritain è:",
+        "options": [
+            "il tutto dell'umano",
+            "la natura essenziale ma non esaustiva della persona",
+            "una costruzione storica"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 121,
+        "text": "Il rapporto tra spiegazione e comprensione viene affrontato da Ricoeur:",
+        "options": [
+            "Con un orientamento differente dalla concezione gadameriana, poiché Ricoeur identifica la comprensione con il metodo e le scienze naturali",
+            "Sulla scorta della concezione gadameriana, recuperando la dicotomia tra spiegazione e comprensione e tra verità e metodo",
+            "Con un orientamento differente dalla concezione gadameriana, poiché per Ricoeur spiegazione e comprensione sono complementari ed essenziali, così come verità e metodo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 122,
+        "text": "La verità trascendente, secondo Blondel:",
+        "options": [
+            "Vive nella concretezza dell'atto ed è in profondo rapporto con le necessità e i bisogni dell'uomo",
+            "Giunge all'uomo tramite rivelazione, in quanto verità universale e astratta che solo la ragione riesce a cogliere",
+            "Non ha alcun rapporto con l'uomo e con tutto ciò che ha natura finita"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 123,
+        "text": "Dal punto di vista antropologico, Freud:",
+        "options": [
+            "Non si interessa di texti antropologiche",
+            "Sviluppa un ottimismo antropologico",
+            "Sviluppa un pessimismo antropologico"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 124,
+        "text": "Coesse di cui parla Marcel:",
+        "options": [
+            "Indica esclusivamente la struttura ontologica e relazionale della trinità",
+            "Non è un termine usato da MARCEL, ma la traduzione scelta per il Mit-sein heideggeriano",
+            "Indica l'essere-con ed esprime l'impossibilità di mettere tra parentesi il mondo al quale partecipiamo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 125,
+        "text": "La totalità per Lévinas è:",
+        "options": [
+            "La maniera errata con cui l'occidente ha pensato a partire dall'essere",
+            "Il nome di Dio",
+            "Il raggiungimento della verità"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 126,
+        "text": "Con 'slancio vitale' Bergson intende:",
+        "options": [
+            "la causa prima della scelta in sede morale che permette di effettuare il salto tra uno stadio e un altro",
+            "la volontà di potenza che attraversa ogni uomo",
+            "la radice umana di tutto ciò che è espressione della vita stessa"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 127,
+        "text": "Il Superuomo secondo Nietzsche è:",
+        "options": [
+            "Colui che salva il mondo dalla perdita di senso",
+            "Colui che accetta il caos del mondo",
+            "Colui che svela il mondo vero"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 128,
+        "text": "La fenomenologia secondo Husserl:",
+        "options": [
+            "É una scienza di essenze",
+            "Non è una scienza",
+            "É scienza di fatti"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 129,
+        "text": "Il Principium individuationis in Schopenhauer:",
+        "options": [
+            "Un principio del mondo come rappresentazione",
+            "Sta a fondamento sia del mondo come rappresentazione sia del mondo come volontà",
+            "Non può mai essere negato né nel mondo come rappresentazione né come volontà"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 130,
+        "text": "Per Kierkegaard la vita religiosa:",
+        "options": [
+            "É perfezionamento della vita etica",
+            "É capovolgimento della vita etica",
+            "É traguardo necessario cui giunge la vita vissuta eticamente"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 131,
+        "text": "Le deformazioni oniriche secondo Freud sono:",
+        "options": [
+            "Sono le cattive interpretazioni del sogno",
+            "Sono la manifestazione onirica di una mente moralmente...",
+            "Sono il risultato del tentativo di occultamento del desiderio nel sogno"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 132,
+        "text": "Il ritorno a Kant è rappresentato in particolare dalla condivisione:",
+        "options": [
+            "Della rivoluzione trascendentale Kantiana",
+            "Della assoluta eterogeneità di sensibilità e intelletto",
+            "Della concezione Kantiana della realtà noumenica"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 133,
+        "text": "Lo spiritualismo che contraddistingue parte del pensiero francese contemporaneo:",
+        "options": [
+            "Presta attenzione agli eventi del mondo e dello spirito, considerandoli irriducibili a fenomeni naturali. Costituisce una reazione critica tanto al positivismo che all'idealismo",
+            "Presta attenzione ai fenomeni naturali considerandoli come manifestazione di uno spirito immanente a tutte le cose. Costituisce una reazione critica al materialismo",
+            "Presta attenzione ai fenomeni naturali, in senso deterministico e meccanico. Costituisce una reazione critica alla fenomenologia"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 134,
+        "text": "La filosofia Hegeliana secondo Feuerbach:",
+        "options": [
+            "Esprime i caratteri di un compiuto gnosticismo che necessita di essere approfondito",
+            "É una forma di teologia perché considera l'essere infinito, e questa identificazione deve trovare realizzazione nell'uomo e non nell'assoluto",
+            "La forma più compiuta di ateismo che il pensiero filosofico può solo approfondire"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 135,
+        "text": "Stein affrontando il tema della corporeità recupera:",
+        "options": [
+            "La concezione espressa da Platone nel Fedone",
+            "La distinzione Husserliana tra Leib e Körper",
+            "Stein non parla della corporeità"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 136,
+        "text": "Possiamo parlare di modelli di fenomenologia alternativi:",
+        "options": [
+            "In quelle prospettive di pensiero basate sul netto dualismo tra essere e fenomeno",
+            "In quelle prospettive di pensiero che tentano una riconciliazione di dialettica tra essere e fenomeno",
+            "In quelle prospettive che affrontano il rapporto tra essere e fenomeno in termini di polarità, tentando un superamento delle forme di riduzionismo e di dualismo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 137,
+        "text": "Per memoria culturale Gadamer intende:",
+        "options": [
+            "Un carattere ormai obliato dell'individuo",
+            "Un carattere individuale posseduto dalle persone più colte e interessate",
+            "Un carattere strutturale dell'individuo che si riferisce all'essere storico dell'uomo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 138,
+        "text": "La tradizione greca secondo la Weil:",
+        "options": [
+            "Nella sua vocazione costituisce l'origine del pensiero su cui è necessario riflettere",
+            "É un momento della storia del pensiero ormai superato che non merita attenzione particolare",
+            "Nella sua vocazione costituisce l'origine dei totalitarismi contemporanei"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 139,
+        "text": "Nel Pensiero di Sartre lo sguardo dell'altro:",
+        "options": [
+            "É costituito dall'essere poiché quest'ultimo è sempre co-esse",
+            "É alterità trascendente poiché l'altro è dio",
+            "É dapprima oggetto e cosa tra le cose successivamente alterità che mi guarda mi sfida e aliena"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 140,
+        "text": "Gottlob Frege è famoso per il suo tentativo di ridurre:",
+        "options": [
+            "La Geometria alla matematica",
+            "La matematica alla logica",
+            "La logica alla matematica"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 141,
+        "text": "Secondo Guardini la contraddizione è il rapporto che riguarda:",
+        "options": [
+            "I poli della tensione polare, quindi l'intero sistema degli opposti",
+            "I termini tra i quali è necessario operare una scelta in sede morale, come bene e male",
+            "Le forme pure a priori, quindi la dottrina della sensibilità"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 142,
+        "text": "La credenza secondo Peirce è:",
+        "options": [
+            "stimolo al pensiero",
+            "Verità assoluta",
+            "Lo stabilirsi di un'opinione"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 143,
+        "text": "Lo scritto schopenhaueriano 'Sulla quadruplice radice del principio di ragion sufficiente' è considerato dal suo stesso autore:",
+        "options": [
+            "Un'introduzione propedeutica a 'Il mondo come volontà e rappresentazione'",
+            "Uno scritto giovanile e privo di importanza, la cui tesi principale si fonda su presupposti errati",
+            "La necessaria conclusione del suo pensiero, poiché riprende e sviluppa le tesi de 'Il mondo come volontà e rappresentazione'"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 144,
+        "text": "La coscienza per Sartre è:",
+        "options": [
+            "è una potenza di nullificazione",
+            "è lo spazio dell'incontro con Dio",
+            "è un nulla"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 145,
+        "text": "Quali elementi del pensiero kantiano sono criticati da Schopenhauer?",
+        "options": [
+            "Tutte le risposte sono corrette",
+            "La classificazione delle categorie",
+            "L'inconoscibilità della cosa in sé"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 146,
+        "text": "Secondo Frege i termini privi di riferimento:",
+        "options": [
+            "Hanno un grado di verità ma inferiore ai termini aventi riferimento",
+            "Non possono né essere veri né falsi in quanto non corrispondono ad alcunché di reale",
+            "Sono sempre falsi in quanto non corrispondono ad alcunché di reale"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 147,
+        "text": "Le scienze idiografiche così chiamate da Windelband sono:",
+        "options": [
+            "Le scienze cognitive",
+            "Le scienze storiche",
+            "Le scienze naturali"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 148,
+        "text": "La persona secondo Maritain:",
+        "options": [
+            "è concetto astratto che determina l'essenza di ogni uomo",
+            "è 'un tutto' che deriva dalla natura dalla socialità e dalla provvidenza",
+            "è determinazione di tipo materiale che deriva dalla natura"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 149,
+        "text": "L'ermeneutica è intesa da Gadamer come:",
+        "options": [
+            "Processo definito avente un inizio e una fine",
+            "Attività interminabile e mai compiuta",
+            "Attività che si serve del metodo sperimentale"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 150,
+        "text": "Scheler è:",
+        "options": [
+            "Ateo",
+            "Gnostico",
+            "Credente"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 151,
+        "text": "Le scienze idiografiche hanno tendenza:",
+        "options": [
+            "tendenza individualizzante",
+            "tendenza generalizzante",
+            "entrambe"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 152,
+        "text": "Principio ontologico di Schopenhauer:",
+        "options": [
+            "irrazionale e violento",
+            "immobile e perfetto",
+            "razionale e ordinato"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 153,
+        "text": "Secondo la teoria dell'evoluzione di Spencer:",
+        "options": [
+            "l'ambiente non condiziona l'evoluzione degli organismi",
+            "la differenziazione evolutiva è un processo di adattamento e perfezionamento",
+            "i processi evolutivi non sono necessari, ma contingenti"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 154,
+        "text": "La coscienza per Dilthey:",
+        "options": [
+            "unità psicofisica....",
+            "unità psicofisica che non è un solo pensiero, ma comprende l'uomo intero",
+            "coscienza come rappresentazione"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 155,
+        "text": "Come può essere definita la filosofia di Kierkegaard:",
+        "options": [
+            "scienza dell'assoluto",
+            "scienza teologica",
+            "autobiografia teologica"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 156,
+        "text": "Scheler propone:",
+        "options": [
+            "un'etica universale e materiale",
+            "un'etica ammissibile a quella kantiana, dunque formale e universale",
+            "un'etica priva di apriori e fondata solo sugli insegnamenti appresi tramite l'esperienza"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 157,
+        "text": "Secondo Nietzsche, la visione tradizionale della grecità:",
+        "options": [
+            "corrisponde soltanto all'Atene del V secolo ed è stata impropriamente estesa a tutto il mondo greco",
+            "è il risultato di un'intensa operazione filologica, ma compiuta soltanto su V e IV secolo",
+            "rappresenta la vitalità greca nel suo massimo splendore"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 158,
+        "text": "Che rapporto c'è tra la teoria dei tipi e la teoria degli opposti polari?",
+        "options": [
+            "la teoria dei tipi è la base per l'elaborazione della teoria degli opposti",
+            "nessuno, Guardini non parla di teoria dei tipi",
+            "la teoria degli opposti è la base per l'elaborazione della teoria dei tipi"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 159,
+        "text": "Il dionisiaco, per Nietzsche:",
+        "options": [
+            "equivale allo stato di ebbrezza",
+            "segue il principium individuationis",
+            "si esprime principalmente con la poesia epica"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 160,
+        "text": "L'intuizione schopenhaueriana è:",
+        "options": [
+            "intellettiva",
+            "sensibile",
+            "una delle categorie teorizzate da Schopenhauer"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 161,
+        "text": "In Feuerbach:",
+        "options": [
+            "l'essenza della teologia è l'antropologia, dal momento che ciò che viene riconosciuto come divino è l'ipostatizzazione di ciò che è umano",
+            "non si parla di antropologia né di teologia",
+            "l'essenza dell'antropologia è la teologia dal momento che l'uomo è creato a immagine e somiglianza di Dio"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 162,
+        "text": "Quando si verifica, secondo Freud, la cosiddetta invidia del pene da parte delle bambine?",
+        "options": [
+            "alla fine del terzo anno di vita",
+            "tra il secondo e il terzo anno di vita",
+            "tra il primo e il secondo anno di vita"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 163,
+        "text": "Il 'concetto-funzione' descritto da Cassirer:",
+        "options": [
+            "opera una revisione della rigida distinzione tra sostanza e accidenti",
+            "è il concetto di tipo classico, usato da Aristotele e Locke",
+            "opera per astrazione e riduce gli oggetti a forme concettuali più semplici e generali"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 164,
+        "text": "L'ascesi per Schopenhauer:",
+        "options": [
+            "è un percorso che ha come prima tappa la castità",
+            "rende ogni uomo consapevole della propria individualità ed eccezionalità",
+            "è qualcosa a cui bisogna sempre ambire, ma che non può mai essere raggiunto"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 165,
+        "text": "Per il secondo Heidegger, il silenzio:",
+        "options": [
+            "è il modo di riconoscere, oggettivando, il logos",
+            "è il modo di dire il logos",
+            "è il modo di tacere il logos"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 166,
+        "text": "La soggettività della verità, per Kierkegaard:",
+        "options": [
+            "dev'essere strenuamente difesa, dinanzi all'insufficienza della verità oggettiva",
+            "è il traguardo raggiunto con la vita etica",
+            "dev'essere superata in nome di una verità assoluta e oggettiva"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 167,
+        "text": "Ricoeur NON è l'autore di:",
+        "options": [
+            "Il conflitto delle interpretazioni",
+            "Sé come un altro",
+            "L'azione"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 168,
+        "text": "Qual è il rapporto che Gadamer ritiene sussista tra essere e linguaggio?",
+        "options": [
+            "una relazione intermedia, che varia a seconda della correttezza e della scorrettezza delle proposizioni che dicono ciò che è",
+            "una relazione molto stretta, dal momento che l'essere si disvela tramite il linguaggio",
+            "una netta distinzione, dal momento che il linguaggio è operazione convenzionale che non ha legami con le cose, se non puramente simbolici"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 169,
+        "text": "Secondo Stein, la persona:",
+        "options": [
+            "è unità tripartita di corpo, anima e spirito",
+            "è solo corpo",
+            "è corpo e spirito"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 170,
+        "text": "L'opera kierkegaardiana:",
+        "options": [
+            "tenta di riaffermare l'esistenza concreta di contro all'essenza astratta, oltre i limiti di qualsiasi forma di panteismo e immanentismo",
+            "tenta di riaffermare l'essenza astratta, oltre i limiti di ogni forma di esistenzialismo",
+            "tenta di riaffermare un pensiero ateo, oltre i limiti imposti da qualsiasi forma di religione e dogma"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 171,
+        "text": "La verità extrametodica, secondo Gadamer:",
+        "options": [
+            "pone al centro la texte dell'essere della cosa",
+            "pone al centro l'attività gnoseologica",
+            "pone al centro il soggetto come soggetto interpretante"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 172,
+        "text": "Quando Husserl parla di 'ritorno alle cose', intende:",
+        "options": [
+            "un ritorno alle cose e a come si presentano alla coscienza; quindi, intese come res (entità irriducibili ai fenomeni psichici e fisici) attraverso le cose concrete",
+            "un ritorno ai fenomeni fisici, prescindendo da qualsiasi altra forma di fenomenalità",
+            "un ritorno alla concreta esistenza e al singolo"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 173,
+        "text": "Nello stadio positivo di cui parla Comte, per giungere a una conoscenza, si fa uso:",
+        "options": [
+            "del ragionamento",
+            "del ragionamento e dell'osservazione",
+            "dell'osservazione"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 174,
+        "text": "secondo Guardini l'opposizione:",
+        "options": [
+            "si distingue dalla contraddizione, poiché il prevalere di un polo non esclude l'altro",
+            "coincide con la contraddizione, poiché il prevalere di un polo esclude l'altro",
+            "si distingue dalla contraddizione, ma solo in ambito morale"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 175,
+        "text": "Quale di queste prospettive risulta essenziale allo sviluppo della concezione di coscienza elaborata da Sartre?",
+        "options": [
+            "l'idealismo hegeliano",
+            "la fenomenologia husserliana",
+            "l'ermeneutica gadameriana"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 176,
+        "text": "Lo storicismo è critico nei confronti del positivismo perché:",
+        "options": [
+            "il positivismo si interessa alle scienze della natura",
+            "il positivismo utilizza il metodo delle scienze naturali per lo studio della storia",
+            "il positivismo compie una ricerca concreta dei fatti empirici"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 177,
+        "text": "Relativamente ai tre stadi kierkegaardiani, si può dire che:",
+        "options": [
+            "il passaggio da uno stadio all'altro equivale ad un 'et-et'",
+            "tra i primi due stadi vi è un abisso incolmabile; tra il secondo e il terzo vi è invece una minore distanza",
+            "ogni stadio è una possibilità esistenziale"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 178,
+        "text": "Quando Levinas parla di 'il y a' intende:",
+        "options": [
+            "l'impersonale che assorbe ogni coscienza",
+            "la trascendenza",
+            "il livello autentico di ogni relazione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 179,
+        "text": "Freud condivide i principi:",
+        "options": [
+            "del meccanicismo",
+            "della teleologia",
+            "dell'atomismo"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 180,
+        "text": "Cos'è la storia critica, secondo Nietzsche?",
+        "options": [
+            "la storia di chi analizza il passato, alla ricerca di insegnamenti per la condotta nel presente",
+            "la storia di chi critica e giudica il passato",
+            "la storia appresa attraverso il metodo critico kantiano"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 181,
+        "text": "La relazione nel pensiero di Sartre:",
+        "options": [
+            "è esclusivamente quella tra l'uomo e Dio",
+            "una forma di negazione reciproca e di conflitto",
+            "non viene considerata, Sartre si concentra sul Singolo"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 182,
+        "text": "Gli opposti categoriali di cui parla Guardini:",
+        "options": [
+            "fanno riferimento ai punti di naufragio del sistema degli opposti, ne regolano i rapporti",
+            "fanno riferimento a concetti universali, categorie",
+            "fanno riferimento alla relazione strutturale tra poli"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 183,
+        "text": "Quando si parla di 'dialettica della volontà' all'interno del pensiero di Blondel, cosa si intende?",
+        "options": [
+            "la tensione costante tra volontà volente e volontà voluta, tra aspirazione e realizzazione",
+            "la tensione iniziale tra volontà e realtà, che poi trova risoluzione nell'azione",
+            "la tensione costante tra pensiero e azione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 184,
+        "text": "La responsabilità per Lévinas è:",
+        "options": [
+            "una forma di schiavitù e dipendenza",
+            "la risposta alla presenza di altri",
+            "il mondo in cui il soggetto agisce"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 185,
+        "text": "Il Super-io di cui parla Freud è:",
+        "options": [
+            "la sede della coscienza morale",
+            "istanza mediatrice tra forza contrastanti",
+            "un calderone di impulsi ribollenti"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 186,
+        "text": "Cosa intende Husserl quando parla di 'crisi delle scienze europee'?",
+        "options": [
+            "che le scienze sono in crisi perché hanno frainteso il loro compito e quindi occorre una presa di coscienza storica del loro senso originario",
+            "che le scienze sono in crisi perché hanno dimenticato l'originaria vocazione etica della tradizione filosofica e quindi devono tornare a Socrate",
+            "che le scienze sono in crisi a causa del lento progresso scientifico-tecnologico"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 187,
+        "text": "Con la nozione di essere-nel-mondo (in-der-Welt-sein), Heidegger fa riferimento:",
+        "options": [
+            "alla costitutiva apertura dell'uomo verso il mondo, in quanto lo abita e ne ha cura",
+            "agli enti indagati a partire dalle scienze naturali",
+            "a una critica all'immanentismo"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 188,
+        "text": "Il sentire empatico, secondo Stein è:",
+        "options": [
+            "un'intuizione emozionale che permette di entrare nel vivere dell'altro e tornare a me",
+            "una comprensione razionale delle narrazioni altrui",
+            "la totale identificazione con l'altro che consente di parlare di unità indifferenziata"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 189,
+        "text": "il simbolo, per Cassirer, è:",
+        "options": [
+            "la realtà astratta e schematizzata",
+            "l'artificiale separazione di ciò che è intelletto e di ciò che è sensibile",
+            "l'unione di intelligibile e sensibile"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 190,
+        "text": "Il personalismo di Maritain:",
+        "options": [
+            "cerca di riprendere Aristotele e Tommaso",
+            "è uno sviluppo coerente del pensiero di Bergson",
+            "Riprende la tradizione platonica"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 191,
+        "text": "Il volto per Lévinas è:",
+        "options": [
+            "l'insieme dei tratti fisici di chi incontro",
+            "la rivelazione originaria dell'alterità",
+            "la rappresentazione dell'altro"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 192,
+        "text": "Il termine Erlebnis nel pensiero di Husserl indica:",
+        "options": [
+            "la coscienza percettiva, diversa dalla coscienza morale",
+            "l'immaginazione",
+            "il vissuto come esperienza di una coscienza che ha percepito"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 193,
+        "text": "In Bergson il primato dell'intuizione è:",
+        "options": [
+            "la rinuncia a ogni forma di conoscenza",
+            "una forma di innatismo",
+            "la rivendicazione di una conoscenza possibile oltre il sapere astratto"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 194,
+        "text": "Secondo la Scuola di Marburgo elementi sensibili ed elementi formali/concettuali:",
+        "options": [
+            "sono distinguibili tramite uno sforzo analitico",
+            "sono originariamente distinti gli uni dagli altri",
+            "sono assolutamente indistinguibili"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 195,
+        "text": "La morale è, per Nietzsche:",
+        "options": [
+            "utile quando accetta l'imperfezione umana e la possibilità di sbagliare",
+            "un insieme di precetti pratici che favoriscono l'orientamento nella vita quotidiana, ma non assicurano la salvezza ultraterrena",
+            "utilità mascherata"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 196,
+        "text": "Secondo Blondel l'indagine filosofica deve orientarsi primariamente verso:",
+        "options": [
+            "la ragione",
+            "l'azione",
+            "dio"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 197,
+        "text": "Il noema, per Husserl è:",
+        "options": [
+            "l'elemento oggettivo dell'esperienza vissuta",
+            "l'oggetto",
+            "la cosa heideggerianamente intesa come distinta dall'oggetto"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 198,
+        "text": "Abbiamo indicato come 'fenomenologie alternative' le prospettive di:",
+        "options": [
+            "Harry, Marion, Falque",
+            "Blondel, Marcel, Guardini, Weil",
+            "Husserl, Heidegger, Levinas"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 199,
+        "text": "La sessualità infantile secondo Freud:",
+        "options": [
+            "non si manifesta ma resta solo latente",
+            "ha come oggetto del piacere gli oggetti più disparati",
+            "è definibile nei termini di auto-erotismo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 200,
+        "text": "Per il secondo Heidegger gli individui:",
+        "options": [
+            "sono gli autentici artefici del darsi dell'essere",
+            "non partecipano della metafisica",
+            "sono meri strumenti tramite cui l'andamento velante e dis-velante dell'essere si manifesta nella storia"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 201,
+        "question": "Heidegger in Essere e tempo ritiene che il problema del senso dell'essere:",
+        "options": [
+            "è da sempre il principale problema che la tradizione filosofica si è posta, tuttavia, senza riuscire a trovare una risposta",
+            "è oggetto di pregiudizi che negano l'importanza di un'indagine filosofica sulla questione. Al senso dell'essere non manca solo essere posto come problema",
+            "è stato al centro dell'interesse della metafisica classica, la quale è riuscita a rispondere in maniera definitiva"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 204,
+        "text": "Le scienze dello spirito secondo Dilthey:",
+        "options": [
+            "hanno esclusivamente una tendenza individualizzante",
+            "hanno esclusivamente una tendenza generalizzante",
+            "hanno sia una tendenza individualizzante che una generalizzante"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 205,
+        "text": "Con 'storia degli effetti', Gadamer intende:",
+        "options": [
+            "la storia interpretativa di ciò che è interpretato con cui quest'ultimo giunge all'interpretante",
+            "il bagaglio di conoscenze riguardanti l'oggetto interpretato, utili per poter discernere l'ipotesi interpretativa più corretta",
+            "l'enumerazione dei casi in cui si è verificato uno stesso effetto a partire da cause simili"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 206,
+        "text": "Il rapporto con Dio, secondo Kierkegaard:",
+        "options": [
+            "è rafforzato dalla condivisione della fede con la collettività",
+            "può esser vissuto con adeguata profondità anche nella vita etica",
+            "è necessariamente solitario e intimo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 207,
+        "text": "La dialettica hegeliana, secondo Kierkegaard:",
+        "options": [
+            "è un processo che, in altra forma, esprime le tre alternative esistenziali proposte da Kierkegaard stesso",
+            "è definibile nei termini di 'et-et', ossia da un processo i cui momenti non sono alternativi l'uno all'altro",
+            "può essere ridotta a due soli momenti e per questo non è condivisa da Kierkegaard"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 208,
+        "text": "La persona per Mounier è:",
+        "options": [
+            "una sostanza immutabile",
+            "un farsi tra storia e trascendenza",
+            "un fascio di esperienze"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 209,
+        "text": "L'ermeneutica di Gadamer è:",
+        "options": [
+            "una teoria critica",
+            "un modo d'essere dell'esistenza",
+            "uno dei modi di conoscere"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 210,
+        "text": "Il neokantismo ha come principale obiettivo:",
+        "options": [
+            "la riduzione dei fenomeni a pura attività del soggetto",
+            "l'indagine riguardante il darsi effettivo, psicologico-empirico, dei fenomeni",
+            "l'analisi delle condizioni di validità delle molteplici forme di conoscenza"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 211,
+        "text": "La melancolia o schizofrenia, secondo Scheler:",
+        "options": [
+            "deriva dalla incapacità di connettersi al mondo tramite i livelli di sintonizzazione carnis, intellectualis e Dei",
+            "scaturisce dalla incapacità di ragionare",
+            "deriva dall'assenza di sintonia tra i centri di orientamento della natura umana nel cosmo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 212,
+        "text": "Secondo il 'primo Wittgenstein':",
+        "options": [
+            "è possibile dedurre gli eventi futuri da quelli presenti grazie a un procedimento inferenziale",
+            "è possibile dedurre gli eventi futuri da quelli grazie all'insegnamento dell'esperienza",
+            "non è possibile dedurre gli eventi futuri da quelli presenti"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 213,
+        "text": "La ricerca filosofica per Weil:",
+        "options": [
+            "ha carattere etico e assume i tratti della libera disposizione ad accogliere l'alterità",
+            "è priva di senso, qualsiasi ricerca filosofica è 'chiacchera' inautentica e vuota",
+            "ha carattere esclusivamente gnoseologico, il fine della filosofia è l'elaborazione di una teoria della conoscenza"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 214,
+        "text": "Nella vita estetica secondo Kierkegaard l'individuo:",
+        "options": [
+            "vive spontaneamente nell'immediatezza e nel momento, senza operare una vera scelta",
+            "ha piena coscienza di sé e della propria libertà di azione",
+            "considera come bene più prezioso il rapporto disinteressato con gli altri"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 215,
+        "text": "Il corpo per Schopenhauer:",
+        "options": [
+            "non può essere conosciuto dalla conoscenza rappresentativa",
+            "si presenta a noi sia in modo immediato che in modo mediato",
+            "è concepibile solo come oggetto"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 216,
+        "text": "L'indagine attorno al senso dell'essere, in Essere e tempo:",
+        "options": [
+            "recupera e prolunga fedelmente la metafisica classica, che intende l'essere come presenza",
+            "si sviluppa a partire dalla critica alla metafisica classica, cui oppone la riflessione sul senso dell'essere dell'Esserci trascendentale e la considerazione del tempo come orizzonte",
+            "ha come fine la dimostrazione dell'inutilità di una simile riflessione, dal momento che il concetto di essere non è definibile"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 217,
+        "text": "Il milieu di cui parla Taine è:",
+        "options": [
+            "il clima",
+            "le disposizioni innate dell'uomo",
+            "l'ambiente"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 218,
+        "text": "L'esistenza di cui parla Marcel:",
+        "options": [
+            "è l'esistenza intesa nella sua universalità, quale categoria concettuale",
+            "è l'esistenza concreta nella sua singolarità, unicità e irripetibilità che eccede il concetto",
+            "è esclusivamente l'esistenza di Dio nella sua trascendenza, quale oggetto di Rivelazione"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 219,
+        "text": "Freud:",
+        "options": [
+            "ha fatto dell'ipnosi il suo unico e magistrale metodo",
+            "non ha mai usato l'ipnosi",
+            "ha adoperato l'ipnosi per un certo periodo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 220,
+        "text": "Ne 'La filosofia dell'aritmetica', Husserl concepisce il 'collegare collettivo' come:",
+        "options": [
+            "fenomeno psichico in cui vengono collegati differenti oggetti",
+            "fenomeno privo di intenzionalità e istintivo",
+            "fenomeno che vede più soggetti cooperare per la rappresentazione di un oggetto"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 221,
+        "text": "La storia della filosofia, secondo Weil:",
+        "options": [
+            "è un percorso di crescita dell'umano e luogo di confronto, una sorta di 'palestra' per l'uomo che contribuisce a continuarlo",
+            "è una 'galleria' di opinioni, mossa da una curiosità vuota e orientata alla semplice erudizione",
+            "è un percorso di progressivo avanzamento e superamento del passato, verso il futuro"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 222,
+        "text": "Tra Freud e Schopenhauer, chi condivide la distinzione kantiana di fenomeno e realtà in sé?",
+        "options": [
+            "entrambi",
+            "solo Schopenhauer",
+            "solo Freud"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 223,
+        "text": "La dimensione creatrice e creativa dell'azione, secondo Blondel:",
+        "options": [
+            "è riferibile esclusivamente all'ambito artistico, per descrivere la creazione di un'opera da parte dell'artista",
+            "è riferibile esclusivamente a Dio, per descrivere la creazione del mondo",
+            "è riferibile alla natura stessa dell'azione, per descrivere il modo con il quale l'azione crea sintesi nuove che cambiano colui che agisce e il mondo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 224,
+        "text": "Nella fenomenologia trascendentale di Husserl:",
+        "options": [
+            "l'intersoggettività è una texte che interessa esclusivamente la dimensione",
+            "l'intersoggettività viene garantita dall'appercezione appresentativa dell'altro",
+            "l'intersoggettività risulta totalmente esclusa e si presenta un solipsismo radicale"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 225,
+        "text": "Qual è l'atteggiamento di Gadamer verso i pregiudizi, la tradizione e l'autorità?",
+        "options": [
+            "vengono criticati aspramente",
+            "vengono riabilitati",
+            "viene tentato un superamento degli stessi, in nome di una conoscenza oggettiva"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 226,
+        "text": "L'essere per il secondo Heidegger:",
+        "options": [
+            "è inoggettivabile",
+            "è al servizio del pensiero",
+            "coincide con il Dasein"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 227,
+        "text": "La filosofia della cultura cassireriana:",
+        "options": [
+            "è anti-illuministica",
+            "come sviluppo della fenomenologia, non ha conservato nulla del criticismo kantiano",
+            "recupera elementi illuministici"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 228,
+        "text": "L'abduzione, secondo Pierce:",
+        "options": [
+            "è una forma di ragionamento che estende la conoscenza in modo quantitativo, ma non qualitativo",
+            "è una forma infallibile di ragionamento",
+            "è un ragionamento che dalle conclusioni giunge alle premesse"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 229,
+        "text": "Il Singolo di cui parla Kierkegaard:",
+        "options": [
+            "approfondisce le riflessioni svolte da Max Stirner in L'Unico e la sua proprietà",
+            "indica questo uomo, facendo riferimento all'esistenza concreta nella sua determinatezza e singolarità, unica e irripetibile",
+            "coincide con il concetto di uomo in generale, in termini di universalità"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 230,
+        "text": "Il termine greco metaxy, tradotto in francese con entre-deux, è:",
+        "options": [
+            "di origine platonica, Simone Weil lo riprende per indicare lo spazio di mediazione e la creazione di ponti tra ordini differenti del reale",
+            "di origine cartesiana, Simone Weil lo riprende per indicare il dualismo tra spirito e materia",
+            "di origini kantiana, Simone Weil lo riprende per indicare il soggetto trascendentale"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 231,
+        "text": "Con la morte di Dio, Nietzsche:",
+        "options": [
+            "critica la forma e ingiustizia sociale, sofferenza, povertà, guerra. La morte di Dio è annunciata esclusivamente nelle Considerazioni inattuali",
+            "intende l'evento pasquale di morte e resurrezione di Cristo. La morte di Dio è così annunciata per la prima volta nel Così parlò Zarathustra",
+            "intende la fine della trascendenza e di ogni forma di credenza e inganno, annunciata per la prima volta in La gaia scienza e ripresa in Così parlò Zarathustra"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 232,
+        "text": "Secondo Scheler, il valore delle cose può essere colto:",
+        "options": [
+            "attraverso la ricostruzione storica",
+            "attraverso la riduzione eidetica",
+            "attraverso l'intuizione emozionale"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 233,
+        "text": "La categoria dell'avere, secondo Marcel:",
+        "options": [
+            "esprime l'atteggiamento del consumatore indotto dal capitalismo",
+            "è alla base della comprensione del mistero ontologico che, irriducibile a qualsiasi forma di analisi e sintesi, si pone come presenza che apre naturalmente alla dimensione relazionale",
+            "riguarda una considerazione oggettivante che procede per analisi e sintesi, e implica tanto il possesso dell'oggetto di indagine quanto la servitù dell'uomo nei confronti del mondo"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 234,
+        "text": "Secondo Weil, la necessità:",
+        "options": [
+            "non esiste che per la presenza della causalità e della libertà",
+            "rende l'uomo schiavo e lo priva della libertà e della possibilità di creare",
+            "è l'unico ordine possibile, che esclude ogni forma di causalità e libertà"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 235,
+        "text": "Nella seconda fase del suo pensiero, Heidegger ritiene che la poesia:",
+        "options": [
+            "sia il fine ultimo della ricerca filosofica, in quanto raggiungimento del logos originario",
+            "si opponga al linguaggio strumentale e tecnico-scientifico",
+            "in quanto radicata nella storia del pensiero, rappresenti un'altra via del velamento dell'essere"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 236,
+        "text": "Per Schopenhauer, come per il 'secondo' Heidegger:",
+        "options": [
+            "La poesia è strumento di avvicinamento al noumeno/essere",
+            "Il noumeno/l'essere coincide con la totalità degli enti/esserci",
+            "Il percorso di avvicinamento al noumeno/essere è determinato dall'adesione al principium individuationis"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 237,
+        "text": "Secondo Schopenhauer, il mondo organico e quello psichico:",
+        "options": [
+            "seguono leggi diverse",
+            "seguono entrambi il principio di causalità",
+            "non sono in nessun modo distinti l'un l'altro"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 238,
+        "text": "Il velo di Maya, nel pensiero di Schopenhauer:",
+        "options": [
+            "è una metafora dell'inganno del mondo come rappresentazione",
+            "equivale alla realtà che soggiace all'apparenza",
+            "è un principio irrazionale e istintivo"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 239,
+        "text": "Nello stadio positivo di Comte:",
+        "options": [
+            "i fenomeni sono concepiti soltanto nelle loro leggi e relazioni",
+            "i fenomeni sono visti come prodotti di forze astratte",
+            "i fenomeni sono concepiti come prodotti di agenti soprannaturali"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 240,
+        "text": "La volontà voluta, secondo Blondel:",
+        "options": [
+            "è la volontà che soggiace alla realizzazione di ogni azione",
+            "è la volontà di potenza di cui parlava Nietzsche",
+            "è la volontà dell'uomo che si contrappone alla volontà di Dio"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 241,
+        "text": "Blondel parla del soprannaturale:",
+        "options": [
+            "considerandolo semplice frutto dell'immaginazione dell'uomo",
+            "considerandolo come oggetto di desiderio, come esigenza intrinseca all'uomo",
+            "considerandolo come oggetto di rivelazione esteriore che non ha alcun rapporto con l'interiorità"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 242,
+        "text": "Il comprendere, secondo Gadamer:",
+        "options": [
+            "coglie le costanti dei fenomeni, depurando la conoscenza dai caratteri meramente individuali",
+            "è attività autenticamente valida solo quando compie un lavoro rigorosamente filologico",
+            "preserva l'individuale"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 243,
+        "text": "L'alterità nel pensiero di Ricoeur:",
+        "options": [
+            "è esclusivamente quella dell'altro che mi sta di fronte, irriducibile a me",
+            "è esclusivamente quella dell'inconscio, alterità ed estraneità radicale che divide l'io",
+            "assume forme e declinazioni differenti, che riguardano le dimensioni e relazioni di sé"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 244,
+        "text": "L'epochè fenomenologica di Husserl è:",
+        "options": [
+            "la negazione dell'esistenza effettiva del mondo",
+            "la sospensione dell'affermazione della realtà implicita nell'atteggiamento naturale",
+            "l'operazione di messa in dubbio della sussistenza della realtà"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 245,
+        "text": "La logica delle relazioni di Russell è:",
+        "options": [
+            "anti-ontologica",
+            "realista",
+            "psicologista"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 246,
+        "text": "La ragione e il metodo scientifico, secondo Marcel:",
+        "options": [
+            "non hanno alcuna validità e costituiscono un pericolo per l'uomo",
+            "hanno una loro validità nella risoluzione dei problemi, ma non permettono di comprendere il mistero dell'essere",
+            "sono le uniche vie per giungere al mistero dell'essere"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 247,
+        "text": "Il significato (Sinn), per Frege, rappresenta:",
+        "options": [
+            "ciò a cui si riferisce il significato",
+            "il modo in cui qualcosa viene indicato",
+            "il valore di verità o di falsità dell'oggetto designato"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 248,
+        "text": "Quale tra queste affermazioni sulla concezione del linguaggio di Gadamer è vera?",
+        "options": [
+            "il linguaggio non si può trascendere",
+            "il linguaggio è convenzionale",
+            "il linguaggio è attività di oggettivazione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 249,
+        "text": "L'esistenza anonima è contrassegnata da:",
+        "options": [
+            "cura; precomprensione; curiosità",
+            "chiacchera; curiosità; equivoco",
+            "Essere-per-la-morte; cura; abbandono"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 250,
+        "text": "Blondel considera il pensiero di Tommaso d'Aquino:",
+        "options": [
+            "Soprattutto a partire dagli anni Trenta, sebbene già nei primi scritti vi siano forti critiche a letture scolastiche e razionalistiche dell'aquinate che lasciano l'interesse di Blondel per un ritorno al 'vero' Tommaso",
+            "solamente nello scritto L'azione, dopo il quale Blondel si distacca totalmente da Tommaso e rivede profondamente alcune tesi formulate in precedenza",
+            "solo in ottica critica. Blondel prende come modello Agostino, contro il rigido razionalismo dell'Aquinate"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 251,
+        "text": "La Scuola del Baden postula:",
+        "options": [
+            "il primato della ragione pratica su quella teoretica",
+            "il primato della ragione teoretica su quella pratica",
+            "l'indistinzione di ragione pratica e ragione teoretica"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 252,
+        "text": "La fase anale, secondo Freud, si verifica:",
+        "options": [
+            "tra il primo e il secondo anno di vita",
+            "tra il secondo e il terzo anno di vita",
+            "alla fine del terzo anno di vita"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 253,
+        "text": "Il socratismo, o platonismo, per Nietzsche:",
+        "options": [
+            "ha riportato in auge l'istinto alla vita dionisiaco",
+            "ha significato l'inizio di una decadenza dei valori morali",
+            "ha introdotto un razionalismo responsabile dell'irrigidirsi dell'istinto alla vita"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 254,
+        "text": "Quali sono i maestri del sospetto per Ricoeur?",
+        "options": [
+            "Marx, Nietzsche, Freud",
+            "Hegel, Kant, Husserl",
+            "Kierkegaard, Sartre, Heidegger"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 255,
+        "text": "Chi ha influenzato Ricoeur:",
+        "options": [
+            "HUSSERL (Heidegger, Mounier, Maritain)",
+            "Marx e Nietzsche",
+            "Gadamer e Wittgenstein"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 256,
+        "text": "Le scienze idiografiche considerano o meno la peculiarità degli oggetti:",
+        "options": [
+            "preservano le peculiarità intendendole come essenziali e non accidentali",
+            "ignorano le peculiarità concentrandosi sui caratteri generali",
+            "considerano le peculiarità come accidentali"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 257,
+        "text": "Freud e Schopenhauer:",
+        "options": [
+            "hanno una concezione diversa del principio primo: per Schopenhauer è irrazionale, per Freud è razionale",
+            "condividono l'idea della irrazionalità del principio primo",
+            "hanno una medesima concezione della sessualità"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 258,
+        "text": "Intuizione in Bergson:",
+        "options": [
+            "Atto metafisico mediante cui si genera una simpatia tra un oggetto e l'altro; filosofia è 'intuizione' superiore",
+            "È una forma di conoscenza inferiore",
+            "Corrisponde alla sensazione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 259,
+        "text": "Quiddità in Heidegger:",
+        "options": [
+            "quiddità è essenza che NON MUTA, STATICA, MA PER H. NON VA BENE PERCHE' L'UOMO è QUALCOSA CHE HA SEMPRE DA DIVENIRE e POTER ESSERE (ESSERCI)",
+            "è il concetto fondamentale della sua filosofia",
+            "corrisponde all'essere in generale"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 260,
+        "text": "L'AMORE in SCHOPENHAUER:",
+        "options": [
+            "Schopenhauer distingue l'amore in due tipi: l'eros e l'agape, la pietà, la carità. L'eros è un istinto distruttivo. L'amore appare come un ISTINTO FEROCE POICHE' NON è ALTRO CHE IL RIFLESSO DELLA VOLONTA'",
+            "È sempre positivo e liberatorio",
+            "Non ha importanza nella sua filosofia"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 261,
+        "text": "Heidegger in essere e tempo parla del problema dell'essere:",
+        "options": [
+            "Un problema rispetto al chiarimento degli esistenziali",
+            "Il più fondamentale e concreto dei problemi",
+            "Un falso problema"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 262,
+        "text": "L'intenzionalità secondo Husserl:",
+        "options": [
+            "è l'atto di trascendere sé stessa e di mettersi in rapporto con gli oggetti",
+            "è la volontà che si impone in tutta la sua potenza",
+            "corrisponde alla facoltà pratica di scegliere in modo adeguato"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 263,
+        "text": "La volontà schopenhaueriana:",
+        "options": [
+            "è una forza libera e cieca a cui gli uomini sono subordinati",
+            "è un principio che trascende gli individui e segue scopi ben precisi",
+            "è ciò che rende liberi gli uomini"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 264,
+        "text": "Qual è il limite del pensiero kantiano messo in luce dallo storicismo tedesco e da Dilthey?",
+        "options": [
+            "l'a priori come fisso e immutabile",
+            "la fallacia della rivoluzione trascendentale kantiana",
+            "la concezione antimetafisica di Kant"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 265,
+        "text": "Il metodo usato dal detective, per Peirce, è un esempio di:",
+        "options": [
+            "abduzione",
+            "induzione",
+            "deduzione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 266,
+        "text": "Si parla di filosofia dell'azione in relazione a quale dei seguenti autori?",
+        "options": [
+            "Heidegger",
+            "Marx",
+            "Blondel"
+        ],
+        "correct": 2
+    },
+    {
+        "id": 267,
+        "text": "La malinconia per Kierkegaard:",
+        "options": [
+            "un sentimento preponderante nella vita religiosa, che sorge dalla comprensione dell'impossibilità di legarsi a Dio durante la vita terrena",
+            "l'isterismo dello spirito, che non riesce a fare il salto verso una forma di esistenza superiore",
+            "è il sentimento che sorge nella vita estetica quando l'uomo non riesce a soddisfare un desiderio della carne"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 268,
+        "text": "La comprensione dell'altro per Dilthey:",
+        "options": [
+            "è fondata sull'analogia, è il ritrovamento dell'io nel tu",
+            "è impossibile da realizzare",
+            "si basa sulla deduzione logica"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 269,
+        "text": "Per lo storicismo tedesco, il razionalismo storico:",
+        "options": [
+            "È condivisibile quando il principio logico su cui si fonda è immanente e non trascendente",
+            "È un'illusione",
+            "È la chiave di lettura in grado di connettere presente e passato"
+        ],
+        "correct": 1
+    },
+    {
+        "id": 270,
+        "text": "In Levinas l'etica come filosofia prima significa:",
+        "options": [
+            "rivendicarne l'antecedenza rispetto a ogni ontologia",
+            "fare dell'etica una ontologia",
+            "mettere l'esperienza dell'incontro al centro della speculazione"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 271,
+        "text": "Cos'è il metalinguaggio per il secondo Heidegger:",
+        "options": [
+            "linguaggio dell'essere",
+            "linguaggio platonico",
+            "linguaggio metafisica"
+        ],
+        "correct": 0
+    },
+    {
+        "id": 272,
+        "text": "Chi sono i venturi per Heidegger?",
+        "options": [
+            "i poeti che comprendono l'essere",
+            "l'umanità che verrà in futuro",
+            "gli uomini che verranno"
+        ],
+        "correct": 0
+    }
+        ];
+
+        let userAnswers = {};
+        let filteredQuestions = [...questions];
+        let showAllCorrectAnswers = false;
+
+        function renderQuestions() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            
+            filteredQuestions.forEach(question => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.id = `question-${question.id}`;
+                
+                const userAnswer = userAnswers[question.id];
+                let questionClass = '';
+                if (userAnswer !== undefined) {
+                    questionClass = userAnswer === question.correct ? 'correct' : 'incorrect';
+                    questionDiv.className += ` ${questionClass}`;
+                }
+                
+                questionDiv.innerHTML = `
+                    <div class="question-number">Domanda ${question.id}</div>
+                    <div class="question-text">${question.text}</div>
+                    <div class="options">
+                        ${question.options.map((option, index) => {
+                            let optionClass = 'option';
+                            // Mostra la risposta corretta solo se:
+                            // 1. L'utente ha già risposto a questa domanda, OPPURE
+                            // 2. È stato premuto "Verifica tutte"
+                            if ((userAnswer !== undefined || showAllCorrectAnswers) && index === question.correct) {
+                                optionClass += ' correct-answer';
+                            }
+                            if (userAnswer === index) {
+                                optionClass += ' selected';
+                                if (userAnswer === question.correct) optionClass += ' correct';
+                                else optionClass += ' incorrect';
+                            }
+                            
+                            return `
+                                <label class="${optionClass}">
+                                    <input type="radio" name="q${question.id}" value="${index}" 
+                                           ${userAnswer === index ? 'checked' : ''}
+                                           onchange="selectAnswer(${question.id}, ${index})">
+                                    ${String.fromCharCode(97 + index)}. ${option}
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                    ${(userAnswer !== undefined || showAllCorrectAnswers) ? `
+                        <div class="result ${userAnswer === question.correct ? 'correct' : 'incorrect'}">
+                            <span class="result-icon">${userAnswer === question.correct ? '✅' : '❌'}</span>
+                            ${userAnswer === question.correct ? 'Risposta corretta!' : 
+                              userAnswer !== undefined ? `Risposta sbagliata. La risposta corretta è: ${String.fromCharCode(97 + question.correct)}` :
+                              `Risposta corretta: ${String.fromCharCode(97 + question.correct)}`}
+                        </div>
+                    ` : ''}
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+            
+            updateStats();
+        }
+
+        function selectAnswer(questionId, answerIndex) {
+            userAnswers[questionId] = answerIndex;
+            renderQuestions();
+        }
+
+        function checkAllAnswers() {
+            questions.forEach(question => {
+                if (userAnswers[question.id] === undefined) {
+                    // Non forziamo una risposta, lasciamo che l'utente veda cosa ha saltato
+                    // userAnswers[question.id] = -1; // Rimosso
+                }
+            });
+            // Mostra tutte le risposte corrette
+            showAllCorrectAnswers = true;
+            renderQuestions();
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            filteredQuestions = [...questions];
+            showAllCorrectAnswers = false;
+            renderQuestions();
+            document.getElementById('searchBox').value = '';
+        }
+
+        function showOnlyIncorrect() {
+            filteredQuestions = questions.filter(q => 
+                userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct
+            );
+            renderQuestions();
+        }
+
+        function updateStats() {
+            const totalAnswered = Object.keys(userAnswers).length;
+            const correctCount = Object.keys(userAnswers).filter(id => 
+                userAnswers[id] === questions.find(q => q.id == id).correct
+            ).length;
+            const percentage = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+            
+            document.getElementById('totalQuestions').textContent = questions.length;
+            document.getElementById('correctAnswers').textContent = `${correctCount}/${totalAnswered}`;
+            document.getElementById('percentage').textContent = `${percentage}%`;
+            
+            const progressPercentage = totalAnswered > 0 ? (totalAnswered / questions.length) * 100 : 0;
+            document.getElementById('progressFill').style.width = `${progressPercentage}%`;
+        }
+
+        function searchQuestions() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            filteredQuestions = questions.filter(q => 
+                q.text.toLowerCase().includes(searchTerm) ||
+                q.options.some(option => option.toLowerCase().includes(searchTerm))
+            );
+            renderQuestions();
+        }
+
+        // Event listeners
+        document.getElementById('searchBox').addEventListener('input', searchQuestions);
+
+        // Inizializzazione
+        renderQuestions();
+    </script>
+</body>
+</html>
