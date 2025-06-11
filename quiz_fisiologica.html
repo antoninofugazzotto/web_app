@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Fisiologica - Sistema di Verifica</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .quiz-container {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .question {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+            transition: all 0.3s ease;
+        }
+        
+        .question:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .question.correct {
+            border-left-color: #27ae60;
+            background: linear-gradient(90deg, #d5f4e6 0%, #f8f9fa 100%);
+        }
+        
+        .question.incorrect {
+            border-left-color: #e74c3c;
+            background: linear-gradient(90deg, #fadbd8 0%, #f8f9fa 100%);
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #3498db;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .question-text {
+            font-size: 1.05em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+        
+        .options {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .option:hover {
+            border-color: #3498db;
+            transform: translateX(3px);
+        }
+        
+        .option.correct-answer {
+            border-color: #27ae60;
+            background: #d5f4e6;
+            font-weight: 500;
+        }
+        
+        .option.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .option.selected.correct {
+            border-color: #27ae60;
+            background: #d5f4e6;
+        }
+        
+        .option.selected.incorrect {
+            border-color: #e74c3c;
+            background: #fadbd8;
+        }
+        
+        .option input[type="radio"] {
+            margin: 0;
+            transform: scale(1.2);
+        }
+        
+        .result {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .result.correct {
+            color: #27ae60;
+        }
+        
+        .result.incorrect {
+            color: #e74c3c;
+        }
+        
+        .result-icon {
+            font-size: 1.2em;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db 0%, #27ae60 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .quiz-container {
+                padding: 15px;
+            }
+            
+            .question {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Quiz di Fisiologica</h1>
+            <p>Sistema di verifica interattivo per l'esame</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalQuestions">0</div>
+                <div class="stat-label">Domande totali</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="correctAnswers">0</div>
+                <div class="stat-label">Risposte corrette</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="percentage">0%</div>
+                <div class="stat-label">Percentuale</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Cerca domande...">
+            <button class="btn btn-primary" onclick="checkAllAnswers()">✅ Verifica tutte</button>
+            <button class="btn btn-warning" onclick="resetQuiz()">🔄 Reset</button>
+            <button class="btn btn-success" onclick="showOnlyIncorrect()">❌ Solo sbagliate</button>
+        </div>
+        
+        <div class="quiz-container" id="quizContainer">
+            <!-- Le domande verranno generate qui -->
+        </div>
+    </div>
+
+    <script>
+        const questions = [{"id":1,"text":"Con la risonanza magnetica quali molecole si vedono:","options":["molecole di acqua","molecole di glucosio","molecole di idrogeno","molecole di ossigeno"],"correct":2},{"id":2,"text":"Le ghiandole endocrine sono ghiandole prive di dotti escretori; esse rilasciano:","options":["cromosomi nei nuclei","sostanze nel mondo esterno","traspirazione, tra le altre cose","ormoni nel sistema circolatorio","ormoni nel mondo esterno"],"correct":3},{"id":3,"text":"I due ormoni pancreatici che controllano il flusso di energia durante le fasi del metabolismo energetico sono:","options":["glucagone e secretina","tiroxina e insulina","insulina e glucagone","inibina e glucagone"],"correct":2},{"id":4,"text":"Le scansioni di Tomografia ad emissione di positroni (PET):","options":["Espongono il soggetto a raggi x","Richiedono l'iniezione di sostanze radioattive","Richiedono al soggetto di indossare un elmetto contenente sensori","Espongono il soggetto a forti campi magnetici"],"correct":1},{"id":5,"text":"Le due principali suddivisioni del sistema nervoso sono:","options":["SNA e SNP","SNA e SNC","SNS e SNC","SNP e SNC","cervello e midollo spinale"],"correct":3},{"id":6,"text":"La struttura che aderisce alla superficie del cervello è:","options":["L'aracnoide","Il LCS","La pia madre","La dura madre","La tenace madre"],"correct":2},{"id":7,"text":"La sostanza grigia del midollo spinale è in gran parte composta da","options":["corpi cellulari e interneuroni non mielinizzati","assoni mielinizzati","mielina","meningi","liquido cerebrospinale"],"correct":0},{"id":8,"text":"I neurotrasmettitori vengono impacchettati in vescicole da parte di:","options":["Ribosomi","Complesso di Golgi","Mitocondri","Microtubuli","Bottoni sinaptici"],"correct":1},{"id":9,"text":"Il liquido cerebrospinale circola attraverso:","options":["lo spazio subaracnoideo","i ventricoli laterali","tutte le risposte","il canale centrale","nessuna delle risposte"],"correct":2},{"id":10,"text":"Il dualismo mente-corpo pensato da Cartesio è definita come una visione filosofica che considera:","options":["la realtà esiste solo quando percepita da un osservatore","la mente come il prodotto dell'attività neurale","i sensi sono considerati come la sorgente della conoscenza","la mente e il corpo come entità separate"],"correct":3},{"id":11,"text":"Subito dopo un pasto, i livelli di glucosio nel sangue non aumentano come potrebbe fare perchè","options":["l'insulina promuove l'utilizzo immediato del glucosio da parte dell'organismo","il glucagone promuove la lipolisi","il glucagone promuove la lipogenesi","il glucagone promuove la conversione del glucosio a glicogeno e grasso","nessuna delle risposte è vera"],"correct":0},{"id":12,"text":"La distruzione dell'area preottica mediale:","options":["nessuna delle risposte è vera","abolisce il comportamento copulatorio nel maschio","aumenta il comportamento copulatorio nel maschio","abolisce il comportamento copulatorio nella femmina","aumenta il comportamento copulatorio nella femmina"],"correct":1},{"id":13,"text":"Come si definisce il movimento muscolare rapido che si ritiene sia organizzato o programmato dal cervelletto?","options":["flessione","movimento riflesso","movimento balistico","movimento di reaching","movimento a rampe"],"correct":2},{"id":14,"text":"Derivano dal colesterolo","options":["ormoni peptidici / ormoni amminici","ormoni peptidici","ormoni steroidei","ormoni amminici"],"correct":2},{"id":15,"text":"L'ormone è cruciale per il riassorbimento di acqua da parte dei reni e la contrazione dei vasi sanguigni. Questo ormone è prodotto dall'","options":["ossitocina / ipofisi anteriore","vasopressina / ipofisi anteriore","ossitocina / ipofisi posteriore","vasopressina / ipofisi posteriore"],"correct":3},{"id":16,"text":"Scegli l'alternativa esatta per riempire gli spazi vuoti. Gli assoni sono guidati da sostanze chimiche, rilasciate da cellule bersaglio o altri tessuti. Infatti, il dell'assone risponde ai di concentrazione di queste sostanze: viene attratto da segnali e respinto da segnali .","options":["processo di protrusione / gradienti / chemoattraenti / chemorepellenti","cono di crescita / gradienti / chemoattraenti / chemorepellenti","cono di crescita / cambiamenti / chemoattraenti / chemorepellenti","bersaglio / gradienti / chemoattraenti / chemorepellenti","cono di crescita / gradienti / chemorepellenti / chemoattraenti"],"correct":1},{"id":17,"text":"Scegli la risposta FALSA","options":["La malattia di Alzheimer è semplicemente il risultato del logorio del cervello dovuto all'età.","Le placche amiloidi sono presenti anche nei cervelli di anziani sani.","La malattia di Alzheimer è caratterizzata, a livello cerebrale, da accumuli di β-amiloide e cellule con anomalie definite matasse neurofibrillari.","La malattia di Alzheimer inizia con una perdita di memoria per gli eventi recenti.","La malattia di Alzheimer è caratterizzata da accumuli di proteina Tau fosforilata."],"correct":0},{"id":18,"text":"A quanti gradi di distanza dalla fovea si ha la macchia cieca e in quale parte:","options":["a circa 5 gradi, nella parte nasale","a 40 gradi, nella parte nasale","tra i 60 e i 40 gradi circa, nella parte temporale","tra i 10 e i 20 gradi circa, nella parte temporale","tra i 10 e 20 gradi circa, nel lato nasale"],"correct":4},{"id":19,"text":"La tomografia ad emissione positroni (PET) e la risonanza magnetica funzionale (fMRI) sono simili in quanto entrambe:","options":["rivelano pattern di attività cerebrale con un'elevata risoluzione temporale","rilevano decrementi nel consumo di ossigeno","rilevano e mappano cambiamenti locali di flusso sanguigno e metabolismo cerebrale","usano elementi radioattivi"],"correct":2},{"id":20,"text":"Che cos'è la sonic hedgehog?","options":["una proteina che spinge la cellula del Purkinje a sviluppare il caratteristico albero dendritico","un tipo di cellula della glia","una proteina rilasciata dalla notocorda che diffonde verso il midollo e porta tutte le cellule a diventare motoneuroni","una proteina rilasciata dalla notocorda che diffonde verso il midollo e porta alcune cellule a diventare motoneuroni","il processo per cui sono i soli geni della cellula che dirigono gli eventi"],"correct":3},{"id":21,"text":"Due delle seguenti affermazioni relative alle gonadi femminili, le ovaie, sono corrette. Quali?","options":["il progesterone promuove lo sviluppo degli organi riproduttivi femminili","gli ormoni prodotti dalle ovaie sono di natura steroidea, in modo simile a quelli prodotti dai testicoli","la kisspeptina è cruciale solo per lo sviluppo puberale femminile","solo gli estrogeni sono regolati da un circuito a feedback negativo","in caso di assunzione di contraccettivi orali, il rilascio di GnRH viene inibito da un feedback negativo sull'ipotalamo"],"correct":1},{"id":22,"text":"Quale tra le seguenti non è una delle 8 espressioni emozionali facciali di base secondo Paul Ekman?","options":["Paura","Disgusto","Imbarazzo","Felicità","Noia"],"correct":4},{"id":23,"text":"Quale delle seguenti affermazioni è vera?","options":["l'ossitocina e la vasopressina vengono sintetizzate nell'ipotalamo","il rilascio di ossitocina è stimolato dai fattori di rilascio ipotalamici","la vasopressina stimola le contrazioni dell'utero e il rilascio di ossitocina","l'ossitocina e la vasopressina sono nomi diversi con cui viene indicato uno stesso ormone","la vasopressina viene sintetizzata nell'ipofisi posteriore"],"correct":0},{"id":24,"text":"Scegli l'alternativa esatta per riempire gli spazi vuoti. Il principale fotopigmento dei bastoncelli è la. Quando viene colpita dalla luce, il si dissocia dalla molecola liberando un sito enzimatico su quella molecola che a sua volta attiva molecole della trasducina, che è una. La trasducina agisce poi attraverso la fosfodiesterasi per trasformare il GMP ciclico in 5'-GMP. La stimolazione luminosa causa la chiusura dei canali del nella membrana dei fotorecettori, bloccando di conseguenza l'ingresso di più di un milione di ioni sodio determinando una del fotorecettore","options":["rodopsina/ retinale/ opsina/ proteina G/ sodio/ iperpolarizzazione","melanopsina/ retinale/opsina/ proteina G/ sodio/ iperpolarizzazione","rodopsina/ retinale/ opsina/ proteina K/ sodio/ iperpolarizzazione","rodopsina/ retinale/ opsina/ proteina G/ calcio/ iperpolarizzazione","rodopsina/ retinale/opsina/ proteina G/ sodio/ depolarizzazione"],"correct":0},{"id":25,"text":"Scegli l'alternativa esatta per riempire gli spazi vuoti. La SMA si trova principalmente nella parte dell'emisfero. Si ritiene che essa sia importante per la pianificazione dei movimenti generati. Un danno della SMA causa l'impossibilità di compiere e questo indica, insieme ad altri dati, che questa regione sia cruciale per.","options":["laterale / internamente/ bilaterale/ movimenti involontari/ le sequenze del movimento","laterale / internamente/ bilaterale/ movimenti volontari/ le sequenze del movimento","mediale / esternamente/ bilaterale/ movimenti involontari/ le sequenze del movimento","mediale / esternamente/ bilaterale/ movimenti volontari/ le sequenze del movimento","mediale / internamente/ bilaterale/ movimenti volontari/ le sequenze del movimento"],"correct":4},{"id":26,"text":"Quale delle seguenti affermazione sugli androgeni è FALSA?","options":["sono coinvolti nello sviluppo e nel mantenimento dei caratteri sessuali secondari maschili","l'estradiolo viene convertito dalle gonadi femminili","la loro produzione è regolata da FSH e LH sia nei testicoli sia nelle ovaie","i livelli di testosterone tendono ad aumentare con il progredire dell'età"],"correct":3},{"id":27,"text":"Le tre fasi del metabolismo energetico sono, nell'ordine","options":["di digiuno, di assorbimento e cefalica","di alimentazione, di digiuno e di assorbimento","di assorbimento, di digiuno e di alimentazione","cefalica, di assorbimento e di digiuno","di assorbimento, cefalica e di digiuno"],"correct":3},{"id":28,"text":"Le cellule a opponenza spettrale sono caratterizzate dal fatto che due regioni dello spettro hanno effetti opposti sulla frequenza di scarica della cellula. Indica quali delle seguenti affermazioni a riguardo è VERA.","options":["Queste cellule registrano la differenza nella stimolazione di diverse popolazioni di coni. Per esempio, una cellula +M/−L risponde alla differenza nell'eccitazione dei coni M e L.","La curva della differenza M-meno-L mostra un chiaro picco nella parte rossa dello spettro.","I picchi delle curve della sensibilità dei coni M e L sono molto diversi.","I rilevatori della luminosità ricevono stimoli solo da coni M."],"correct":0},{"id":29,"text":"La luce passa attraverso gli strati della retina in quale delle seguenti sequenze?","options":["strato dei recettori, strato delle cellule bipolari, strato delle cellule retiniche gangliari","strato delle cellule orizzontali, strato delle cellule retiniche gangliari, strato dei recettori","nessuna delle risposte precedenti","strato delle cellule retiniche gangliari, strato delle cellule amacrine, strato dei recettori","sono vere tutte le risposte, in quanto la luce colpisce contemporaneamente tutte le cellule che formano la retina"],"correct":2},{"id":30,"text":"Le scansioni di tomografia assiale computerizzata sono basate su:","options":["istologia","tecnologia a raggi x","magnetismo","raggi gamma"],"correct":1},{"id":31,"text":"Quali tra le seguenti affermazioni è corretta sull'evoluzione dell'essere umano?","options":["tutte le alternative sono corrette","le capacità cognitive degli esseri umani adulti non sono cambiate molto negli ultimi 200.000 anni","non c'è correlazione tra la complessità degli utensili prodotti con la pietra e l'incremento della dimostrazione del cervello","il primo ominide a produrre utensili è stato l'homo erectus"],"correct":1},{"id":32,"text":"L'estrogeno prevalente è","options":["testosterone","estradiolo","progestinico","androstenedione","progesterone"],"correct":1},{"id":33,"text":"La proteina Sry stimola lo sviluppo della zona midollare delle gonadi primordiali in","options":["ovaie","testicoli","sistema di Wolff","pene","sistema di Muller"],"correct":1},{"id":34,"text":"Che cos'è il nucleo di Onuf?","options":["è la sede del controllo dei muscoli BC nei roditori","è un assembramento cellulare tipico dei roditori","è la sede del controllo dei muscoli BC nei ratti","è il nucleo sessualmente dimorfico del POA nei non roditori","è il corrispondente del nucleo spinale bulbocavernoso nei non roditori"],"correct":4},{"id":35,"text":"I sistemi a set-point a feedback negativo costituiscono un modo per mantenere","options":["alti livelli di grasso corporeo","alti livelli di fame","l'omeostasi","alti livelli di assunzione alimentare","alti livelli di consumo energetico"],"correct":2},{"id":36,"text":"Il sistema nervoso somatico:","options":["partecipa alle interazioni sensoriali e motorie con l'ambiente esterno","tutte le risposte","è la parte dell'SNP e partecipa alle interazioni sensoriali e motorie con l'ambiente esterno","è parte dell'SNP","è parte dell'SNA"],"correct":2},{"id":37,"text":"Tra le affermazioni relative alla sindrome di Korsakoff, indica qual è quella FALSA","options":["Implica un danno ai corpi mammillari.","I pazienti con Korsakoff mostrano deficit nella formazione di memorie dichiarative a lungo termine.","I pazienti con Korsakoff sono perfettamente consapevoli della loro malattia e non cercano di negarla.","La memoria procedurale dei pazienti con Korsakoff risulta normale.","La principale causa della sindrome di Korsakoff è una carenza da vitamina B1, spesso causata dall'alcolismo."],"correct":2},{"id":38,"text":"Il controllo principale dei livelli di tiroxina nel sangue è esercitato dall'ormone tireotropo prodotto dall'ipofisi anteriore. La secrezione di questo ormone è controllata dall'ormone di rilascio tireotropina, prodotto dall'ipotalamo, il quale stimola il rilascio di TSH da parte dell'adenoipofisi. Quando il livello ematico degli ormoni tiroidei scende, vengono secreti sia TRH sia TSH; il TSH, quando raggiunge la ghiandola tiroide, stimola la produzione e il rilascio di ormoni tiroidei. Gli ormoni tiroidei esercitano poi un effetto di feedback negativo, inibendo il rilascio di TRH e TSH.","options":["ormone tireotropo / TSH / ipofisi anteriore / ormone di rilascio tireotropina / TRH / ipotalamo / feedback negativo","ormone di rilascio della tireotropina / ormone tireotropo / TSH / ipofisi anteriore / TRH / ipotalamo / feedback negativo","ormone di rilascio della tireotropina / ormone tireotropo / TSH / ipofisi anteriore / TRH / ipotalamo / feedback positivo","ipofisi anteriore / ormone di rilascio della tireotropina / ormone tireotropo / TSH / TRH / ipotalamo / feedback positivo"],"correct":0},{"id":39,"text":"Quale delle seguenti affermazioni è FALSA relativamente alla melatonina?","options":["La secrezione di melatonina controlla anche l'accoppiamento in animali con cicli riproduttivi stagionali.","La melatonina è coinvolta nei cicli circadiani.","La melatonina è rilasciata da una regione del cervello che si trova tra gli emisferi, sotto la porzione anteriore del corpo calloso.","Negli uccelli, la luce raggiunge direttamente l'epifisi, che secerne la melatonina.","Il recettore della melatonina è associato a una proteina G."],"correct":2},{"id":40,"text":"Quali delle seguenti affermazioni sulla migrazione cellulare sono FALSE?","options":["Le cellule migrate negli strati esterni non si differenziano in neuroni.","Sulla superficie delle cellule gliali radiali, le cellule che stanno migrando si possono muovere in varie direzioni.","Le cellule coinvolte in questo processo si spostano per dare origine alle diverse popolazioni neurali, seguendo un movimento casuale.","Le molecole di adesione cellulare possono guidare la rigenerazione assonica in età adulta.","Le molecole di adesione cellulare guidano la migrazione cellulare"],"correct":0},{"id":41,"text":"Scegli la risposta ESATTA","options":["un danno alla via dorsale può causare un disturbo della capacità di raggiungere un oggetto usando la vista","non esiste un'area per il riconoscimento dei volti","la via ventrale corrisponde alla via del \"dove\", la via dorsale alla via del \"cosa\"","la via del \"cosa\" e la via del \"dove\" sono completamente separate","la paziente D.F. aveva perso la capacità di percepire facce e oggetti, pur mantenendo la capacità di manipolare e afferrare sotto il controllo della vista e fu ipotizzato che questo comportamento dipendesse da un danno alla via dorsale."],"correct":0},{"id":42,"text":"Quali sono i recettori interessati per il trattamento del disturbo ossessivo-compulsivo?","options":["NMDA","5-HT2A","ACh","DA","AMPA"],"correct":1},{"id":43,"text":"Il riflesso di stiramento è la contrazione che risulta, appunto, dallo stiramento di un muscolo. Ordina correttamente le fasi della sequenza del circuito che ci impedisce di far cadere un peso che viene caricato sulla mano, scegliendo la sequenza corretta.","options":["1,2,4,3","3,1,2,4","3,1,4,2","3,4,2,1","4,3,1,2"],"correct":4},{"id":44,"text":"Scegli la definizione FALSA","options":["Individui geneticamente identici hanno cervelli e comportamenti identici.","La cura materna può avere effetti epigenetici che possono essere trasmessi anche attraverso diverse generazioni.","I geni immediati precoci, che vengono espressi, per tempi brevi, da quasi ogni neurone che è stato stimolato, vengono influenzati dall'esperienza.","La metilazione consiste nella modificazione chimica del DNA che non influisce sulla sequenza nucleotidica di un gene ma che diminuisce la probabilità che quel gene sia espresso."],"correct":0},{"id":45,"text":"Di fronte alle minacce, come parte della reazione \"combatti o fuggi\", la midollare surrenale rilascia catecolamine, cioè l'epinefrina e la norepinefrina, che, tra le altre cose, preparano il corpo all'azione, innalzando il battito cardiaco e il ritmo della respirazione.","options":["la corticale surrenale / catecolamine / l'epinefrina e la norepinefrina / innalzando","la midollare surrenale/ catecolamine/ l'epinefrina e la norepinefrina / innalzando","la corticale surrenale/ catecolamine/ l'epinefrina e la norepinefrina / riducendo","la midollare surrenale/ catecolamine/ l'epinefrina e la norepinefrina / riducendo"],"correct":1},{"id":46,"text":"Quale dei seguenti NON è un sintomo positivo della schizofrenia?","options":["Deliri","Comportamento bizzarro","Ritiro sociale","Pensiero disorganizzato","Allucinazioni uditive"],"correct":2},{"id":47,"text":"Come si chiama la condizione per cui una persona perde la capacità di formare nuove memorie?","options":["Amnesia retrograda","Amnesia globale","Amnesia progressiva","Amnesia anterograda","Amnesia transitoria"],"correct":3},{"id":48,"text":"Quale tra le seguenti affermazioni è ERRATA relativamente alla depressione?","options":["Le scansioni PET dei pazienti depressi indicano un aumento del flusso sanguigno nella corteccia frontale, e una sua diminuzione nella corteccia parietale e temporale posteriore e nella corteccia cingolata anteriore.","Le scansioni PET dei pazienti depressi indicano una diminuzione del flusso sanguigno in sistemi implicati nell'attenzione.","La terapia elettroconvulsiva viene ancora usata per il trattamento di depressioni gravi.","Periodi di depressione unipolare possono verificarsi anche in assenza di stress apparenti.","Le percentuali di concordanza per i gemelli monozigoti sono molto diverse a seconda che i gemelli crescano separati o insieme"],"correct":4},{"id":49,"text":"Quale delle seguenti affermazioni relative all'amigdala NON è corretta?","options":["Si trova nella porzione anteromediale del lobo temporale destro","La via alta che collega amigdala e talamo prevede che le informazioni in entrata passino prima dalla corteccia sensoriale","La distruzione bilaterale dell'amigdala nelle scimmie provocava una forte diminuzione della paura","I neuroni dell'amigdala laterale codificano l'associazione tra specifici stimoli ed eventi avversi","La corteccia prefrontale è cruciale per l'addestramento all'estinzione nel caso delle paure apprese"],"correct":0},{"id":50,"text":"Nel citoplasma della maggior parte dei bottoni terminali prevalgono","options":["I nuclei","I mitocondri","Tutte le risposte","I mitocondri e le vescicole sinaptiche","Le vescicole sinaptiche"],"correct":3},{"id":51,"text":"Quale delle seguenti affermazioni rappresenta al meglio la teoria di Cannon-Bard?","options":["È la risposta da parte del corpo a provocare l'esperienza emozionale.","Il cervello interpreta la situazione per decidere quale emozione sia più appropriata. La risposta corporea avviene dopo quella emotiva.","La risposta del sistema nervoso autonomo evoca l'esperienza emozionale.","Lo specifico pattern di arousal del sistema nervoso autonomo è causato dalle emozioni.","Il cervello interpreta la situazione per decidere quale emozione sia più appropriata. La risposta corporea e l'esperienza emozionale sono simultanee."],"correct":4},{"id":52,"text":"Quale parte del cervello se lesionata inibisce l'appetito?","options":["ipotalamo laterale","area preottica","nucleo del tratto solitario","nucleo paraventricolare","ipofisi"],"correct":0},{"id":53,"text":"Il neurone presinaptico induce la produzione di un potenziale d'azione tutto-o-nulla che si propaga fino all'assone. Vi è quindi un rilascio di neurotrasmettitore. Poi, il neurone postsinaptico mostra una piccola depolarizzazione nota come potenziale postsinaptico eccitatorio.","options":["postsinaptico/ presinaptico/ potenziale postsinaptico eccitatorio","postsinaptico/ presinaptico/ potenziale postsinaptico inibitorio","presinaptico/ postsinaptico/ potenziale postsinaptico eccitatorio","presinaptico/ postsinaptico/ potenziale postsinaptico inibitorio"],"correct":2},{"id":54,"text":"Scegli le risposte FALSE:","options":["Nella sete ipovolemica un cambiamento nel bilancio tra acqua e sale nei liquidi extracellulari spinge l'acqua fuori da compartimento intracellulare","La sete ipovolemica può avere luogo nel caso di un aumento del sale","Nella sete ipovolemica è un basso volume extracellulare a segnalare la necessità di acqua","La sete ipovolemica ha origine dalla perdita di liquidi che contengono sia acqua sia soluti","La sete ipovolemica può avere luogo nel caso di un'emorragia"],"correct":0},{"id":55,"text":"L'idea che l'ipotalamo laterale (LH) sia un centro della fame è stata largamente abbandonata perché","options":["Le lesioni bilaterali dell'LH producono iperfagia","Le lesioni bilaterali dell'LH producono alterazioni motorie gravi e generali e riducono le risposte a tutti i tipi di stimoli sensoriali, non solo a quelli legati all'alimento","le lesioni dell'LH non riducono l'assunzione né di alimenti né bevande","Le lesioni dell'LH non riducono l'assunzione di alimenti","Il nucleo paraventricolare sembra essere il centro della fame"],"correct":1},{"id":56,"text":"La dottrina del neurone è stata proposta da:","options":["Bell e Magendie","Santiago Ramon y Cajal","Camillo Golgi","Cartesio"],"correct":1},{"id":57,"text":"Quale tra le seguenti definizioni NON rispecchia le proprietà dei recettori metabotropici?","options":["Consentono lo scorrimento degli ioni attraverso la membrana per un tempo più breve rispetto ai recettori ionotropici","riconoscono i trasmettitori sinaptici","Attivano molecole note come proteine G che legano nucleotidi della guanina","Possono controllare direttamente i canali ionici","Consentono lo scorrimento degli ioni attraverso la membrana per un tempo più lungo rispetto ai recettori ionotropici"],"correct":0},{"id":58,"text":"Il mielencefalo viene spesso chiamato:","options":["midollo allungato","ipotalamo","corteccia","tronco encefalico","mesencefalo"],"correct":0},{"id":59,"text":"Le immagini di risonanza magnetica sono basate su:","options":["magnetismo","radioattività","raggi x","raggi gamma"],"correct":0},{"id":60,"text":"Solo le cellule che sintetizzano le corrette proteine recettoriali per un ormone e le inseriscono come proteine integrali della membrana possono rispondere adeguatamente a quell'ormone. Sappiamo che le proteine recettoriali attraversano la membrana e che quando un ormone si lega alla porzione extracellulare di un recettore, la molecola recettrice cambia la sua conformazione. L'alterazione della parte intracellulare del recettore modifica la chimica della cellula, attivando un secondo messaggero. Questo tipo di sistema può apportare cambiamenti nel metabolismo e nei potenziali di membrana, ma non solo.","options":["Extracellulare / intracellulare / interno / secondo messaggero","intracellulare / extracellulare / interno / secondo messaggero","extracellulare / intracellulare / esterno / secondo messaggero","extracellulare / intracellulare / interno / neurotrasmettitore"],"correct":0},{"id":61,"text":"Scegli le risposte ESATTE. Si ritiene che il cervelletto:","options":["medi la astereognosia","svolga un ruolo importante nell'apprendimento motorio, in particolare quando la distribuzione temporale delle sequenze motorie rappresenta un fattore critico","nessuna delle risposte","corregga i movimenti in atto che deviano dalla traiettoria prevista","tutte le risposte"],"correct":1},{"id":62,"text":"Scegli l'alternativa esatta per riempire gli spazi vuoti. Quanto minore è il numero di fibre muscolari che un motoneurone innerva, tanto più fine è il controllo dei movimenti. Questo è detto rapporto di innervazione","options":["minore / fine / sinergia","maggiore / fine / sinergia","maggiore / fine / rapporto di innervazione","minore / fine / rapporto di innervazione","minore / scoordinato / rapporto di innervazione"],"correct":3},{"id":63,"text":"Come si chiama il processo per cui la femmina depone un uovo non fertilizzato che dà origine a un clone della madre?","options":["Gemmazione","Partenogenesi","Estro","Momento refrattario","Fecondazione interna"],"correct":1},{"id":64,"text":"Quale delle seguenti affermazione è vera?","options":["nessuno spermatozoo ha cromosomi Y","nessuna delle risposte è vera","nessuno spermatozoo ha cromosomi X","tutti gli spermatozoi hanno cromosomi X","tutti gli spermatozoi hanno cromosomi Y"],"correct":1},{"id":65,"text":"Un ormone tropico è un ormone che","options":["aumenta il comportamento riproduttivo","influenza le ovaie e i testicoli","viene rilasciato dall'ipofisi","stimola o sopprime il rilascio di altri ormoni","stimola o sopprime il rilascio di ormoni dall'ipofisi posteriore"],"correct":2},{"id":66,"text":"Durante la fase di digiuno, il principale carburante per il cervello è rappresentato da","options":["glucosio","carboidrati","chetoni","gluconeogenesi","acidi grassi liberi"],"correct":0},{"id":67,"text":"L'alcol attiva i canali del cloro accoppiati con i recettori GABAA aumentando l'inibizione post-sinaptica. Questo meccanismo è alla base della disinibizione sociale e della perdita di coordinazione motoria. Inoltre, l'alcol influenza anche altri neurotrasmettitori: basse dosi stimolano le vie dopaminergiche e il conseguente aumento di dopamina potrebbe essere in relazione con l'euforia che accompagna l'assunzione di alcol.","options":["cloro / post-sinaptica / disinibizione / dopaminergiche","cloro / presinaptica / disinibizione / dopaminergiche","cloro / post-sinaptica / eccitazione / dopaminergiche","cloro / post-sinaptica / disinibizione / colinergiche","sodio / post-sinaptica / disinibizione / dopaminergiche"],"correct":0},{"id":68,"text":"Il grasso corporeo rilascia un ormone chiamato","options":["glucagone","grelina","glicogeno","leptina","insulina"],"correct":3},{"id":69,"text":"Il rilascio di neurotrasmettitori dai bottoni è spesso stimolato da:","options":["l'arrivo di un potenziale d'azione a livello del cono di emergenza dell'assone","il rilascio di ioni calcio dai bottoni","un efflusso di ioni sodio","la pompa sodio-potassio","un influsso di ioni calcio"],"correct":4},{"id":70,"text":"Le scansioni di tomografia assiale computerizzata utilizzano","options":["sezioni coronali e sagittali","sezioni assiali","sezioni coronali","sezioni assiali e coronali"],"correct":1},{"id":71,"text":"L'ipotalamo controlla l'ipofisi anteriore attraverso:","options":["tiroide","fascio prosencefalico mediale","fornice","sistema portale ipotalamo-ipofisario","surrene"],"correct":3},{"id":72,"text":"La personalità di una persona è cambiata drasticamente a seguito di un incidente che ha lesionato la corteccia frontale. Questa osservazione offre supporto per la visione unitaria (monistica) della connessione mente-corpo.","options":["sociale","unitaria (monistica)","somatica","dualistica"],"correct":1},{"id":73,"text":"Quale regione del cervello è importante per l'udito, ma anche per i processi di memoria?","options":["cervelletto","lobo parietale","lobo occipitale","lobo temporale"],"correct":3},{"id":74,"text":"Nel neurone a riposo il gradiente di concentrazione spinge gli ioni potassio verso l'esterno della cellula, mentre la pressione elettrostatica li spinge all'interno, fino a raggiungere l'equilibrio","options":["il gradiente di concentrazione / la pressione elettrostatica","l'osmosi / la pressione elettrostatica","la pressione elettrostatica / il gradiente di concentrazione","la permeabilità selettiva / l'osmosi"],"correct":0},{"id":75,"text":"Un vantaggio della ricerca psicobiologica condotta sugli animali non umani rispetto all'uomo è che:","options":["il cervello delle specie non umane è più semplice","la ricerca in diverse specie rende possibile l'utilizzo dell'approccio comparativo","nessuna delle risposte precedenti","tutte le risposte precedenti","esistono meno vincoli etici nello studio delle specie non umane"],"correct":3},{"id":76,"text":"Nel processo di conversione del segnale elettrico in chimico, le molecole di neurotrasmettitore che sono state rilasciate nella fessura sinaptica grazie all'influsso degli ioni calcio si legano temporaneamente ai recettori postsinaptici e modificano la funzionalità della cellula postsinaptica. Alcuni recettori fanno aprire i cancelli ionici, causando un flusso di ioni che dà il via a un potenziale postsinaptico inibitorio o eccitatorio; essi sono detti ionotropici. Altri tipi di recettori sono legati a messaggeri secondari che innescano cambiamenti nell'eccitabilità o nel metabolismo della cellula postsinaptica e sono detti metabotropici.","options":["vescicola sinaptica/ calcio/ ionotropici/ metabotropici","fessura sinaptica/ calcio / ionotropici/ metabotropici","fessura sinaptica/ sodio/ ionotropici/ metabotropici","fessura sinaptica/ calcio/ ionotropici"],"correct":1},{"id":77,"text":"Depolarizzazioni più ampie producono:","options":["potenziali d'azione più numerosi","potenziali d'azione di ampiezza ridotta","potenziali d'azione di intensità ridotta","potenziali locali","potenziali d'azione più ampi"],"correct":0},{"id":78,"text":"Il neuropeptide Y, la galanina, l'orexina A e la grelina sono:","options":["agonistici serotoninergici","catecolamine","amminoacidi","peptidi della fame","peptidi della sazietà"],"correct":3},{"id":79,"text":"A differenza dell'ipofisi posteriore, l'ipofisi anteriore:","options":["non rilascia ormoni","rilascia ormoni","non ha vasi sanguigni","non riceve stimoli nervosi","è sospesa attraverso il peduncolo ipofisario"],"correct":3},{"id":80,"text":"Dove termina la maggior parte degli assoni del tratto ottico?","options":["nel nucleo genicolato laterale","nella radiazione ottica","nella scissura calcarina","nella corteccia extrastriata","a livello del chiasma ottico"],"correct":0},{"id":81,"text":"Come si chiamano le cellule che scaricano selettivamente quando l'animale attraversa i punti di intersezione in un ambiente locale e che funzionano come un sistema di latitudine e longitudine? In che regione cerebrale si trovano?","options":["Cellule di posizione; corteccia entorinale.","Cellule di posizione; ippocampo.","Cellule del perimetro; corteccia entorinale.","Cellule grid; corteccia entorinale.","Cellule grid; corteccia paraippocampale."],"correct":3},{"id":82,"text":"Quale tipo di deficit si verifica in caso di danno allo spinocerebello?","options":["atassia delle gambe","difficoltà a guidare i movimenti degli occhi","difficoltà a mantenere il contatto oculare","atassia degli arti superiori","aprassia"],"correct":0},{"id":83,"text":"Durante il terzo mese di sviluppo di un feto maschio, i testicoli secernono quantità considerevoli di testosterone e","options":["sostanza inibente di Wolff","sostanza inibente di Müller","ormoni tropici","fattori di rilascio","estradiolo"],"correct":1},{"id":84,"text":"Quale tra questi trattamenti agisce inibendo la ricaptazione di norepinefrina, serotonina e/o dopamina?","options":["Farmaci come la clozapina","Inibitori selettivi della ricaptazione della serotonina","Triciclici ed eterociclici","La terapia elettroconvulsiva","Inibitori delle monoamminossidasi"],"correct":2},{"id":85,"text":"Quale tra le seguenti affermazioni relative al modello di attribuzione cognitiva è ERRATA?","options":["Anche la nostra esperienza emozionale in un certo momento può influenzare il come interpreteremo eventi successivi.","La nostra interpretazione del contesto, includendo i fattori sociali, come le emozioni delle altre persone, determina quale emozione andremo a provare.","Le risposte autonome contribuiscono all'intensità dell'esperienza emozionale.","L'emozione esperita non influenzerà le future interpretazioni degli stimoli e la continuazione dell'arousal autonoma.","L'esperimento di Schachter e Singer con l'epinefrina mostra come i partecipanti attribuiscano una determinata emozione al loro arousal fisiologico in modo dipendente dal contesto."],"correct":3},{"id":86,"text":"Come è denominata la parte del cervello che mette in comunicazione i due emisferi?","options":["Corpo calloso","Mielina","Sostanza bianca","Sostanza grigia","Ventricolo"],"correct":0},{"id":87,"text":"Quali tra i seguenti animali vengono attualmente utilizzati più comunemente come soggetti per la ricerca psicobiologica?","options":["scimmie","ratti e topi","gatti","scimpanzè","cani"],"correct":1},{"id":88,"text":"In che cosa consiste il potenziale di membrana a riposo di un neurone?","options":["Nella differenza di potenziale elettrico tra la parte interna e la parte esterna della membrana che si registra in un neurone a riposo, solitamente tra i −65 e i −80 millivolt","Nel potenziale elettrico della parte esterna della membrana cellulare","Nella differenza di potenziale elettrico tra la parte interna e la parte esterna della membrana che si registra in un neurone a riposo, solitamente tra i −50 e i −80 millivolt","Nella differenza di potenziale elettrico tra una cellula nervosa e l'altra, solitamente tra i −50 e i −80 millivolt","Nel potenziale elettrico della parte interna della membrana cellulare"],"correct":2},{"id":89,"text":"Che cos'è il polo ricettivo?","options":["Una delle due ramificazioni dell'assone del neurone unipolare","Una delle due ramificazioni dell'assone del neurone bipolare","Uno dei diversi dendriti del neurone multipolare","Il corpo cellulare del neurone bipolare","La zona di integrazione"],"correct":0},{"id":90,"text":"Come si chiama il piano che divide il cervello in una metà sinistra e in una metà destra?","options":["piano coronale","piano ipsilaterale","piano superiore","piano sagittale","piano orizzontale"],"correct":3},{"id":91,"text":"Durante la mummificazione, gli antichi egizi rimuovevano e scartavano:","options":["il cervello","i polmoni","il cuore","lo stomaco"],"correct":0},{"id":92,"text":"Scegli la risposta Falsa.","options":["Il glutammato inibisce le cellule bipolari centro-on, per cui accendere la luce eccita questi neuroni.","La luce iperpolarizza sempre i fotorecettori, determinando il rilascio di una quantità minore di glutammato.","I recettori tonici mostrano una bassa o nulla diminuzione nella frequenza di scarica dei potenziali d'azione quando lo stimolo è costante.","Spegnere una luce al centro del campo recettivo di una cellula bipolare centro-off iperpolarizza tale cellula."],"correct":3},{"id":93,"text":"Perché l'acuità visiva è molto minore in presenza di luce blu rispetto alle altre parti dello spettro visibile?","options":["il blu non è sintonizzato alla corrispondente parte dello spettro","uno stimolo blu coinvolge solo un terzo dei recettori","la lunghezza d'onda è troppo lunga","la lunghezza d'onda è troppo corta","ci sono molti meno coni S (per lunghezze d'onda corte)"],"correct":4},{"id":94,"text":"Scegli dall'elenco la risposta FALSA. La sindrome alcolica fetale:","options":["è caratterizzata disabilità intellettiva","è oggetto di studio da parte della teratologia comportamentale","provoca danni anatomici e fisiologici che spesso possono essere però recuperati negli anni successivi alla nascita","è caratterizzata da una modifica delle caratteristiche facciali"],"correct":2},{"id":95,"text":"Quale delle seguenti affermazioni è corretta relativamente all'apoptosi?","options":["Più è grande il fattore di encefalizzazione per una specie meno la dimensione del cervello devia dalla predizione matematica per un mammifero di quella taglia","L'apoptosi durante lo sviluppo prenatale non è un processo necessario e naturale ma un processo patologico","L'apoptosi inizia con un rapido influsso e rilascio di ioni Mg2+","I neuroni non competono per la connessione alle strutture bersaglio","La proteina Diablo si lega a proteine specifiche consentendo alle caspasi di disgregare la cellula"],"correct":4},{"id":96,"text":"Quale delle seguenti affermazioni relative al nucleo genicolato laterale (NGL) dei primati è corretta?","options":["Ha 2 strati dorsali detti parvocellulari che contengono cellule piccole e 4 strati ventrali interni, detti magnocellulari perché contengono cellule più grandi. I campi recettivi del NGL sono eccentrici","La maggior parte dei neuroni degli strati magnocellulari possiede campi recettivi relativamente grandi i cui input provengono dalle cellule gangliari piccole, che ricevono input da cellule bipolari, le quali sono pilotate da singoli coni","Ha 4 strati dorsali detti magnocellulari che contengono cellule piccole e 2 strati ventrali interni, detti parvocellulari perché contengono cellule più grandi. I campi recettivi del NGL sono concentrici","La maggior parte dei neuroni magnocellulari è implicata nella discriminazione dei colori","Ha 4 strati dorsali detti parvocellulari che contengono cellule piccole e due strati ventrali interni, detti magnocellulari perché contengono cellule più grandi. I campi recettivi del NGL sono concentrici"],"correct":4},{"id":97,"text":"Negli anni '50 gli esperimenti di autostimolazione cerebrale condotti da Olds e Milner portarono a un importante risultato: i ratti imparavano rapidamente a premere una leva quando la ricompensa o il rinforzo era una scarica breve di stimolazione elettrica di una regione cerebrale chiamata setto. Tra le seguenti affermazioni riferite all'autostimolazione cerebrale, indica quali sono FALSE","options":["Si pensa che la stimolazione elettrica possa fare uso di un circuito che media le ricompense","I roditori in questi esperimenti lavorano molto intensamente per premere una leva per ricevere una lieve stimolazione elettrica nel setto, prosencefalo, nucleus accumbens, mesencefalo ventrale e nel tronco encefalico dorsale","I roditori in questi esperimenti lavorano molto duramente per premere una leva per ricevere una lieve stimolazione elettrica nel setto, prosencefalo accumbens e nel locus coeruleus","La stimolazione dopaminergica del nucleus accumbens è molto spiacevole","Le aree di stimolazione si collocano principalmente lungo il fascio prosencefalico mediale"],"correct":2},{"id":98,"text":"I recettori per l'insulina e per la leptina hanno una densità particolarmente elevata a livello di","options":["nucleo arcuato dell'ipotalamo","grasso cutaneo","corteccia frontale","grasso viscerale","tutte le risposte"],"correct":0},{"id":99,"text":"L'ormone follicolo-stimolante e l'ormone luteinizzante sono:","options":["gonadotropine","ormoni gonadici","ormoni dell'ipofisi posteriore","fattori di rilascio","ormoni di rilascio"],"correct":0},{"id":100,"text":"Quali delle seguenti affermazioni relative all'aromatasi è FALSA","options":["convertire il testosterone in estradiolo","ne sono privi i testicoli","è un enzima","ne sono ricche le ovaie"],"correct":1}];
+
+        let userAnswers = {};
+        let filteredQuestions = [...questions];
+        let showAllCorrectAnswers = false;
+
+        function renderQuestions() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            
+            filteredQuestions.forEach(question => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.id = `question-${question.id}`;
+                
+                const userAnswer = userAnswers[question.id];
+                let questionClass = '';
+                if (userAnswer !== undefined) {
+                    questionClass = userAnswer === question.correct ? 'correct' : 'incorrect';
+                    questionDiv.className += ` ${questionClass}`;
+                }
+                
+                questionDiv.innerHTML = `
+                    <div class="question-number">Domanda ${question.id}</div>
+                    <div class="question-text">${question.text}</div>
+                    <div class="options">
+                        ${question.options.map((option, index) => {
+                            let optionClass = 'option';
+                            // Mostra la risposta corretta solo se:
+                            // 1. L'utente ha già risposto a questa domanda, OPPURE
+                            // 2. È stato premuto "Verifica tutte"
+                            if ((userAnswer !== undefined || showAllCorrectAnswers) && index === question.correct) {
+                                optionClass += ' correct-answer';
+                            }
+                            if (userAnswer === index) {
+                                optionClass += ' selected';
+                                if (userAnswer === question.correct) optionClass += ' correct';
+                                else optionClass += ' incorrect';
+                            }
+                            
+                            return `
+                                <label class="${optionClass}">
+                                    <input type="radio" name="q${question.id}" value="${index}" 
+                                           ${userAnswer === index ? 'checked' : ''}
+                                           onchange="selectAnswer(${question.id}, ${index})">
+                                    ${String.fromCharCode(97 + index)}. ${option}
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                    ${(userAnswer !== undefined || showAllCorrectAnswers) ? `
+                        <div class="result ${userAnswer === question.correct ? 'correct' : 'incorrect'}">
+                            <span class="result-icon">${userAnswer === question.correct ? '✅' : '❌'}</span>
+                            ${userAnswer === question.correct ? 'Risposta corretta!' : 
+                              userAnswer !== undefined ? `Risposta sbagliata. La risposta corretta è: ${String.fromCharCode(97 + question.correct)}` :
+                              `Risposta corretta: ${String.fromCharCode(97 + question.correct)}`}
+                        </div>
+                    ` : ''}
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+            
+            updateStats();
+        }
+
+        function selectAnswer(questionId, answerIndex) {
+            userAnswers[questionId] = answerIndex;
+            renderQuestions();
+        }
+
+        function checkAllAnswers() {
+            questions.forEach(question => {
+                if (userAnswers[question.id] === undefined) {
+                    // Non forziamo una risposta, lasciamo che l'utente veda cosa ha saltato
+                    // userAnswers[question.id] = -1; // Rimosso
+                }
+            });
+            // Mostra tutte le risposte corrette
+            showAllCorrectAnswers = true;
+            renderQuestions();
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            filteredQuestions = [...questions];
+            showAllCorrectAnswers = false;
+            renderQuestions();
+            document.getElementById('searchBox').value = '';
+        }
+
+        function showOnlyIncorrect() {
+            filteredQuestions = questions.filter(q => 
+                userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct
+            );
+            renderQuestions();
+        }
+
+        function updateStats() {
+            const totalAnswered = Object.keys(userAnswers).length;
+            const correctCount = Object.keys(userAnswers).filter(id => 
+                userAnswers[id] === questions.find(q => q.id == id).correct
+            ).length;
+            const percentage = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+            
+            document.getElementById('totalQuestions').textContent = questions.length;
+            document.getElementById('correctAnswers').textContent = `${correctCount}/${totalAnswered}`;
+            document.getElementById('percentage').textContent = `${percentage}%`;
+            
+            const progressPercentage = totalAnswered > 0 ? (totalAnswered / questions.length) * 100 : 0;
+            document.getElementById('progressFill').style.width = `${progressPercentage}%`;
+        }
+
+        function searchQuestions() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            filteredQuestions = questions.filter(q => 
+                q.text.toLowerCase().includes(searchTerm) ||
+                q.options.some(option => option.toLowerCase().includes(searchTerm))
+            );
+            renderQuestions();
+        }
+
+        // Event listeners
+        document.getElementById('searchBox').addEventListener('input', searchQuestions);
+
+        // Inizializzazione
+        renderQuestions();
+    </script>
+</body>
+</html>
