@@ -144,6 +144,16 @@
             transform: translateY(-2px);
         }
         
+        .btn-exam {
+            background: #8e44ad;
+            color: white;
+        }
+        
+        .btn-exam:hover {
+            background: #7d3c98;
+            transform: translateY(-2px);
+        }
+        
         .search-box {
             flex: 1;
             min-width: 250px;
@@ -287,6 +297,16 @@
             transition: width 0.3s ease;
         }
         
+        .exam-mode-indicator {
+            background: #8e44ad;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -366,6 +386,7 @@
                 </div>
             </div>
             
+            <button class="btn btn-exam" onclick="simulateExam()">🎓 Simula Esame</button>
             <button class="btn btn-primary" onclick="checkAllAnswers()">✅ Verifica tutte</button>
             <button class="btn btn-warning" onclick="resetQuiz()">🔄 Reset</button>
             <button class="btn btn-success" onclick="showOnlyIncorrect()">❌ Solo sbagliate</button>
@@ -385,6 +406,7 @@
         let showAllCorrectAnswers = false;
         let randomQuestions = false;
         let randomAnswers = false;
+        let examMode = false;
 
         // Funzione per mescolare un array (Fisher-Yates shuffle)
         function shuffleArray(array) {
@@ -416,6 +438,28 @@
             });
         }
 
+        function simulateExam() {
+            // Reset dello stato
+            userAnswers = {};
+            showAllCorrectAnswers = false;
+            examMode = true;
+            
+            // Seleziona 31 domande casuali
+            const shuffledQuestions = shuffleArray([...originalQuestions]);
+            questions = shuffledQuestions.slice(0, 31);
+            
+            // Applica randomizzazione delle risposte se attiva
+            questions = prepareQuestionsWithRandomAnswers(questions);
+            
+            // Aggiorna le domande filtrate
+            filteredQuestions = [...questions];
+            
+            // Reset della ricerca
+            document.getElementById('searchBox').value = '';
+            
+            renderQuestions();
+        }
+
         function toggleRandomQuestions() {
             randomQuestions = document.getElementById('randomQuestions').checked;
             applyRandomization();
@@ -427,6 +471,9 @@
         }
 
         function applyRandomization() {
+            // Non applicare se siamo in modalità esame
+            if (examMode) return;
+            
             // Ripristina le domande originali
             questions = [...originalQuestions];
             
@@ -453,6 +500,14 @@
             const container = document.getElementById('quizContainer');
             container.innerHTML = '';
             
+            // Aggiungi indicatore modalità esame
+            if (examMode) {
+                const examIndicator = document.createElement('div');
+                examIndicator.className = 'exam-mode-indicator';
+                examIndicator.textContent = '🎓 Modalità Simulazione Esame - 31 domande casuali';
+                container.appendChild(examIndicator);
+            }
+            
             filteredQuestions.forEach((question, displayIndex) => {
                 const questionDiv = document.createElement('div');
                 questionDiv.className = 'question';
@@ -466,7 +521,7 @@
                 }
                 
                 questionDiv.innerHTML = `
-                    <div class="question-number">Domanda ${randomQuestions ? displayIndex + 1 : question.id}</div>
+                    <div class="question-number">Domanda ${randomQuestions || examMode ? displayIndex + 1 : question.id}</div>
                     <div class="question-text">${question.text}</div>
                     <div class="options">
                         ${question.options.map((option, index) => {
@@ -492,10 +547,10 @@
                     </div>
                     ${(userAnswer !== undefined || showAllCorrectAnswers) ? `
                         <div class="result ${userAnswer === question.correct ? 'correct' : 'incorrect'}">
-                            <span class="result-icon">${userAnswer === question.correct ? '✅' : '❌'}</span>
-                            ${userAnswer === question.correct ? 'Risposta corretta!' : 
-                              userAnswer !== undefined ? `Risposta sbagliata. La risposta corretta è: ${String.fromCharCode(97 + question.correct)}` :
-                              `Risposta corretta: ${String.fromCharCode(97 + question.correct)}`}
+                            <span class="result-icon">${userAnswer === question.correct ? '✅' : '✖️'}</span>
+                            ${userAnswer === question.correct ? 'Risposta corretta! ✓' : 
+                              userAnswer !== undefined ? `Risposta sbagliata. La risposta corretta è: ${String.fromCharCode(97 + question.correct)} ✖️` :
+                              `Risposta corretta: ${String.fromCharCode(97 + question.correct)} ✓`}
                         </div>
                     ` : ''}
                 `;
@@ -518,8 +573,9 @@
 
         function resetQuiz() {
             userAnswers = {};
-            filteredQuestions = [...questions];
+            filteredQuestions = [...originalQuestions];
             showAllCorrectAnswers = false;
+            examMode = false;
             document.getElementById('searchBox').value = '';
             
             // Reset delle checkbox
@@ -558,6 +614,9 @@
         }
 
         function searchQuestions() {
+            // Disabilita la ricerca in modalità esame
+            if (examMode) return;
+            
             const searchTerm = document.getElementById('searchBox').value.toLowerCase();
             filteredQuestions = questions.filter(q => 
                 q.text.toLowerCase().includes(searchTerm) ||
