@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Psicometria - Sistema di Verifica</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .checkbox-item:hover {
+            border-color: #3498db;
+            background: #f8f9ff;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin: 0;
+            transform: scale(1.1);
+            cursor: pointer;
+        }
+        
+        .checkbox-item label {
+            font-size: 0.9em;
+            color: #2c3e50;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+        
+        .btn-exam {
+            background: #8e44ad;
+            color: white;
+        }
+        
+        .btn-exam:hover {
+            background: #7d3c98;
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .quiz-container {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .question {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+            transition: all 0.3s ease;
+        }
+        
+        .question:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .question.correct {
+            border-left-color: #27ae60;
+            background: linear-gradient(90deg, #d5f4e6 0%, #f8f9fa 100%);
+        }
+        
+        .question.incorrect {
+            border-left-color: #e74c3c;
+            background: linear-gradient(90deg, #fadbd8 0%, #f8f9fa 100%);
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #3498db;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .question-text {
+            font-size: 1.05em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+        
+        .options {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .option:hover {
+            border-color: #3498db;
+            transform: translateX(3px);
+        }
+        
+        .option.correct-answer {
+            border-color: #27ae60;
+            background: #d5f4e6;
+            font-weight: 500;
+        }
+        
+        .option.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .option.selected.correct {
+            border-color: #27ae60;
+            background: #d5f4e6;
+        }
+        
+        .option.selected.incorrect {
+            border-color: #e74c3c;
+            background: #fadbd8;
+        }
+        
+        .option input[type="radio"] {
+            margin: 0;
+            transform: scale(1.2);
+        }
+        
+        .result {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .result.correct {
+            color: #27ae60;
+        }
+        
+        .result.incorrect {
+            color: #e74c3c;
+        }
+        
+        .result-icon {
+            font-size: 1.2em;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db 0%, #27ae60 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .exam-mode-indicator {
+            background: #8e44ad;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 20px;
+            }
+            
+            .checkbox-group {
+                justify-content: center;
+            }
+            
+            .quiz-container {
+                padding: 15px;
+            }
+            
+            .question {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Quiz di Psicometria</h1>
+            <p>Sistema di verifica interattivo per l'esame</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalQuestions">0</div>
+                <div class="stat-label">Domande totali</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="correctAnswers">0</div>
+                <div class="stat-label">Risposte corrette</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="percentage">0%</div>
+                <div class="stat-label">Percentuale</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Cerca domande...">
+            
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="randomQuestions" onchange="toggleRandomQuestions()">
+                    <label for="randomQuestions">🎲 Domande Random</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="randomAnswers" onchange="toggleRandomAnswers()">
+                    <label for="randomAnswers">🔀 Risposte Random</label>
+                </div>
+            </div>
+            
+            <button class="btn btn-exam" onclick="simulateExam()">🎓 Simula Esame</button>
+            <button class="btn btn-primary" onclick="checkAllAnswers()">✅ Verifica tutte</button>
+            <button class="btn btn-warning" onclick="resetQuiz()">🔄 Reset</button>
+            <button class="btn btn-success" onclick="showOnlyIncorrect()">❌ Solo sbagliate</button>
+        </div>
+        
+        <div class="quiz-container" id="quizContainer">
+            <!-- Le domande verranno generate qui -->
+        </div>
+    </div>
+
+    <script>
+        const originalQuestions = [{"id":1,"text":"Quale tra i seguenti disturbi legati all'ansia non presenta prevalenza nelle femmine che nei maschi","options":["attacchi di panico","disturbo da ansia generalizzata","disturbo da ansia da separazione","fobie specifiche"],"correct":1},{"id":2,"text":"Il disturbo bipolare è presente","options":["prevalentemente nelle femmine","prevalentemente nei maschi","in maniera indiscriminata in entrambi i sessi"],"correct":2},{"id":3,"text":"In che percentuale gli abusi sessuali provocano il disturbo borderline di personalità","options":["50%","60%","70%","80%"],"correct":2},{"id":4,"text":"In quale tipo di attaccamento si manifesta difficoltà a mostrare le emozioni","options":["sicuro","insicuro ambivalente","insicuro evitante","disorientato disorganizzato"],"correct":2},{"id":5,"text":"In quale tipo di attaccamento si manifesta un'espressione emotiva esagerata","options":["sicuro","insicuro ambivalente","insicuro evitante","disorientato disorganizzato"],"correct":1},{"id":6,"text":"Chi parla di scala di isolotti di capacità?","options":["Bettelheim","Kanner","Asperger","Bleuler"],"correct":1},{"id":7,"text":"Chi conia il termine autismo:","options":["Bettelheim","Kanner","Asperger","Bleuler"],"correct":3},{"id":8,"text":"Quale tra i seguenti disturbi dell'autismo non fa parte dei comportamenti non verbali:","options":["Alterazioni nel contatto occhio-ad-occhio","Ritardi nella capacità di acquisizione e di comprensione dei gesti comunicativi e simbolici","Carenze nelle abilità imitative","Presenza ridotta del sorriso sociale"],"correct":1},{"id":9,"text":"Cosa si intende per psicopatologia dello sviluppo","options":["Disciplina che studia le origini e i percorsi dei pattern individuali dei comportamenti disadattivi","Disciplina che studia i percorsi di pattern individuali dei comportamenti disadattivi","Disciplina che studia le origini di pattern individuali dei comportamenti disadattivi","Disciplina che studia le origini e i percorsi dei pattern individuali dei comportamenti adattivi"],"correct":0},{"id":10,"text":"Quale non è un ambito della developmental psychopathology:","options":["infant research","teoria dell'attaccamento","neuroscienze","ricerca informatica"],"correct":3},{"id":11,"text":"Chi forma l'idea della costellazione materna primaria","options":["Stern","Winnicott","Freud","Anna Freud"],"correct":0},{"id":12,"text":"Di quali elementi parlerà Kraepelin:","options":["Multifinalità e equifinalità","Multifinalità e decisione","Equifinalità e personalità","Nessuna delle risposte"],"correct":0},{"id":13,"text":"A chi non può essere somministrato il test delle macchie di Rorschach:","options":["Adolescenti","Bambini","Anziani","nessuna di queste"],"correct":3},{"id":29,"text":"Quale tra i seguenti disturbi non rientrano nei precursori delle relazioni sociali negli individui con diagnosi di autismo?","options":["Presenza ridotta del sorriso sociale","Decremento delle vocalizzazioni/verbalizzazioni dirette agli altri tra i 6 ed i 12 mesi","Deficit nelle iniziative che nel mantenimento dell'attenzione condivisa, rilevabili già a 14 mesi","Carenza del coinvolgimento sociale"],"correct":3},{"id":30,"text":"Quale non prende in considerazione Kanner?","options":["isolamento","ripetitività","isolotti di capacità","disturbi del linguaggio"],"correct":2},{"id":31,"text":"Chi parla di modelli evolutivi:","options":["Lewis","Mahler","Winnicott","Freud"],"correct":0},{"id":32,"text":"Quanta probabilità ha un bambino nato da due genitori schizofrenici di sviluppare la psicopatologia:","options":["10%","20%","30%","40%"],"correct":3},{"id":33,"text":"Con quanta probabilità un bambino nato da madre bipolare sviluppo il disturbo:","options":["40%","50%","60%","70%"],"correct":1},{"id":34,"text":"Con quanta percentuale chi è stato abusato sessualmente da piccolo diventa a sua volta un molestatore?","options":["20-30%","10-20%","50-60%","40%"],"correct":0},{"id":35,"text":"In quanti cluster si dividono i disturbi di personalità?","options":["4","5","3","9"],"correct":2},{"id":36,"text":"Quale tra questi non è un sintomo del disturbo borderline?","options":["Rapporti interpersonali tumultuosi","Affetti dominati dalla rabbia e da un sentimento di vuoto","Impulsività","Afasia"],"correct":3},{"id":37,"text":"Quale non rientra nelle manifestazioni d'ansia","options":["Inquietudine relativa al futuro","Rabbia nei confronti dei genitori","Capricci","timori relativi al passato"],"correct":1},{"id":38,"text":"Quale continuità presenta chi varia la diagnosi nel tempo?","options":["omotipica","eterotipica","finale","nessuna delle opzioni"],"correct":1},{"id":39,"text":"Se la persona non è consapevole del proprio disturbo si parla di:","options":["disturbo egosintonico","disturbo egodistonico","disturbo recessivo","disturbo reale"],"correct":0},{"id":40,"text":"Quale non è una scala per la misurazione dell'ansia","options":["Spence Children Anxiety Scale","State-Trait Anxiety Inventory","Separation Anxiety Assessment Scale for Children","Test dell'attaccamento"],"correct":3},{"id":41,"text":"Per diagnosticare il disturbo dell'umore dirompente secondo il DSM-5, i sintomi devono essere presenti per:","options":["9 mesi o più","15 mesi o più","6 mesi o più","12 mesi o più"],"correct":3},{"id":42,"text":"Nella sindrome di Tourette secondo il DSM-5, i sintomi devono essere presenti per un minimo di:","options":["9 mesi","12 mesi","11 mesi","10 mesi"],"correct":1},{"id":43,"text":"In quale dei seguenti disturbi d'ansia non è stata rilevata la maggior prevalenza nelle bambine rispetto ai bambini?","options":["fobie specifiche","disturbo d'ansia sociale","attacchi di panico","disturbo d'ansia di separazione"],"correct":1},{"id":44,"text":"La diagnosi per un adulto secondo il PDM-II parte dall'asse:","options":["M","D","P","S"],"correct":2},{"id":45,"text":"Il ritiro sociale accomuna i pazienti con disturbo evitante di personalità e i pazienti con:","options":["disturbo schizoide di personalità","disturbo paranoide di personalità","disturbo dipendente di personalità","disturbo ossessivo-compulsivo di personalità"],"correct":1},{"id":46,"text":"Lo studio di Rinne e collaboratori (2002) prende in considerazione, come campione:","options":["uomini affetti da disturbo di personalità borderline e soggetti di controllo sani","donne affette da disturbo di personalità borderline e soggetti di controllo sani","donne affette da disturbo di personalità narcisistico e soggetto di controllo sani","uomini affetti da disturbo di personalità narcisistico e soggetti di controllo sani"],"correct":1},{"id":47,"text":"Il disturbo ossessivo-compulsivo non ha comorbidità specifiche con:","options":["disturbo d'ansia sociale","disturbo da deficit dell'attenzione con iperattività","disturbi del sonno","disturbo oppositivo"],"correct":2},{"id":48,"text":"Qual è il periodo della vita più difficile da affrontare per un paziente narcisista?","options":["vecchiaia","età adulta","infanzia","adolescenza"],"correct":0},{"id":49,"text":"Quale non è un denominatore comune della sindrome \"caotica\" (borderline) di Ginker e collaboratori?","options":["depressione pervasiva","alti livelli di ansia","difficoltà nelle relazioni interpersonali","rabbia come affetto principale o esclusivo"],"correct":1},{"id":50,"text":"Il concetto di costellazione materna è di:","options":["A","Stern","S. Freud","Melanie Klein"],"correct":1},{"id":51,"text":"Quale aspetto non è stato rilevato dalla Società Italiana di neuropsichiatria dell'infanzia e dell'adolescenza rispetto ai disturbi depressivi in età evolutiva?","options":["frequenza minore rispetto al passato","difficoltà di diagnosi","sviluppo di cronicità","alto rischio di comorbidità con altre patologie"],"correct":0},{"id":52,"text":"Secondo Kernberg esiste un continuum tra il disturbo narcisistico di personalità e:","options":["nessuna delle precedenti","disturbo borderline di personalità","disturbo antisociale di personalità","disturbo ossessivo-compulsivo di personalità"],"correct":1},{"id":53,"text":"La diagnosi che si concentra sugli aspetti che accomunano le persone-generalizzabilità:","options":["nomotetica","politetica","ideografica","funzionale"],"correct":0},{"id":54,"text":"La semplificazione delle espressioni emozionali è tipica di quale tipo di attaccamento:","options":["disorganizzato","evitante","sicuro","ambivalente/resistente"],"correct":2},{"id":55,"text":"Quali sono i livelli di gravità dello spettro autistico secondo il DSM-5:","options":["5","2","3","4"],"correct":2},{"id":56,"text":"Comprensione del narcisismo secondo Kohut. Quale affermazione non è corretta?","options":["oggetto come estensione del sé che fornisce al soggetto funzioni mancanti","struttura con fusione tra sé reale, sé ideale e oggetto ideale","arresto evolutivo in una fase specifica cha ha minato la coesione del sé","presenza di oggetti-sé arcaici e poco adeguati"],"correct":1},{"id":57,"text":"Seguendo Sanislow et. al. (2000/2002) qual è il criterio che meglio permette la diagnosi differenziale:","options":["paura di essere rifiutato","desiderio di stare al centro dell'attenzione","senso di vuoto","instabilità emotiva"],"correct":3},{"id":58,"text":"Qual è uno dei meccanismi difensivi chiave nel disturbo di personalità paranoide?","options":["dissociazione","introiezione","diniego","proiezione"],"correct":1},{"id":59,"text":"Quale non è una componente della triade psichica di Stern:","options":["donna come madre","madre con il suo bambino","madre come moglie"],"correct":2},{"id":60,"text":"Quale non è stato identificato come fattore di rischio per lo sviluppo di disturbi depressivi?","options":["disturbo del sonno del genitore","disordini psichiatrici cronici in uno dei due genitori","maltrattamento fisico o abuso","depressione post-partum materna"],"correct":0},{"id":61,"text":"All'interno del PDM, a quale fascia d'età si riferisce la sezione infanzia?","options":["4-12 anni","4-9 anni","4-10 anni","4-11 anni"],"correct":3},{"id":62,"text":"Quale dei seguenti disturbi in età evolutiva sembra predire lo sviluppo del disturbo antisociale di personalità?","options":["disturbo alimentare","disturbo depressivo","disturbo d'ansia","ADHD"],"correct":3},{"id":63,"text":"Quale non è una delle discipline che afferisce alla Developmental Psychology:","options":["infant research","psicologia cognitiva","neuroscienze affettive","teoria dell'attaccamento"],"correct":1},{"id":64,"text":"Quale non è un modello esplicativo dei disturbi dello spettro autistico:","options":["Deficit della teoria della mente","deficit primario della relazione interpersonale","deficit della consistenza centrale","deficit delle funzioni esecutive"],"correct":2},{"id":65,"text":"Quale non è una caratteristica dei pazienti con disturbo ossessivo-compulsivo di personalità?","options":["perfezionismo","difficoltà interpersonali","ritiro sociale","scarsa autostima"],"correct":2},{"id":66,"text":"Quale non è un aspetto chiave del narcisismo teorizzato da Kohut?","options":["rabbia per mancata gratificazione dei bisogni infantili","molta invidia verso gli altri","oggetto inteso come un'estensione del sé","se arcaico congelato"],"correct":1},{"id":67,"text":"Gli studi prospettici sui bambini a rischio di ASD hanno rilevato una finestra temporale di insorgenza dei primi sintomi compresa tra:","options":["il primo semestre e i 36 mesi di vita","il secondo semestre e i 24 mesi di vita","il secondo semestre e i 36 mesi di vita","il primo semestre e i 24 mesi di vita"],"correct":2},{"id":68,"text":"Chi ha parlato di comunicazione affettiva genitoriale disgregata?","options":["main e hesse","stern","bowlby","Karen Lyons-Ruth"],"correct":3},{"id":69,"text":"Non è una caratteristica del DSM","options":["multiassiale","categoriale","usa il concetto di spettro","attenzione culturale"],"correct":0},{"id":70,"text":"A che età il bambino inizia ad avere paura della morte?","options":["7-8 anni","6-7 anni","prima infanzia","4-5 anni"],"correct":3},{"id":71,"text":"Chi introdusse il concetto di madre frigorifero?","options":["kanner","bettelheim","bleuer","asperger"],"correct":1},{"id":72,"text":"Quante sono le sottofasi del processo di separazione-individuazione della Mahler?","options":["2","3","6","4"],"correct":2},{"id":73,"text":"Nel disturbo reattivo dell'attaccamento, con quale disturbo non deve essere fatta la diagnosi differenziale?","options":["disabilità intellettiva","disturbi ansiosi","disturbi depressivi","disturbo dello spettro autistico"],"correct":1},{"id":74,"text":"Quale non è una delle 4 aree coinvolte nel vissuto emozionale dell'ansia secondo il PDM-II?","options":["area comportamentale","area somatica","area affettiva","area cognitiva"],"correct":0},{"id":75,"text":"Quale aspetto non troviamo nel sistema di codifica AMBIANCE per la valutazione delle interazioni genitore-bambino?","options":["comportamento intrusivi o negativi","disorientamento","errori affettivi","inversione dei ruoli"],"correct":1},{"id":76,"text":"I due principi derivanti dalla teoria dei sistemi di von Bertalanffy sono:","options":["nessuna delle precedenti","equifinalità e multifinalità","plurifinalità e equifinalità","multifinalità e plurifinalità"],"correct":1},{"id":77,"text":"La tendenza alla vergogna propria dei pazienti con DBP a cosa non è correlata secondo Rusch?","options":["impulsività","bassa autostima","ansia"],"correct":1},{"id":78,"text":"Quale non è una delle aree compromesse nel disturbo depressivo della prima infanzia secondo il DC:0-5?","options":["area esplorazione mondo esterno","area vegetativa","area dell'adattamento personale e familiare","area cognitiva"],"correct":3},{"id":79,"text":"Chi fu a coniare il termine \"autismo\"?","options":["bleuler","winnicott","bettelheim","kanner"],"correct":0},{"id":80,"text":"amplificazione delle espressione emozionali è tipica di quale tipo di attaccamento:","options":["sicuro","evitante","ambivalente/resistente","disorganizzato"],"correct":2},{"id":81,"text":"Il PDM-II adotta un sistema:","options":["prototipico","politetico","nomotetico","nomotetico"],"correct":0},{"id":82,"text":"Alcuni studi indicano una correlazione genetica con la schizofrenia per:","options":["il disturbo ossessivo-compulsivo di personalità","il disturbo schizotipico e schizoide di personalità","il disturbo schizotipico di personalità","il disturbo schizoide di personalità"],"correct":1},{"id":83,"text":"L'asse sintomatologico del disturbo oppositivo-provocatorio è rappresentato da:","options":["rabbia e aggressività","rabbia e insensibilità","rabbia e comportamenti antisociali","rabbia, aggressività e insensibilità"],"correct":1},{"id":84,"text":"Il lausanne trilogue play è rivolto a quale fascia d'età?","options":["0-18 anni","0-15 anni","0-16 anni","0-17 anni"],"correct":3},{"id":85,"text":"Secondo i Centers for Disease Control and Prevention, I disturbi dello spettro autistico sono:","options":["Non ci sono differenze tra maschi e femmine","Più frequenti nelle femmine","Più frequenti nei maschi","Non è stato possibile calcolarne la frequenza"],"correct":2},{"id":86,"text":"Quale non è una caratteristica della diagnosi descrittiva:","options":["Descrizione dettagliata dei fenomeni clinici","Condivisibile","Si basa su di una teoria","Non si interessa della relazione tra sintomi"],"correct":2},{"id":87,"text":"Quale non è una caratteristica del narcisista inconsapevole di Kernberg?","options":["Spesso noioso senza accorgersene","Ipersensibile a come gli altri reagiscono","Desideroso di stare al centro dell'attenzione","Insensibile ai bisogni altrui"],"correct":1},{"id":88,"text":"Quale non è un aspetto della comprensione psicodinamica del narcisismo secondo Kernberg?","options":["Oggetto inteso come separato dal sé","Aggressività che origina da mancate gratificazioni dei bisogni infantili","Sé grandioso come difesa contro l'investimento degli altri","Invidia verso gli altri"],"correct":2},{"id":89,"text":"Quale non è una delle aree intorno a cui possono ruotare le ossessioni dei pazienti con DOC secondo il PDM-2?","options":["Area del dubbio e del controllo","Area della paura e della contaminazione","Area dell'ansia e dell'ordine","Area della simmetria e dell'ordine"],"correct":2}];
+
+        let questions = [...originalQuestions];
+        let userAnswers = {};
+        let filteredQuestions = [...questions];
+        let showAllCorrectAnswers = false;
+        let randomQuestions = false;
+        let randomAnswers = false;
+        let examMode = false;
+
+        // Funzione per mescolare un array (Fisher-Yates shuffle)
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Funzione per preparare le domande con risposte randomizzate
+        function prepareQuestionsWithRandomAnswers(questionsArray) {
+            return questionsArray.map(question => {
+                if (!randomAnswers) return question;
+
+                const optionsWithIndex = question.options.map((option, index) => ({
+                    text: option,
+                    originalIndex: index
+                }));
+
+                const shuffledOptions = shuffleArray(optionsWithIndex);
+                
+                return {
+                    ...question,
+                    options: shuffledOptions.map(opt => opt.text),
+                    correct: shuffledOptions.findIndex(opt => opt.originalIndex === question.correct)
+                };
+            });
+        }
+
+        function simulateExam() {
+            // Reset dello stato
+            userAnswers = {};
+            showAllCorrectAnswers = false;
+            examMode = true;
+            
+            // Seleziona 31 domande casuali
+            const shuffledQuestions = shuffleArray([...originalQuestions]);
+            questions = shuffledQuestions.slice(0, 31);
+            
+            // Applica randomizzazione delle risposte se attiva
+            questions = prepareQuestionsWithRandomAnswers(questions);
+            
+            // Aggiorna le domande filtrate
+            filteredQuestions = [...questions];
+            
+            // Reset della ricerca
+            document.getElementById('searchBox').value = '';
+            
+            renderQuestions();
+        }
+
+        function toggleRandomQuestions() {
+            randomQuestions = document.getElementById('randomQuestions').checked;
+            applyRandomization();
+        }
+
+        function toggleRandomAnswers() {
+            randomAnswers = document.getElementById('randomAnswers').checked;
+            applyRandomization();
+        }
+
+        function applyRandomization() {
+            // Non applicare se siamo in modalità esame
+            if (examMode) return;
+            
+            // Ripristina le domande originali
+            questions = [...originalQuestions];
+            
+            // Applica randomizzazione risposte
+            questions = prepareQuestionsWithRandomAnswers(questions);
+            
+            // Applica randomizzazione domande
+            if (randomQuestions) {
+                questions = shuffleArray(questions);
+            }
+            
+            // Aggiorna le domande filtrate
+            filteredQuestions = [...questions];
+            
+            // Pulisci le risposte salvate poiché le posizioni potrebbero essere cambiate
+            userAnswers = {};
+            showAllCorrectAnswers = false;
+            
+            // Re-renderizza
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            
+            // Aggiungi indicatore modalità esame
+            if (examMode) {
+                const examIndicator = document.createElement('div');
+                examIndicator.className = 'exam-mode-indicator';
+                examIndicator.textContent = '🎓 Modalità Simulazione Esame - 31 domande casuali';
+                container.appendChild(examIndicator);
+            }
+            
+            filteredQuestions.forEach((question, displayIndex) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.id = `question-${question.id}`;
+                
+                const userAnswer = userAnswers[question.id];
+                let questionClass = '';
+                if (userAnswer !== undefined) {
+                    questionClass = userAnswer === question.correct ? 'correct' : 'incorrect';
+                    questionDiv.className += ` ${questionClass}`;
+                }
+                
+                questionDiv.innerHTML = `
+                    <div class="question-number">Domanda ${randomQuestions || examMode ? displayIndex + 1 : question.id}</div>
+                    <div class="question-text">${question.text}</div>
+                    <div class="options">
+                        ${question.options.map((option, index) => {
+                            let optionClass = 'option';
+                            if ((userAnswer !== undefined || showAllCorrectAnswers) && index === question.correct) {
+                                optionClass += ' correct-answer';
+                            }
+                            if (userAnswer === index) {
+                                optionClass += ' selected';
+                                if (userAnswer === question.correct) optionClass += ' correct';
+                                else optionClass += ' incorrect';
+                            }
+                            
+                            return `
+                                <label class="${optionClass}">
+                                    <input type="radio" name="q${question.id}" value="${index}" 
+                                           ${userAnswer === index ? 'checked' : ''}
+                                           onchange="selectAnswer(${question.id}, ${index})">
+                                    ${String.fromCharCode(97 + index)}. ${option}
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                    ${(userAnswer !== undefined || showAllCorrectAnswers) ? `
+                        <div class="result ${userAnswer === question.correct ? 'correct' : 'incorrect'}">
+                            <span class="result-icon">${userAnswer === question.correct ? '✅' : '✖️'}</span>
+                            ${userAnswer === question.correct ? 'Risposta corretta! ✓' : 
+                              userAnswer !== undefined ? `Risposta sbagliata. La risposta corretta è: ${String.fromCharCode(97 + question.correct)} ✖️` :
+                              `Risposta corretta: ${String.fromCharCode(97 + question.correct)} ✓`}
+                        </div>
+                    ` : ''}
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+            
+            updateStats();
+        }
+
+        function selectAnswer(questionId, answerIndex) {
+            userAnswers[questionId] = answerIndex;
+            renderQuestions();
+        }
+
+        function checkAllAnswers() {
+            showAllCorrectAnswers = true;
+            renderQuestions();
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            filteredQuestions = [...originalQuestions];
+            showAllCorrectAnswers = false;
+            examMode = false;
+            document.getElementById('searchBox').value = '';
+            
+            // Reset delle checkbox
+            document.getElementById('randomQuestions').checked = false;
+            document.getElementById('randomAnswers').checked = false;
+            randomQuestions = false;
+            randomAnswers = false;
+            
+            // Ripristina le domande originali
+            questions = [...originalQuestions];
+            filteredQuestions = [...questions];
+            
+            renderQuestions();
+        }
+
+        function showOnlyIncorrect() {
+            filteredQuestions = questions.filter(q => 
+                userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct
+            );
+            renderQuestions();
+        }
+
+        function updateStats() {
+            const totalAnswered = Object.keys(userAnswers).length;
+            const correctCount = Object.keys(userAnswers).filter(id => 
+                userAnswers[id] === questions.find(q => q.id == id).correct
+            ).length;
+            const percentage = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+            
+            document.getElementById('totalQuestions').textContent = questions.length;
+            document.getElementById('correctAnswers').textContent = `${correctCount}/${totalAnswered}`;
+            document.getElementById('percentage').textContent = `${percentage}%`;
+            
+            const progressPercentage = totalAnswered > 0 ? (totalAnswered / questions.length) * 100 : 0;
+            document.getElementById('progressFill').style.width = `${progressPercentage}%`;
+        }
+
+        function searchQuestions() {
+            // Disabilita la ricerca in modalità esame
+            if (examMode) return;
+            
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            filteredQuestions = questions.filter(q => 
+                q.text.toLowerCase().includes(searchTerm) ||
+                q.options.some(option => option.toLowerCase().includes(searchTerm))
+            );
+            renderQuestions();
+        }
+
+        // Event listeners
+        document.getElementById('searchBox').addEventListener('input', searchQuestions);
+
+        // Inizializzazione
+        renderQuestions();
+    </script>
+</body>
+</html>
