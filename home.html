@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Esami - Seleziona il tuo esame</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .quiz-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border: 2px solid #e0e6ff;
+            border-radius: 15px;
+            padding: 30px 20px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quiz-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .quiz-card:hover::before {
+            left: 100%;
+        }
+
+        .quiz-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .quiz-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .quiz-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .quiz-description {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e0e6ff;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .quiz-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 Quiz Esami</h1>
+        <p class="subtitle">Seleziona l'esame che vuoi praticare</p>
+        
+        <div class="quiz-grid">
+            <!-- Esempio di quiz cards - sostituisci con i tuoi esami -->
+            <a href="./quiz_fisiologica.html" class="quiz-card">
+                <span class="quiz-icon">🔢</span>
+                <div class="quiz-title">Fisiologica</div>
+                <div class="quiz-description">Esame di fisiologica, facoltà di psicologia</div>
+            </a>
+
+            <a href="./fisica/index.html" class="quiz-card">
+                <span class="quiz-icon">⚛️</span>
+                <div class="quiz-title">Fisica</div>
+                <div class="quiz-description">Meccanica, termodinamica, elettromagnetismo e fisica moderna</div>
+            </a>
+
+            <a href="./chimica/index.html" class="quiz-card">
+                <span class="quiz-icon">🧪</span>
+                <div class="quiz-title">Chimica</div>
+                <div class="quiz-description">Chimica generale, organica, inorganica e biochimica</div>
+            </a>
+
+            <a href="./biologia/index.html" class="quiz-card">
+                <span class="quiz-icon">🧬</span>
+                <div class="quiz-title">Biologia</div>
+                <div class="quiz-description">Biologia cellulare, genetica, evoluzione e anatomia</div>
+            </a>
+
+            <a href="./storia/index.html" class="quiz-card">
+                <span class="quiz-icon">📚</span>
+                <div class="quiz-title">Storia</div>
+                <div class="quiz-description">Storia antica, medievale, moderna e contemporanea</div>
+            </a>
+
+            <a href="./informatica/index.html" class="quiz-card">
+                <span class="quiz-icon">💻</span>
+                <div class="quiz-title">Informatica</div>
+                <div class="quiz-description">Programmazione, algoritmi, strutture dati e sistemi</div>
+            </a>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number">6</span>
+                <span class="stat-label">Materie</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">240+</span>
+                <span class="stat-label">Domande</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number">100%</span>
+                <span class="stat-label">Gratuito</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
