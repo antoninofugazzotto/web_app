@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Psichiatria - Sistema di Verifica</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .checkbox-item:hover {
+            border-color: #3498db;
+            background: #f8f9ff;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            margin: 0;
+            transform: scale(1.1);
+            cursor: pointer;
+        }
+        
+        .checkbox-item label {
+            font-size: 0.9em;
+            color: #2c3e50;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+            transform: translateY(-2px);
+        }
+        
+        .btn-exam {
+            background: #8e44ad;
+            color: white;
+        }
+        
+        .btn-exam:hover {
+            background: #7d3c98;
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .quiz-container {
+            padding: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .question {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #3498db;
+            transition: all 0.3s ease;
+        }
+        
+        .question:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .question.correct {
+            border-left-color: #27ae60;
+            background: linear-gradient(90deg, #d5f4e6 0%, #f8f9fa 100%);
+        }
+        
+        .question.incorrect {
+            border-left-color: #e74c3c;
+            background: linear-gradient(90deg, #fadbd8 0%, #f8f9fa 100%);
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #3498db;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .question-text {
+            font-size: 1.05em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+        
+        .options {
+            display: grid;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .option:hover {
+            border-color: #3498db;
+            transform: translateX(3px);
+        }
+        
+        .option.correct-answer {
+            border-color: #27ae60;
+            background: #d5f4e6;
+            font-weight: 500;
+        }
+        
+        .option.selected {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+        
+        .option.selected.correct {
+            border-color: #27ae60;
+            background: #d5f4e6;
+        }
+        
+        .option.selected.incorrect {
+            border-color: #e74c3c;
+            background: #fadbd8;
+        }
+        
+        .option input[type="radio"] {
+            margin: 0;
+            transform: scale(1.2);
+        }
+        
+        .result {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .result.correct {
+            color: #27ae60;
+        }
+        
+        .result.incorrect {
+            color: #e74c3c;
+        }
+        
+        .result-icon {
+            font-size: 1.2em;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db 0%, #27ae60 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .exam-mode-indicator {
+            background: #8e44ad;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 20px;
+            }
+            
+            .checkbox-group {
+                justify-content: center;
+            }
+            
+            .quiz-container {
+                padding: 15px;
+            }
+            
+            .question {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Quiz di Psichiatria</h1>
+            <p>Sistema di verifica interattivo per l'esame</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalQuestions">0</div>
+                <div class="stat-label">Domande totali</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="correctAnswers">0</div>
+                <div class="stat-label">Risposte corrette</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="percentage">0%</div>
+                <div class="stat-label">Percentuale</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="controls">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Cerca domande...">
+            
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="randomQuestions" onchange="toggleRandomQuestions()">
+                    <label for="randomQuestions">🎲 Domande Random</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="randomAnswers" onchange="toggleRandomAnswers()">
+                    <label for="randomAnswers">🔀 Risposte Random</label>
+                </div>
+            </div>
+            
+            <button class="btn btn-exam" onclick="simulateExam()">🎓 Simula Esame</button>
+            <button class="btn btn-primary" onclick="checkAllAnswers()">✅ Verifica tutte</button>
+            <button class="btn btn-warning" onclick="resetQuiz()">🔄 Reset</button>
+            <button class="btn btn-success" onclick="showOnlyIncorrect()">❌ Solo sbagliate</button>
+        </div>
+        
+        <div class="quiz-container" id="quizContainer">
+            <!-- Le domande verranno generate qui -->
+        </div>
+    </div>
+
+    <script>
+        const originalQuestions = [{"id":1,"text":"Le allucinazioni rispetto alle illusioni:","options":["Non sono suscettibili di correzione","Sono suscettibili di correzione","Entrambe sono suscettibili di correzione"],"correct":0},{"id":2,"text":"L'idea incorreggibile di essere danneggiato, osteggiato, privato o derubato è un:","options":["Delirio di veneficio","Delirio di rivendicazione","Delirio di nocumento"],"correct":2},{"id":3,"text":"Le illusioni sono:","options":["Percezioni senza oggetto","Modificazioni quantitative della percezione","Un'alterata interpretazione di uno stimolo sensoriale reale"],"correct":2},{"id":4,"text":"Indifferenza e freddezza davanti a qualsiasi stimolo, imperturbabilità, distacco affettivo si riferisce a:","options":["Apatia","Depressione","Ipertimia"],"correct":0},{"id":5,"text":"Monotone e persistenti ripetizioni di movimenti, di posizioni e atteggiamenti sono definiti:","options":["Manierismi","Stereotipie","Automatismi"],"correct":1},{"id":6,"text":"Idee erronee non corrispondenti alla realtà obiettiva e non correggibili dal soggetto sono:","options":["Falsi riconoscimenti","Deliri","Pseudologia fantastica"],"correct":1},{"id":7,"text":"La mania è:","options":["Una forma particolare di ossessione","Un disturbo d'ansia","Un disturbo dell'umore"],"correct":2},{"id":8,"text":"Nei DCA (disturbi del comportamento alimentare), l'iperattività fisica è tipica di:","options":["Anoressia nervosa","Bulimia nervosa","Disturbo da alimentazione incontrollata"],"correct":0},{"id":9,"text":"La censura regola i confini tra:","options":["Es e Preconscio","Super Io e Inconscio","Inconscio e Preconscio"],"correct":2},{"id":10,"text":"Il delirio è un disturbo:","options":["Del pensiero","Della percezione","Dell'intelligenza"],"correct":0},{"id":11,"text":"L'ansia è un disturbo:","options":["Dell'affettività","Della memoria","Della coscienza"],"correct":0},{"id":12,"text":"Nelle fasi di sviluppo psicosessuali secondo la teoria della Mahler, non è presente la fase:","options":["Autistica","Simbiotica","Maniacale"],"correct":2},{"id":13,"text":"I meccanismi di difesa messi in atto per proteggere il soggetto da istanze pulsionali inaccettabili sono:","options":["Funzioni del Super Io","Parzialmente inconsci","Inconsci"],"correct":2},{"id":14,"text":"Il DOC (disturbo ossessivo compulsivo) è caratterizzato da:","options":["Comportamento bizzarro","Isolamento sociale","Perfezionismo"],"correct":2},{"id":15,"text":"I disturbi bipolari fanno parte dei:","options":["Disturbi d'ansia","Disturbi schizofrenici","Disturbi dell'umore"],"correct":2},{"id":16,"text":"L'allucinazione è un disturbo:","options":["Della percezione","Del pensiero","Dell'intelligenza"],"correct":0},{"id":17,"text":"Per pensiero magico s'intende:","options":["Una modalità di pensiero bizzarro e illogico senza alcune finalità comunicativa","La costruzione fantastica di una realtà esistente","La convinzione di poter modificare la realtà con le parole, azioni o pensieri"],"correct":2},{"id":18,"text":"L'accelerazione ideatoria è tipica di:","options":["Distimia","Fase maniacale","DOC"],"correct":1},{"id":19,"text":"La difesa delle pulsioni inaccettabili è un'attività:","options":["IO","ES","Super-IO"],"correct":0},{"id":20,"text":"L'attribuzione di un significato abnorme ad un fatto reale è:","options":["Un disturbo dell'intelligenza","Una percezione delirante","Un delirio"],"correct":1},{"id":21,"text":"Nella prima topica, Freud propone un apparato psichico composto da:","options":["ES, IO e Super-IO","Conscio, preconscio e inconscio","Nevrosi, psicosi e borderline"],"correct":1},{"id":22,"text":"La confabulazione è un disturbo:","options":["Della coscienza","Della memoria","Dell'attività"],"correct":1},{"id":23,"text":"Un atto o una spinta non programmata ad agire, incoercibile, senza particolare obiettivo è detto:","options":["Raptus","Impulso","Automatismo"],"correct":1},{"id":24,"text":"Secondo i criteri del DSM-5 i disturbi del neurosviluppo comprendono:","options":["Disturbi depressivi","Disturbi d'ansia","Disturbi dello spettro autistico"],"correct":2},{"id":25,"text":"Quale fra i seguenti può essere sintomo di schizofrenia:","options":["Incoerenza","Appiattimento dell'affettività","Tutte le precedenti"],"correct":2},{"id":26,"text":"Quale dei seguenti non è un disturbo dell'umore:","options":["Disturbo distimico","Disturbo bipolare","Disturbo di conversione"],"correct":2},{"id":27,"text":"Nel caso di Dora, Freud descrive:","options":["L'isteria d'angoscia","L'isteria di conversione","Disturbo di conversione"],"correct":1},{"id":28,"text":"Il disturbo di personalità evitante fa parte del cluster:","options":["C","B","A"],"correct":0},{"id":29,"text":"Secondo la teoria freudiana, nello sviluppo psicosessuale del bambino, fra i 3 e i 5 anni compare:","options":["Stadio fallico","Complesso di edipo","Fase di latenza"],"correct":1},{"id":30,"text":"Secondo la teoria freudiana, il complesso di edipo compare tra:","options":["2-3 anni","3-5 anni","5-7 anni"],"correct":1},{"id":31,"text":"Nella seconda topica, Freud propone un apparato psichico composto da 3 sistemi:","options":["Conscio, preconscio e inconscio","ES, IO e Super-IO","Nevrosi, psicosi e borderline"],"correct":1},{"id":32,"text":"Inosservanza e violazione dei diritti, mancanza di rimorso e aggressività sono caratteristiche del disturbo:","options":["Narcisitico","Borderline","Antisociale"],"correct":2},{"id":33,"text":"La scissione dell'imago è un meccanismo di difesa tipico del disturbo:","options":["Antisociale","Borderline","Schizoide"],"correct":1},{"id":34,"text":"Il disturbo di personalità schizoide fa parte del cluster:","options":["A","B","C"],"correct":0},{"id":35,"text":"L'eliminazione della realtà di una percezione imbarazzante è un meccanismo di difesa definito:","options":["Diniego","Negazione","Sdoppiamento dell'IO"],"correct":0},{"id":36,"text":"Il termine coma si riferisce a:","options":["Una grave schizofrenia catatonica","Una grave forma di depressione endogena","Un disturbo dello stato di coscienza"],"correct":2},{"id":37,"text":"Assenza di emotività, freddezza, ricorso inesauribile alla logica, caratterizzano la personalità:","options":["Ossessiva","Paranoide","Antisociale"],"correct":0},{"id":38,"text":"Il principale meccanismo di difesa messo in atto per contrastare la frammentazione dell'IO è:","options":["Sdoppiamento dell'IO","Sdoppiamento dell'Imago","Formazione reattiva"],"correct":0},{"id":39,"text":"La bulimia nervosa si caratterizza per la presenza di:","options":["Obesità","Abbuffate","Restrizioni"],"correct":1},{"id":40,"text":"Il periodo di latenza precede:","options":["Lo stadio fallico","Il complesso di Edipo","La pubertà"],"correct":2},{"id":41,"text":"Il termine sentimento può essere definito come:","options":["Stato affettivo intenso e di breve durata","Stato affettivo stabile e duraturo","Caratteristica dell'intelligenza emotiva"],"correct":1},{"id":42,"text":"Nei sintomi di schizofrenia si rilevano:","options":["Disturbi del pensiero, della percezione, della memoria","Disturbi del pensiero, della percezione e del comportamento","Disturbi del pensiero, della percezione e dell'orientamento"],"correct":1},{"id":43,"text":"Il disturbo di panico fa parte dei:","options":["Disturbi d'ansia","Disturbi dell'umore","Disturbi del comportamento"],"correct":0},{"id":44,"text":"Nel concetto di metapsicologia una di queste coordinate è ERRATA:","options":["Dinamica","Fisiologica","Economica"],"correct":1},{"id":45,"text":"Grandiosità, ridotto bisogno di sonno e logorrea sono caratteristici di:","options":["Episodio di ansia acuta","Episodio maniacale","Distimia"],"correct":1},{"id":46,"text":"Nel delirio di persecuzione il paziente è fortemente convinto di:","options":["Essere avvelenato da qualcuno","Essere vittima di qualcuno","Essere in grado di danneggiare qualcuno"],"correct":1},{"id":47,"text":"Diffidenza e sospettosità nei confronti degli altri sono tra le caratteristiche del Disturbo di personalità:","options":["Schizoide","Schizotipico","Paranoide"],"correct":2},{"id":48,"text":"La distimia è un disturbo:","options":["Dell'umore","Dell'ansia","Delle fasi di sviluppo"],"correct":0},{"id":49,"text":"L'angoscia caratteristica dell'organizzazione borderline di personalità viene definita come:","options":["di abbandono","frammentazione","castrazione"],"correct":0},{"id":50,"text":"Il delirio è:","options":["Un disturbo della forma del pensiero","Un disturbo del contenuto del pensiero","Un disturbo qualitativo della percezione"],"correct":1},{"id":51,"text":"Per Freud, l'IO è:","options":["Conscio","Inconscio","Conscio e inconscio"],"correct":2},{"id":52,"text":"Il termine emozione può essere definito come:","options":["Stato affettivo intenso e di breve durata","Stato affettivo stabile e duraturo","Un disturbo dell'affettività"],"correct":0},{"id":53,"text":"Il disturbo di personalità schizotipico fa parte del cluster:","options":["A","B","C"],"correct":0},{"id":54,"text":"Una modalità pervasiva di emotività eccessiva e ricerca di attenzione è tipica del disturbo di personalità:","options":["Ossessivo-compulsivo","Istrionico","Borderline"],"correct":1},{"id":55,"text":"Le disabilità intellettive fanno parte di:","options":["Disturbi dello spettro schizofrenico","Disturbi della memoria","Disturbi del neurosviluppo"],"correct":2},{"id":56,"text":"Il disturbo antisociale fa parte del cluster:","options":["A","B","C"],"correct":1},{"id":57,"text":"Una pervasiva instabilità nelle relazioni interpersonali è caratteristica del disturbo di personalità:","options":["Borderline","Ossessivo-compulsivo","Istrionico"],"correct":0},{"id":58,"text":"Nel disturbo di deficit di attenzione/iperattività ADHD:","options":["È presente iperattività, non impulsività","Nessuna delle due opzioni","Possono esserci sia iperattività che impulsività"],"correct":2},{"id":59,"text":"I disturbi formali del pensiero sono:","options":["Sempre quantitativi","Sia qualitativi che quantitativi","Sempre qualitativi"],"correct":1},{"id":60,"text":"Nel disturbo post traumatico da stress PTSD si verifica:","options":["Evitamento persistente degli stimoli associati con il trauma","Sintomi di diminuzione dell'arousal","Nessuna delle due"],"correct":0},{"id":61,"text":"Durante l'attacco di panico:","options":["Si ha frequentemente desiderio di morte","Si possono avere sia paura di morire che idee di morte","Si ha spesso paura di morire"],"correct":2},{"id":62,"text":"Nel disturbo specifico dell'apprendimento DSA possono comparire:","options":["Difficoltà nello spelling ma mai nel ragionamento matematico","Difficoltà nel ragionamento matematico ma mai nello spelling","Difficoltà nello spelling e nel ragionamento matematico"],"correct":2},{"id":63,"text":"In riferimento alla schizofrenia, Schneider inserisce le allucinazioni e le intuizioni deliranti tra:","options":["Sintomi di I ordine","Sintomi di II ordine","Sintomi primari"],"correct":0},{"id":64,"text":"Quali tra questi NON è un disturbo dell'umore:","options":["Distimia","Disturbo bipolare","Ipocondria major"],"correct":2},{"id":65,"text":"Gli studi epidemiologici rilevano che la depressione ha:","options":["Incidenza doppia negli uomini rispetto alle donne","Incidenza doppia nelle donne rispetto agli uomini","Non ci sono differenze fra i sessi"],"correct":1},{"id":66,"text":"L'anedonia è:","options":["Tipica dei disturbi depressivi","Tipica dei disturbi d'ansia","Tipica del cluster C di personalità"],"correct":0},{"id":67,"text":"Nell'episodio ipomaniacale si può verificare:","options":["Un incremento della timidezza","Incremento del consumo di alcol e sigarette","Incremento della necessità di sonno"],"correct":1},{"id":68,"text":"Nella schizofrenia paranoide si osserva:","options":["Deliri persecutori e di riferimento","Negativismo e distacco dalla realtà","Appiattimento dell'affettività"],"correct":0},{"id":69,"text":"Autostima e bulimia:","options":["I livelli sono indebitamente influenzati dalla forma e dal peso corporeo"],"correct":0},{"id":70,"text":"Di cosa è tipica la disfunzione vestibolare:","options":["Disturbo d'ansia dovuto a condizione medica"],"correct":0},{"id":71,"text":"Disturbo psicotico acuto è:","options":["Con o senza evento scatenante"],"correct":0},{"id":72,"text":"Disturbo d'ansia indotto da sostanze può essere raccolto da anamnesi o raccolta dati da laboratorio:","options":["Entrambi"],"correct":0},{"id":73,"text":"Quali sono i meccanismi difensivi usati dai soggetti fobici:","options":["Spostamento (e proiezione)"],"correct":0},{"id":74,"text":"L'autismo coincide sempre con la disabilità intellettiva:","options":["No"],"correct":0},{"id":75,"text":"Il delirium fa parte dei:","options":["Disturbi dello stato di coscienza","Disturbi della forma del pensiero","Disturbi del contenuto del pensiero"],"correct":0},{"id":76,"text":"L'eco del pensiero è un:","options":["Delirio","Disturbo del processo del pensiero qualitativo","Disturbo del processo del pensiero quantitativo"],"correct":1},{"id":77,"text":"La prevalenza della schizofrenia nella popolazione è del:","options":["0.8 %","Tra lo 0.3% e lo 0.7%"],"correct":1},{"id":78,"text":"Nell'autismo i pensieri vengono interiorizzati:","options":["No"],"correct":0},{"id":79,"text":"Nell'autismo l'interesse verso i compagni è ristretto:","options":["Si"],"correct":0},{"id":80,"text":"Nell'autismo ci sono deficit visivi:","options":["Anomalie del contatto visivo"],"correct":0},{"id":81,"text":"L'inconscio è:","options":["Arcaico"],"correct":0},{"id":82,"text":"Anoressia nervosa:","options":["Esercizio fisico finalizzato a evitare il diventare flaccidi"],"correct":0},{"id":83,"text":"Quali sono le conseguenze di una mancata formazione della costanza d'oggetto:","options":["Disturbo borderline di personalità"],"correct":0},{"id":84,"text":"Per quanto tempo si devono manifestare i sintomi per individuare un disturbo d'ansia:","options":["6 mesi"],"correct":0},{"id":85,"text":"Quale fascia d'età è maggiormente colpita dai disturbi negli ultimi 20 anni:","options":["Donne tra 15 e 25 anni"],"correct":0},{"id":86,"text":"Il delirio della schizofrenia è un:","options":["Sintomo secondario"],"correct":0},{"id":87,"text":"Quando avvengono le allucinazioni ipnagogiche?","options":["Prima dell'addormentarsi"],"correct":0},{"id":88,"text":"Nella fobia specifica:","options":["Riconosce che la paura è eccessiva e irragionevole"],"correct":0},{"id":89,"text":"Le allucinazioni ipnagogiche sono:","options":["Percezioni visive o uditive che si possono manifestare al momento di addormentarsi"],"correct":0},{"id":90,"text":"Nella sindrome/ disturbo di Tourette si possono verificare:","options":["Sia tic verbali che multipli"],"correct":0},{"id":91,"text":"Nell'episodio depressivo maggiore:","options":["Si possono verificare sia insonnia che ipersonnia"],"correct":0},{"id":92,"text":"Nel disturbo depressivo:","options":["possono essere presenti idee ricorrenti morte e franca ideazione suicidaria"],"correct":0},{"id":93,"text":"Il disturbo narcisistico di personalità fa parte del cluster:","options":["a","b","c"],"correct":1},{"id":94,"text":"Nel processo morboso della schizofrenia, Bleuler considera i deliri come:","options":["sintomi accessori, quindi secondari"],"correct":0},{"id":95,"text":"L'ambivalenza affettiva esprime:","options":["presenza contemporanea di sentimenti antitetici","affettività scarsamente modulabile","perdita di interesse per attività usualmente piacevoli"],"correct":0},{"id":96,"text":"L'iperestesia è un disturbo:","options":["quantitativo della percezione"],"correct":0},{"id":97,"text":"Nell'autismo nei fanciulli è presente per lo più:","options":["assenza di interesse verso i coetanei"],"correct":0},{"id":98,"text":"Nella bulimia nervosa alcune pazienti per evitare la crisi bulimica:","options":["Riferiscono di ricorrere a farmaci stimolanti, anoressizzanti o alcool e ansiolitici"],"correct":0},{"id":99,"text":"Nel disturbo ossessivo compulsivo il soggetto avverte che le ossessioni:","options":["Sono per lo più egodistoniche"],"correct":0},{"id":100,"text":"Nel disturbo del movimento stereotipato il comportamento motorio ripetitivo è:","options":["Afinalistico ed interferisce con le attività sociali e scolastiche"],"correct":0},{"id":101,"text":"Nel disturbo antisociale di personalità il soggetto ha:","options":["Forte bisogno di essere indipendente e di opporsi al controllo degli altri"],"correct":0},{"id":102,"text":"Il disturbo d'ansia generalizzato:","options":["Maggior parte dei giorni almeno sei mesi a riguardo di una quantità di eventi o di attività"],"correct":0},{"id":103,"text":"Il delirium è caratterizzato da:","options":["Disorientamento spazio-temporale"],"correct":0},{"id":104,"text":"Il pensiero iperinclusivo:","options":["È presenta nella schizofrenia e si associa spesso al pensiero concreto"],"correct":0},{"id":105,"text":"Cosa si intende col termine derealizzazione:","options":["Sentimenti estranei"],"correct":0},{"id":106,"text":"Il decorso della schizofrenia può mostrare:","options":["Modificazioni cognitive ed emotive"],"correct":0},{"id":107,"text":"Il delirio in relazione alle modalità di insorgenza quando:","options":["Non si verifica in risposta ad un quadro psicopatologico"],"correct":0},{"id":108,"text":"Il disturbo dell'umore indotto da sostanze:","options":["È evidente da anamnesi, esame fisico o dati di laboratorio"],"correct":0},{"id":109,"text":"Il penisero dissociato è:","options":["Una perdita dei nessi associativi"],"correct":0},{"id":110,"text":"Il rallentamento del pensiero è un disturbo:","options":["Quantitativo della forma"],"correct":0},{"id":111,"text":"La catatonia è:","options":["Uno stato di arresto psicologico con aumento del tono muscolare a riposo"],"correct":0},{"id":112,"text":"L'allucinazione microzootipica è:","options":["Tipica del delirium tremens"],"correct":0},{"id":113,"text":"La necessità di avere le cose in ordine è:","options":["L'ossessione più frequente","Tipica del DOC"],"correct":1},{"id":114,"text":"La stereotipica è:","options":["Più frequente nella schizofrenia"],"correct":0},{"id":115,"text":"Le condotte di eliminazione nei DCA possono comprendere:","options":["L'uso inappropriato dei lassativi"],"correct":0},{"id":116,"text":"L'ossessione ha carattere di:","options":["Estraneità, intrusività e persistenza"],"correct":0},{"id":117,"text":"Lo stretto legame tra attaccamento ed emozioni:","options":["Bowlby"],"correct":0},{"id":118,"text":"Nel disturbo evitante di personalità, l'individuo è:","options":["Inibito in situazioni interpersonali nuove per sentimenti di inadeguatezza"],"correct":0},{"id":119,"text":"Nella schizofrenia:","options":["nel 25% dei casi si sono evidenziati da tratti specifici","nel 25% dei casi si sono evidenziati tratti aspecifici"],"correct":1},{"id":120,"text":"Nell'episodio manicale il soggetto avverte che:","options":["i pensieri si susseguono rapidamente"],"correct":0},{"id":121,"text":"Secondo la teoria della Mahler, la fase autistica:","options":["Primo mese di vita (0-2 mesi)"],"correct":0},{"id":122,"text":"Sfrutta i rapporti personali a proprio vantaggio:","options":["Istrionico","Narcisista","Borderline"],"correct":1},{"id":123,"text":"Tra i criteri del Disturbo Ciclotimico troviamo:","options":["Presenza di un episodio ipomaniacale e di un episodio depressivo per almeno 6 mesi","Presenza di un episodio ipomaniacale e di un episodio depressivo per almeno 2 anni","Presenza di numerosi episodi ipomaniacali e numerosi episodi con sintomi depressivi per almeno 2 anni"],"correct":2},{"id":124,"text":"Tra i criteri della bulimia nervosa:","options":["2 volte a settimana per 3 mesi, almeno una volta alla settimana"],"correct":0},{"id":125,"text":"Vaghezza e difficoltà di concentrazione:","options":["Schizofrenia"],"correct":0},{"id":126,"text":"I sintomi positivi della schizofrenia sono:","options":["Deliri, allucinazioni, comportamento bizzarro, disturbi formali del pensiero"],"correct":0},{"id":127,"text":"L'Abulia è caratterizzata da:","options":["Ridotta iniziativa, anedonia, carenza di interessi, isolamento sociale, scarsa igiene, rallentamento psicomotorio"],"correct":0},{"id":128,"text":"Chi viene maggiormente colpito dai DCA?","options":["Le donne che vivono nei paesi più industrializzati"],"correct":0},{"id":129,"text":"Nel disturbo dello spettro autistico:","options":["Si possono avere deficit della reciprocità socio-emotiva che vanno da un approccio sociale anomalo ad una ridotta condivisione di interessi"],"correct":0},{"id":130,"text":"Risposta allo stress, componenti:","options":["Comportamentale, vegetative e ormonale"],"correct":0},{"id":131,"text":"Cosa si intende per dementia praecox?","options":["Quadro demenziale in soggetti di giovane età"],"correct":0},{"id":132,"text":"Nelle donne che soffrono di anoressia nervosa si può verificare:","options":["Amenorrea"],"correct":0},{"id":133,"text":"Il pensiero magico, non giustificato dalla cultura, è caratterizzato da:","options":["Chiaroveggenza, telepatia e sesto senso"],"correct":0},{"id":134,"text":"Nella schizofrenia:","options":["Possono presentarsi perplessità, sospettosità, ansia e depressione"],"correct":0},{"id":135,"text":"L'anedonia è:","options":["Un disturbo dell'umore","Un disturbo dell'affettività","Un disturbo della coscienza"],"correct":0},{"id":136,"text":"Tra i disturbi del neurosviluppo troviamo:","options":["I DSA"],"correct":0},{"id":137,"text":"La depersonalizzazione fa parte:","options":["Disturbi della coscienza"],"correct":0},{"id":138,"text":"Nel disturbo schizoide di personalità il soggetto è:","options":["Per lo più indifferente alla critica e alle lodi","Per lo più empatico","Particolarmente sensibile a critiche e lodi"],"correct":0},{"id":139,"text":"Nell'anoressia nervosa spesso troviamo:","options":["Il rifiuto di trattamenti farmacologici ritenuti pericolosi per l'incremento ponderale"],"correct":0},{"id":140,"text":"La paura degli ascensori è:","options":["Una fobia specifica per tipo"],"correct":0},{"id":141,"text":"Abraham divide lo stato orale in 2 sottostati, uno dei due non è compreso:","options":["Ritentivo"],"correct":0},{"id":142,"text":"Secondo il modello biopsicosociale di Cloninger il carattere è:","options":["Ereditabile e non influenzato dall'apprendimento sociale","Debolmente ereditabile e influenzato dall'apprendimento sociale","Interamente manifestato dall'infanzia"],"correct":1},{"id":143,"text":"Il disturbo d'ansia dovuto a condizione medica generale si può presentare:","options":["In caso di deficit di vitamina B12","Nel caso di iper/ipotiroidismo","Entrambi"],"correct":2},{"id":144,"text":"I movimenti distonici sono:","options":["Oscillazioni ritmiche involontarie","Contrazioni involontarie lente e prolungate che impongono posture abnormi","Contrazioni muscolari involontarie rapide e brevi"],"correct":1},{"id":145,"text":"Nel PTSD:","options":["Si può verificare derealizzazione ma non depersonalizzazione","Si possono verificare sia derealizzazione che depersonalizzazione","Si può verificare depersonalizzazione ma non derealizzazione"],"correct":1},{"id":146,"text":"Uno stato di arresto psicomotorio con aumento del tono muscolare a riposo:","options":["Arresto psicomotorio","Catatonia","Acinesia"],"correct":1},{"id":147,"text":"Nel disturbo depressivo l'esordio:","options":["È sempre graduale","Può essere sia brusco che graduale","È sempre brusco"],"correct":1},{"id":148,"text":"L'eco del pensiero è un:","options":["Disturbo della percezione","Disturbo del contenuto del pensiero","Disturbo della forma del pensiero"],"correct":2},{"id":149,"text":"Il principale meccanismo di difesa messo in atto per contrastare l'angoscia di frammentazione è:","options":["Spostamento","Sdoppiamento dell'imago","Sdoppiamento dell'IO"],"correct":2},{"id":150,"text":"L'ADHD è un disturbo che fa parte dei:","options":["Disturbi bipolari","Disturbi del neurosviluppo","Disturbo dello spettro autistico"],"correct":1},{"id":151,"text":"L'ansia può essere definita come:","options":["Stato emotivo generale che implica l'ipoattivazione delle risorse individuali contro uno stimolo","Stato emotivo generale che implica l'attivazione delle risorse individuali contro uno stimolo","Stato emotivo generale che implica la disattivazione delle risorse individuali contro uno stimolo"],"correct":1},{"id":152,"text":"In un colloquio clinico non strutturato o libero, l'intervistatore ha:","options":["3 domande prefissate","5 domande prefissate","Non ha domande prefissate"],"correct":2},{"id":153,"text":"Uno stile dell'eloquio impressionistico, teatralità ed utilizzo dell'aspetto fisico per attirare attenzione sono caratteristici di:","options":["Disturbo istrionico di personalità","Disturbo antisociale di personalità","Disturbo narcisistico di personalità"],"correct":0},{"id":154,"text":"Nel disturbo istrionico di personalità, l'individuo:","options":["È a disagio quando non sta al centro dell'attenzione","Nessuna delle due è corretta","Si sente a disagio quando è al centro dell'attenzione"],"correct":0},{"id":155,"text":"L'incidenza della bulimia nervosa è:","options":["Dall'1 al 1,5%","Dallo 0,4 al 1%","> 1,5%"],"correct":0},{"id":156,"text":"Il concetto di dementia precox è stato introdotto da:","options":["Bleuler","Kraepelin"],"correct":1},{"id":157,"text":"Sui sintomi della schizofrenia ci sono:","options":["Affettivi e cognitivi","Entrambi","Positivi e negativi"],"correct":1},{"id":158,"text":"Percentuale dei fattori comuni della schizofrenia:","options":["Elevata sensibilità","Ego ipertrofico","Nessuna delle 2"],"correct":0},{"id":159,"text":"Il disturbo dello spettro autistico coincide con disabilità intellettiva:","options":["Spesso c'è comorbilità","Non coincide mai","Coincide sempre"],"correct":0},{"id":160,"text":"In che attività il bambino prova piacere nella fase anale:","options":["Trattenere ed espellere feci"],"correct":0},{"id":161,"text":"Quale di questi è un fattore precipitante nei DCA:","options":["Pubertà"],"correct":0},{"id":162,"text":"Benessere:","options":["Fisico e mentale","Fisico e sociale","Fisico mentale e sociale"],"correct":2},{"id":163,"text":"Deliri e allucinazioni sono sintomi di primo o secondo ordine:","options":["II ordine"],"correct":0},{"id":164,"text":"Chi parlò per la prima volta di disturbi mentali:","options":["Egizi","Romani","Ippocrate"],"correct":0},{"id":165,"text":"Tra le complicazioni della depressione troviamo:","options":["Episodi psicotici","Idee di morte","Entrambe"],"correct":2},{"id":166,"text":"Da quanti anni la psicologia è ritenuta scienza?","options":["100","200","300"],"correct":1},{"id":167,"text":"Comunicare significa:","options":["Mettere in comune","Parlare","intervenire"],"correct":0},{"id":168,"text":"In quale malattia vengono ingerite sostanze non commestibili:","options":["Pica","Ruminazione","Bulimia nervosa"],"correct":0},{"id":169,"text":"Tra i sintomi negativi della schizofrenia troviamo:","options":["Restrizioni dell'espressione emotiva, del pensiero, del linguaggio del piacere, della motivazione e dell'attenzione"],"correct":0},{"id":170,"text":"La PREVALENZA dell'anoressia nervosa è:","options":[">1,5%","Fra 0,5% e 1,4%","<0,4%"],"correct":2},{"id":171,"text":"Nella scuola di Ippocrate la mania è riconducibile ad un:","options":["Ribollire del sangue nel cuore"],"correct":0},{"id":172,"text":"Diocle descrive la frenite come:","options":["Disturbo del pensiero come un'infiammazione del diaframma"],"correct":0},{"id":173,"text":"La melanconia di Diocle:","options":["Era caratterizzata da un umore depresso, causato dall'addensarsi intorno al cuore della bile nera"],"correct":0},{"id":174,"text":"Galeno fine del secondo secolo:","options":["Spiega il disturbo mentale come uno squilibrio umorale del cervello"],"correct":0},{"id":175,"text":"Secondo Bleuler:","options":["La demenza precoce è un'alterazione qualitativa dell'esperienza psichica e del comportamento"],"correct":0},{"id":176,"text":"Il termine schizofrenia è stato coniato da:","options":["Bleuler nel 1911"],"correct":0},{"id":177,"text":"Il modello psico-biosociale fu proposto da:","options":["Proposto da Howard Brody nel 1973 ma presentato al mondo medico da Georg e Engel nel 1977"],"correct":0},{"id":178,"text":"Il Binge eating (BED) nei paesi occidentali:","options":["Prevalenza 12 mesi, 1.6% nelle donne e 0.8% negli uomini"],"correct":0},{"id":179,"text":"Tra le complicazioni della depressione NON troviamo:","options":["Autostima pericolosamente ipertrofica","Cronicizzazione"],"correct":0},{"id":180,"text":"La ruminazione è un disturbo:","options":["Del pensiero","Della percezione","Della memoria"],"correct":0},{"id":181,"text":"Nel delirio di veneficio il paziente è convinto di:","options":["Essere vittima di qualcuno","Essere stato avvelenato da qualcuno","Essere in grado di danneggiare qualcuno"],"correct":1},{"id":182,"text":"In quale fascia d'età si riscontrano maggiormente i DCA:","options":["Pubertà","Infanzia","Età adulta"],"correct":0},{"id":183,"text":"Tra i criteri diagnostici per l'anoressia nervosa, secondo il DSM5 troviamo:","options":["Mangiare in un determinato periodo di tempo","Restrizioni nell'assunzione delle calorie in relazione alla necessità","Abbuffate e condotte compensatorie inappropriate"],"correct":1},{"id":184,"text":"Le percezioni alterate di stimoli sensoriali reali si definiscono:","options":["Illusioni","Allucinazioni","Percezioni senza oggetto"],"correct":0},{"id":185,"text":"Nei disturbi del movimento sono compresi:","options":["Disturbi dello sviluppo della coordinazione e da movimento stereotipato","Entrambe","Disturbi da tic"],"correct":1},{"id":186,"text":"Le allucinazioni:","options":["Sono suscettibili di correzione","Sono suscettibili di correzione in particolare…","Non sono suscettibili di correzione"],"correct":2},{"id":187,"text":"Nell'autismo si può presentare:","options":["Iperreattività agli stimoli","Iporeattività agli stimoli","Entrambe"],"correct":2},{"id":188,"text":"Le fobie specifiche fanno parte dei:","options":["Disturbi dell'umore","Stati misti","Disturbi d'ansia"],"correct":2},{"id":189,"text":"Nella schizofrenia: anaffettività, abulia e apatia sono considerati:","options":["Sintomi negativi","Sintomi secondari","Sintomi positivi"],"correct":0},{"id":190,"text":"Nella diagnosi dei disturbi del neurosviluppo, tra gli elementi specifici troviamo:","options":["Età di esordio","Livello di gravità","Entrambi"],"correct":2},{"id":191,"text":"Le balbuzie fa parte dei disturbi:","options":["Di comunicazione","Dello sviluppo intellettivo","Del movimento"],"correct":0},{"id":192,"text":"Nelle fasi di sviluppo psicologico, durante il processo primario prevale il:","options":["Principio di realtà","Principio di piacere","Formazione del compromesso"],"correct":1},{"id":193,"text":"L'INCIDENZA dell'anoressia nervosa è:","options":["0,4%","< 0,4%","Da 1 a 1,5%"],"correct":0},{"id":194,"text":"Nell'autismo il contatto visivo:","options":["Non presenta anomalie","Presenta anomalie ma sempre con integrità totale della restante espressività facciale","Presenta anomalie"],"correct":2},{"id":195,"text":"Nei DCA l'esordio è:","options":["Spesso graduale e insidioso","Sempre reattivo ad eventi significativi","Conseguente ad una perdita significativa"],"correct":0},{"id":196,"text":"La depersonalizzazione fa parte dei disturbi:","options":["Della coscienza","Del pensiero","Di personalità"],"correct":0},{"id":197,"text":"Tra le manifestazioni cliniche della schizofrenia troviamo:","options":["Entrambe","Distorsione della realtà","Impoverimento ideoaffettivo"],"correct":0},{"id":198,"text":"Il disturbo schizoaffettivo fa parte dei:","options":["Disturbi dello spettro autistico","Disturbi schizofrenici","Disturbi bipolari"],"correct":1},{"id":199,"text":"Durante il primo colloquio clinico, la tecnica dell'interpretazione analitica delle notizie riferite è:","options":["Uno strumento di difficile utilizzo","Un intervento molto utile e sempre da utilizzare","Nessuna delle due risposte"],"correct":0},{"id":200,"text":"L'ansia di stato indica:","options":["Sentirsi ansiosi in un determinato momento","Entrambe","Sentirsi ansiosi la maggior parte del tempo"],"correct":0},{"id":201,"text":"La sessualità infantile è:","options":["Indifferenziata e ben organizzata","Differenziata e poco organizzata","Indifferenziata e poco organizzata"],"correct":2},{"id":202,"text":"Nel corso della vita, quante persone sviluppano i disturbi dell'umore:","options":["1 su 5","1 su 3","1 su 7"],"correct":0},{"id":203,"text":"Fanno parte dei disturbi del movimento:","options":["Tic","Mancanza di organizzazione del movimento","Entrambe"],"correct":2},{"id":204,"text":"Il termine stress definisce:","options":["Risposta specifica dell'organismo","Risposta aspecifica dell'organismo","Nessuna delle precedenti"],"correct":1},{"id":205,"text":"Tra i fattori predisponenti nei DCA troviamo:","options":["Pubertà","Classe sociale","Fattori cognitivi"],"correct":1},{"id":206,"text":"Tra i fattori PRECIPITANTI nei DCA troviamo:","options":["Pubertà","Classe sociale","Fattori cognitivi"],"correct":0},{"id":207,"text":"Il conscio può essere considerato come:","options":["Sistema pulsione-mediazione","Sistema percezione-coscienza","Sistema relazionale-sviluppo"],"correct":1},{"id":208,"text":"I disturbi del movimento fanno parte dei:","options":["Disturbi del neurosviluppo","Disturbi d'ansia","Disturbi depressivi"],"correct":0},{"id":209,"text":"Un pregiudizio nei confronti di persone con disturbi mentali viene detto:","options":["Stigma","Emarginazione"],"correct":0},{"id":210,"text":"Nel disturbo da stress acuto:","options":["Non c'è mai amnesia dissociativa","Nessuna delle due","Può esserci amnesia dissociativa"],"correct":2},{"id":211,"text":"Tra i principali fattori predisponenti dei disturbi alimentari:","options":["Sono più a rischio alcuni gruppi etnici","Predisposizione genetica","Nessuna delle due"],"correct":0},{"id":212,"text":"Il binge eating BED nei paesi occidentali in prevalenza a 12 mesi è del:","options":["0,4%","1% donne e 1,4% uomini","1,6% donne e 0,8% uomini"],"correct":2},{"id":213,"text":"Le allucinazioni sono disturbi:","options":["Del pensiero","Della percezione","Dell'ansia"],"correct":1},{"id":214,"text":"La mania è caratteristica dei:","options":["Disturbi bipolari","Disturbi schizofrenici","Disturbi d'ansia"],"correct":0},{"id":215,"text":"La preoccupazione di essere affetto da una grave malattia nonostante la negatività degli esami strumentali è definita:","options":["Ipocondria","Disturbo di somatizzazione","Disturbo alogico"],"correct":0},{"id":216,"text":"Nella catalessia:","options":["La muscolatura del soggetto può essere modellata come la cera","C'è irrequietezza motori","C'è la ripetizione meccanica e continua dei comportamenti motori"],"correct":0},{"id":217,"text":"La distimia è un disturbo:","options":["Dell'umore","Dell'ansia","Delle fasi di sviluppo"],"correct":0},{"id":218,"text":"L'autismo e la disabilità intellettiva:","options":["Spesso sono presenti in comorbidità","Non si presentano mai insieme","Sono sempre presenti insieme"],"correct":0},{"id":219,"text":"La rappresentazione simbolica di un conflitto intrapsichico si definisce:","options":["Conversione","Somatizzazione","Ipocondria"],"correct":0},{"id":220,"text":"In quale disturbo della personalità troviamo la tendenza ad escludere i contatti sociali per paura del fallimento e del rifiuto:","options":["Evitante","Schizoide","Dipendente"],"correct":0},{"id":221,"text":"L'instabilità è caratteristica di quale disturbo della personalità:","options":["Ossessivo-compulsivo","Borderline","Dipendente"],"correct":1},{"id":222,"text":"L'asse II del DSM 4-TR codifica:","options":["Le malattie organiche","I disturbi di personalità","Gli eventi stressanti"],"correct":1},{"id":223,"text":"L'asse III del DSM 4-TR codifica:","options":["Le malattie organiche","I disturbi di personalità","Gli eventi stressanti"],"correct":0},{"id":224,"text":"La ricostruzione immaginifica di eventi attuali o passati costituisce:","options":["Pseudologia fantastica","Delirio","Pensiero magico"],"correct":0},{"id":225,"text":"La disforia è:","options":["La mancanza di desiderio","Si associa ad irritabilità e scarsa capacità di controllo","Nessuna delle due"],"correct":1},{"id":226,"text":"La perdita d'interesse e di capacità di provare piacere per attività o eventi solitamente piacevoli è detta:","options":["Anedonia","Ipoestesia","Disforia"],"correct":0},{"id":227,"text":"Le tangenziali sono:","options":["Un disturbo d'ansia","Un sistema di difesa","Un disturbo del pensiero"],"correct":2},{"id":228,"text":"La negazione totale del proprio corpo o più spesso di parti interne di esso, oppure riguardanti oggetti, persone e cose al di fuori di sé, è:","options":["Un delirio nichilistico","Uno stato psicotico","Nessuno dei due"],"correct":0},{"id":229,"text":"Il delirio di querela è tipico:","options":["Del DOC","Della paranoia","Del disturbo antisociale"],"correct":1},{"id":230,"text":"La fobia sociale è un disturbo caratterizzato da:","options":["Timore di situazioni nelle quali il soggetto è in relazione con gli altri","Timore del giudizio altrui","Nessuno dei due"],"correct":0},{"id":231,"text":"La fuga delle idee consiste in:","options":["Difficoltà a ricordare","Timore di furto delle idee","Contenuti ideativi che si succedono con molta celerità"],"correct":2},{"id":232,"text":"La presenza di ricorrenti pensieri di contaminazione associata a rituali di pulizia è tipica dei pazienti:","options":["Ipocondriaci","Ossessivo-compulsivi","Con delirio"],"correct":1},{"id":233,"text":"Le condotte di eliminazione le troviamo:","options":["Nella bulimia nervosa","Nel binge eating","Nel disturbo da ruminazione"],"correct":0},{"id":234,"text":"La difesa delle pulsioni inaccettabili è un'attività:","options":["Dell'IO","Dell'ES","Del Super-IO"],"correct":0},{"id":235,"text":"Il delirio di furto del pensiero è caratterizzato da:","options":["Paura di essere derubato","Nessuno delle due","Sensazione soggettiva che una forza esterna sottragga i propri pensieri"],"correct":2},{"id":236,"text":"Tra le caratteristiche premorbose dell'anoressia nervosa generalmente troviamo:","options":["Tentativi di ottenere il massimo in ogni prestazione","Scarso rendimento scolastico","Nessuna delle precedenti"],"correct":0},{"id":237,"text":"Quando nascono i manicomi?","options":["1600/1700","1800"],"correct":1},{"id":238,"text":"Quando nasce l'assistenza psichiatrica?","options":["1800","Metà 1900","Dopo la Prima guerra mondiale"],"correct":0},{"id":239,"text":"I prerequisiti del colloquio clinico:","options":["Stile del colloquio","Disponibilità","Entrambe"],"correct":2},{"id":240,"text":"Nelle fasi di sviluppo psicologico, durante il processo secondario prevale il:","options":["Principio di piacere","Principio di realtà","Entrambi"],"correct":1},{"id":241,"text":"Nel meccanismo della negazione:","options":["Amplifica ogni difficoltà fino a farla diventare un trauma","Rifiuta una persona che non accetta come parte della sua vita","Accetta passivamente tutte le situazioni difficili"],"correct":1},{"id":242,"text":"Secondo la Mahler quale di questi NON è presente negli stadi di sviluppo:","options":["Edipico","Simbiotico","Autistico"],"correct":0},{"id":243,"text":"Quale dei seguenti disturbi rientra nei disturbi del neurosviluppo:","options":["Disturbi della memoria","Disturbi dello spettro schizofrenico","Disturbi del movimento"],"correct":2},{"id":244,"text":"Che cosa analizza il colloquio:","options":["Verità","Esperienza","Realtà psichica"],"correct":2},{"id":245,"text":"Il meccanismo di difesa della rimozione riguarda:","options":["La rappresentazione dell'evento","L'affetto impiegato in quell'evento","Entrambe"],"correct":2},{"id":246,"text":"Il rigurgito è tipico di quale DCA:","options":["Ruminazione","Restrittivo di alimentazione","Pica"],"correct":0},{"id":247,"text":"L'abbassamento del tono dell'umore può essere sintomo di:","options":["Disturbi psichiatrici","Disturbi non psichiatrici","Entrambi"],"correct":2},{"id":248,"text":"Percentuale di rischio della schizofrenia nella popolazione generale è:","options":["3%","0.8%","5%"],"correct":1},{"id":249,"text":"Tra i sintomi della depressione troviamo:","options":["Disturbi psicotici","Aumento dell'autostima","Entrambe"],"correct":0},{"id":250,"text":"La risposta allo stress è formata da 3 componenti:","options":["Comportamentale, vegetativa e ormonale","Vegetativa, ormonale, sociale","Comportamentale, vegetativa e sociale"],"correct":0}];
+
+        let questions = [...originalQuestions];
+        let userAnswers = {};
+        let filteredQuestions = [...questions];
+        let showAllCorrectAnswers = false;
+        let randomQuestions = false;
+        let randomAnswers = false;
+        let examMode = false;
+
+        // Funzione per mescolare un array (Fisher-Yates shuffle)
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // Funzione per preparare le domande con risposte randomizzate
+        function prepareQuestionsWithRandomAnswers(questionsArray) {
+            return questionsArray.map(question => {
+                if (!randomAnswers) return question;
+
+                const optionsWithIndex = question.options.map((option, index) => ({
+                    text: option,
+                    originalIndex: index
+                }));
+
+                const shuffledOptions = shuffleArray(optionsWithIndex);
+                
+                return {
+                    ...question,
+                    options: shuffledOptions.map(opt => opt.text),
+                    correct: shuffledOptions.findIndex(opt => opt.originalIndex === question.correct)
+                };
+            });
+        }
+
+        function simulateExam() {
+            // Reset dello stato
+            userAnswers = {};
+            showAllCorrectAnswers = false;
+            examMode = true;
+            
+            // Seleziona 31 domande casuali
+            const shuffledQuestions = shuffleArray([...originalQuestions]);
+            questions = shuffledQuestions.slice(0, 20);
+            
+            // Applica randomizzazione delle risposte se attiva
+            questions = prepareQuestionsWithRandomAnswers(questions);
+            
+            // Aggiorna le domande filtrate
+            filteredQuestions = [...questions];
+            
+            // Reset della ricerca
+            document.getElementById('searchBox').value = '';
+            
+            renderQuestions();
+        }
+
+        function toggleRandomQuestions() {
+            randomQuestions = document.getElementById('randomQuestions').checked;
+            applyRandomization();
+        }
+
+        function toggleRandomAnswers() {
+            randomAnswers = document.getElementById('randomAnswers').checked;
+            applyRandomization();
+        }
+
+        function applyRandomization() {
+            // Non applicare se siamo in modalità esame
+            if (examMode) return;
+            
+            // Ripristina le domande originali
+            questions = [...originalQuestions];
+            
+            // Applica randomizzazione risposte
+            questions = prepareQuestionsWithRandomAnswers(questions);
+            
+            // Applica randomizzazione domande
+            if (randomQuestions) {
+                questions = shuffleArray(questions);
+            }
+            
+            // Aggiorna le domande filtrate
+            filteredQuestions = [...questions];
+            
+            // Pulisci le risposte salvate poiché le posizioni potrebbero essere cambiate
+            userAnswers = {};
+            showAllCorrectAnswers = false;
+            
+            // Re-renderizza
+            renderQuestions();
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            
+            // Aggiungi indicatore modalità esame
+            if (examMode) {
+                const examIndicator = document.createElement('div');
+                examIndicator.className = 'exam-mode-indicator';
+                examIndicator.textContent = '🎓 Modalità Simulazione Esame - 31 domande casuali';
+                container.appendChild(examIndicator);
+            }
+            
+            filteredQuestions.forEach((question, displayIndex) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.id = `question-${question.id}`;
+                
+                const userAnswer = userAnswers[question.id];
+                let questionClass = '';
+                if (userAnswer !== undefined) {
+                    questionClass = userAnswer === question.correct ? 'correct' : 'incorrect';
+                    questionDiv.className += ` ${questionClass}`;
+                }
+                
+                questionDiv.innerHTML = `
+                    <div class="question-number">Domanda ${randomQuestions || examMode ? displayIndex + 1 : question.id}</div>
+                    <div class="question-text">${question.text}</div>
+                    <div class="options">
+                        ${question.options.map((option, index) => {
+                            let optionClass = 'option';
+                            if ((userAnswer !== undefined || showAllCorrectAnswers) && index === question.correct) {
+                                optionClass += ' correct-answer';
+                            }
+                            if (userAnswer === index) {
+                                optionClass += ' selected';
+                                if (userAnswer === question.correct) optionClass += ' correct';
+                                else optionClass += ' incorrect';
+                            }
+                            
+                            return `
+                                <label class="${optionClass}">
+                                    <input type="radio" name="q${question.id}" value="${index}" 
+                                           ${userAnswer === index ? 'checked' : ''}
+                                           onchange="selectAnswer(${question.id}, ${index})">
+                                    ${String.fromCharCode(97 + index)}. ${option}
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                    ${(userAnswer !== undefined || showAllCorrectAnswers) ? `
+                        <div class="result ${userAnswer === question.correct ? 'correct' : 'incorrect'}">
+                            <span class="result-icon">${userAnswer === question.correct ? '✅' : '✖️'}</span>
+                            ${userAnswer === question.correct ? 'Risposta corretta! ✓' : 
+                              userAnswer !== undefined ? `Risposta sbagliata. La risposta corretta è: ${String.fromCharCode(97 + question.correct)} ✖️` :
+                              `Risposta corretta: ${String.fromCharCode(97 + question.correct)} ✓`}
+                        </div>
+                    ` : ''}
+                `;
+                
+                container.appendChild(questionDiv);
+            });
+            
+            updateStats();
+        }
+
+        function selectAnswer(questionId, answerIndex) {
+            userAnswers[questionId] = answerIndex;
+            renderQuestions();
+        }
+
+        function checkAllAnswers() {
+            showAllCorrectAnswers = true;
+            renderQuestions();
+        }
+
+        function resetQuiz() {
+            userAnswers = {};
+            filteredQuestions = [...originalQuestions];
+            showAllCorrectAnswers = false;
+            examMode = false;
+            document.getElementById('searchBox').value = '';
+            
+            // Reset delle checkbox
+            document.getElementById('randomQuestions').checked = false;
+            document.getElementById('randomAnswers').checked = false;
+            randomQuestions = false;
+            randomAnswers = false;
+            
+            // Ripristina le domande originali
+            questions = [...originalQuestions];
+            filteredQuestions = [...questions];
+            
+            renderQuestions();
+        }
+
+        function showOnlyIncorrect() {
+            filteredQuestions = questions.filter(q => 
+                userAnswers[q.id] !== undefined && userAnswers[q.id] !== q.correct
+            );
+            renderQuestions();
+        }
+
+        function updateStats() {
+            const totalAnswered = Object.keys(userAnswers).length;
+            const correctCount = Object.keys(userAnswers).filter(id => 
+                userAnswers[id] === questions.find(q => q.id == id).correct
+            ).length;
+            const percentage = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
+            
+            document.getElementById('totalQuestions').textContent = questions.length;
+            document.getElementById('correctAnswers').textContent = `${correctCount}/${totalAnswered}`;
+            document.getElementById('percentage').textContent = `${percentage}%`;
+            
+            const progressPercentage = totalAnswered > 0 ? (totalAnswered / questions.length) * 100 : 0;
+            document.getElementById('progressFill').style.width = `${progressPercentage}%`;
+        }
+
+        function searchQuestions() {
+            // Disabilita la ricerca in modalità esame
+            if (examMode) return;
+            
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            filteredQuestions = questions.filter(q => 
+                q.text.toLowerCase().includes(searchTerm) ||
+                q.options.some(option => option.toLowerCase().includes(searchTerm))
+            );
+            renderQuestions();
+        }
+
+        // Event listeners
+        document.getElementById('searchBox').addEventListener('input', searchQuestions);
+
+        // Inizializzazione
+        renderQuestions();
+    </script>
+</body>
+</html>
