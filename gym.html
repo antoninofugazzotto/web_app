@@ -237,16 +237,66 @@
         }
 
         .exercise-card {
-            margin-bottom: 24px;
+            margin-bottom: 16px;
+            overflow: hidden;
         }
 
         .exercise-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 0;
             flex-wrap: wrap;
             gap: 16px;
+            cursor: pointer;
+            padding: 4px 0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-header:hover {
+            background: rgba(71, 85, 105, 0.2);
+        }
+
+        .exercise-header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 16px;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+
+        .accordion-content.open {
+            max-height: 2000px;
+            opacity: 1;
+            padding-top: 20px;
+        }
+
+        .accordion-toggle {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+            color: #10b981;
+            margin-left: 8px;
+        }
+
+        .accordion-toggle.rotated {
+            transform: rotate(180deg);
+        }
+
+        .exercise-completed {
+            background: rgba(16, 185, 129, 0.1) !important;
+            border-color: rgba(16, 185, 129, 0.3) !important;
+        }
+
+        .exercise-completed .exercise-header {
+            color: #10b981;
         }
 
         .exercise-info h3 {
@@ -327,6 +377,7 @@
         .input-group {
             display: flex;
             flex-direction: column;
+            width: 100%;
         }
 
         .input-group label {
@@ -506,7 +557,8 @@
             workoutData: {},
             timer: 0,
             isTimerRunning: false,
-            timerInterval: null
+            timerInterval: null,
+            openAccordions: new Set([0]) // Il primo accordion è aperto di default
         };
 
         // Dati degli allenamenti
@@ -621,6 +673,7 @@
         function startWorkout(workoutKey) {
             state.selectedWorkout = workoutKey;
             state.workoutData = {};
+            state.openAccordions = new Set([0]); // Reset accordion: solo il primo aperto
             
             workouts[workoutKey].exercises.forEach((exercise, idx) => {
                 state.workoutData[idx] = {
@@ -642,9 +695,46 @@
             
             exerciseData.completedSets = Math.max(exerciseData.completedSets, setIdx + 1);
             
+            // Controlla se l'esercizio è completato
+            const exercise = workouts[state.selectedWorkout].exercises[exerciseIdx];
+            const isExerciseCompleted = exerciseData.completedSets >= exercise.sets;
+            
+            if (isExerciseCompleted) {
+                // Chiudi l'accordion corrente
+                state.openAccordions.delete(exerciseIdx);
+                
+                // Trova il prossimo esercizio non completato
+                const nextExerciseIdx = findNextIncompleteExercise(exerciseIdx);
+                if (nextExerciseIdx !== -1 && !state.openAccordions.has(nextExerciseIdx)) {
+                    // Apri il prossimo accordion solo se non è già aperto
+                    state.openAccordions.add(nextExerciseIdx);
+                }
+            }
+            
             const restTime = workouts[state.selectedWorkout].exercises[exerciseIdx].rest;
             startTimer(restTime);
             
+            render();
+        }
+
+        function findNextIncompleteExercise(currentIdx) {
+            const exercises = workouts[state.selectedWorkout].exercises;
+            
+            for (let i = currentIdx + 1; i < exercises.length; i++) {
+                const exerciseData = state.workoutData[i];
+                if (!exerciseData || exerciseData.completedSets < exercises[i].sets) {
+                    return i;
+                }
+            }
+            return -1; // Nessun esercizio successivo trovato
+        }
+
+        function toggleAccordion(exerciseIdx) {
+            if (state.openAccordions.has(exerciseIdx)) {
+                state.openAccordions.delete(exerciseIdx);
+            } else {
+                state.openAccordions.add(exerciseIdx);
+            }
             render();
         }
 
@@ -818,72 +908,83 @@
                         reps: Array(exercise.sets).fill('') 
                     };
                     
+                    const isOpen = state.openAccordions.has(exerciseIdx);
+                    const isCompleted = exerciseData.completedSets >= exercise.sets;
+                    
                     return `
-                        <div class="card exercise-card">
-                            <div class="exercise-header">
-                                <div class="exercise-info">
-                                    <h3>${exercise.name}</h3>
-                                    <div class="exercise-details">
-                                        <span>📊 Serie: ${exercise.sets}</span>
-                                        <span>🔢 Ripetizioni: ${exercise.reps}</span>
-                                        <span>⏱️ Riposo: ${formatTime(exercise.rest)}</span>
-                                        <span class="muscle-highlight">💪 ${exercise.muscle}</span>
+                        <div class="card exercise-card ${isCompleted ? 'exercise-completed' : ''}">
+                            <div class="exercise-header" onclick="toggleAccordion(${exerciseIdx})">
+                                <div class="exercise-header-content">
+                                    <div class="exercise-info">
+                                        <h3 style="margin-bottom: 8px; display: flex; align-items: center;">
+                                            ${exercise.name}
+                                            ${isCompleted ? '<span style="margin-left: 8px;">✅</span>' : ''}
+                                            <span class="accordion-toggle ${isOpen ? 'rotated' : ''}">▼</span>
+                                        </h3>
+                                        <div class="exercise-details">
+                                            <span>📊 Serie: ${exercise.sets}</span>
+                                            <span>🔢 Ripetizioni: ${exercise.reps}</span>
+                                            <span>⏱️ Riposo: ${formatTime(exercise.rest)}</span>
+                                            <span class="muscle-highlight">💪 ${exercise.muscle}</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="exercise-stats">
-                                    <div class="sets-counter">${exerciseData.completedSets}/${exercise.sets}</div>
-                                    <div class="sets-label">serie completate</div>
+                                    <div class="exercise-stats">
+                                        <div class="sets-counter">${exerciseData.completedSets}/${exercise.sets}</div>
+                                        <div class="sets-label">serie completate</div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="sets-grid">
-                                ${Array.from({ length: exercise.sets }, (_, setIdx) => {
-                                    const isCompleted = setIdx < exerciseData.completedSets;
-                                    const hasData = exerciseData.weights[setIdx] && exerciseData.reps[setIdx];
-                                    
-                                    return `
-                                        <div class="set-row ${isCompleted ? 'completed' : ''}">
-                                            <div class="set-content">
-                                                <div class="set-number">
-                                                    <span>Serie ${setIdx + 1}</span>
-                                                    ${isCompleted ? '<span class="check-icon">✅</span>' : ''}
-                                                </div>
-                                                
-                                                <div class="set-inputs">
-                                                    <div class="input-group">
-                                                        <label>Peso (kg)</label>
-                                                        <input
-                                                            type="number"
-                                                            step="0.5"
-                                                            value="${exerciseData.weights[setIdx]}"
-                                                            onchange="updateWeight(${exerciseIdx}, ${setIdx}, this.value)"
-                                                            placeholder="0"
-                                                        />
+                            <div class="accordion-content ${isOpen ? 'open' : ''}">
+                                <div class="sets-grid">
+                                    ${Array.from({ length: exercise.sets }, (_, setIdx) => {
+                                        const isSetCompleted = setIdx < exerciseData.completedSets;
+                                        const hasData = exerciseData.weights[setIdx] && exerciseData.reps[setIdx];
+                                        
+                                        return `
+                                            <div class="set-row ${isSetCompleted ? 'completed' : ''}">
+                                                <div class="set-content">
+                                                    <div class="set-number">
+                                                        <span>Serie ${setIdx + 1}</span>
+                                                        ${isSetCompleted ? '<span class="check-icon">✅</span>' : ''}
                                                     </div>
                                                     
-                                                    <div class="input-group">
-                                                        <label>Ripetizioni</label>
-                                                        <input
-                                                            type="number"
-                                                            value="${exerciseData.reps[setIdx]}"
-                                                            onchange="updateReps(${exerciseIdx}, ${setIdx}, this.value)"
-                                                            placeholder="0"
-                                                        />
+                                                    <div class="set-inputs">
+                                                        <div class="input-group">
+                                                            <label>Peso (kg)</label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.5"
+                                                                value="${exerciseData.weights[setIdx]}"
+                                                                onchange="updateWeight(${exerciseIdx}, ${setIdx}, this.value)"
+                                                                placeholder="0"
+                                                            />
+                                                        </div>
+                                                        
+                                                        <div class="input-group">
+                                                            <label>Ripetizioni</label>
+                                                            <input
+                                                                type="number"
+                                                                value="${exerciseData.reps[setIdx]}"
+                                                                onchange="updateReps(${exerciseIdx}, ${setIdx}, this.value)"
+                                                                placeholder="0"
+                                                            />
+                                                        </div>
                                                     </div>
+                                                    
+                                                    <button
+                                                        class="btn ${isSetCompleted ? 'btn-primary' : hasData ? 'btn-primary' : 'btn-secondary'}"
+                                                        onclick="completeSet(${exerciseIdx}, ${setIdx})"
+                                                        ${isSetCompleted ? 'disabled' : ''}
+                                                        style="${!hasData && !isSetCompleted ? 'opacity: 0.5; cursor: not-allowed;' : ''}"
+                                                    >
+                                                        ${isSetCompleted ? '✅ Completata' : hasData ? '🏁 Completa Serie' : '⚠️ Inserisci dati'}
+                                                    </button>
                                                 </div>
-                                                
-                                                <button
-                                                    class="btn ${isCompleted ? 'btn-primary' : hasData ? 'btn-primary' : 'btn-secondary'}"
-                                                    onclick="completeSet(${exerciseIdx}, ${setIdx})"
-                                                    ${isCompleted ? 'disabled' : ''}
-                                                    style="${!hasData && !isCompleted ? 'opacity: 0.5; cursor: not-allowed;' : ''}"
-                                                >
-                                                    ${isCompleted ? '✅ Completata' : hasData ? '🏁 Completa Serie' : '⚠️ Inserisci dati'}
-                                                </button>
                                             </div>
-                                        </div>
-                                    `;
-                                }).join('')}
+                                        `;
+                                    }).join('')}
+                                </div>
                             </div>
                         </div>
                     `;
