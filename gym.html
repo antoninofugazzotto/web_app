@@ -1,4 +1,812 @@
-<!DOCTYPE html>
+<style>
+		.exercise-completed {
+            background: rgba(16, 185, 129, 0.1) !important;
+            border-color: rgba(16, 185, 129, 0.3) !important;
+        }
+
+        .exercise-completed .exercise-header {
+            color: #10b981;
+        }
+
+        .exercise-info h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .exercise-details {
+            display: flex;
+            gap: 20px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+        }
+
+        .exercise-stats {
+            text-align: right;
+        }
+
+        .sets-counter {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .sets-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .sets-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .set-row {
+            background: rgba(71, 85, 105, 0.3);
+            border: 2px solid rgba(71, 85, 105, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .set-row.completed {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        .set-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .set-number {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
+        }
+
+        .check-icon {
+            color: #10b981;
+            font-size: 1.2rem;
+        }
+
+        .set-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .input-group label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        .input-group input {
+            background: rgba(71, 85, 105, 0.5);
+            border: 1px solid rgba(100, 116, 139, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            color: #f1f5f9;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .back-button {
+            color: #94a3b8;
+            text-decoration: none;
+            margin-top: 12px;
+            display: inline-block;
+            transition: color 0.3s ease;
+        }
+
+        .back-button:hover {
+            color: #f1f5f9;
+        }
+
+        .workout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .workout-title-section h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .target-icon {
+            color: #10b981;
+            font-size: 1.5rem;
+        }
+
+        .muscle-highlight {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .timer-display {
+                font-size: 2.5rem;
+            }
+            
+            .exercise-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .exercise-stats {
+                text-align: left;
+            }
+            
+            .set-content {
+                gap: 16px;
+            }
+            
+            .set-inputs {
+                flex-direction: column;
+                gap: 12px;
+                width: 100%;
+            }
+            
+            .input-group {
+                width: 100%;
+            }
+            
+            .input-group input {
+                width: 100%;
+                min-width: 0;
+                padding: 12px;
+                font-size: 16px;
+                box-sizing: border-box;
+            }
+            
+            .workout-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .card {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+            
+            .exercise-details {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .set-row {
+                padding: 16px;
+            }
+            
+            .btn {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                width: 100%;
+                margin-top: 12px;
+            }
+            
+            .timer-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .timer-controls .btn {
+                width: auto;
+                margin-top: 0;
+            }
+            
+            .progress-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 16px;
+            }
+            
+            .workout-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="app"></div>
+    </div>
+
+    <script>
+        // Stato dell'applicazione
+        const state = {
+            selectedUser: null,
+            selectedWorkout: null,
+            workoutData: {},
+            timer: 0,
+            isTimerRunning: false,
+            timerInterval: null,
+            openAccordions: new Set([0])
+        };
+
+        // Dati degli allenamenti per utenti
+        const userWorkouts = {
+            "Anto": {
+                A: {
+                    name: "Petto, Spalle, Tricipiti",
+                    exercises: [
+                        { name: "Panca Piana con Bilanciere", sets: 4, reps: "8-10", rest: 150, muscle: "Petto" },
+                        { name: "Panca Inclinata 30° Manubri", sets: 3, reps: "10-12", rest: 120, muscle: "Petto" },
+                        { name: "Croci ai Cavi Alti", sets: 3, reps: "12-15", rest: 90, muscle: "Petto" },
+                        { name: "Military Press in Piedi", sets: 4, reps: "8-10", rest: 150, muscle: "Spalle" },
+                        { name: "Alzate Laterali", sets: 3, reps: "12-15", rest: 90, muscle: "Spalle" },
+                        { name: "Alzate Posteriori ai Cavi", sets: 3, reps: "15-18", rest: 75, muscle: "Spalle" },
+                        { name: "French Press", sets: 3, reps: "10-12", rest: 105, muscle: "Tricipiti" },
+                        { name: "Tricipiti ai Cavi", sets: 3, reps: "12-15", rest: 90, muscle: "Tricipiti" },
+                        { name: "Plank", sets: 3, reps: "45-60 sec", rest: 60, muscle: "Core" }
+                    ]
+                },
+                B: {
+                    name: "Dorso, Bicipiti",
+                    exercises: [
+                        { name: "Trazioni Assistite/Lat Machine", sets: 4, reps: "8-10", rest: 150, muscle: "Dorso" },
+                        { name: "Rematore con Bilanciere", sets: 4, reps: "8-10", rest: 150, muscle: "Dorso" },
+                        { name: "Pulley Basso", sets: 3, reps: "10-12", rest: 120, muscle: "Dorso" },
+                        { name: "Rematore Unilaterale Manubrio", sets: 3, reps: "10-12 cad", rest: 105, muscle: "Dorso" },
+                        { name: "Pullover Manubrio", sets: 3, reps: "12-15", rest: 90, muscle: "Dorso" },
+                        { name: "Curl Bilanciere", sets: 4, reps: "10-12", rest: 105, muscle: "Bicipiti" },
+                        { name: "Curl Martello", sets: 3, reps: "12-15", rest: 90, muscle: "Bicipiti" },
+                        { name: "Curl ai Cavi", sets: 3, reps: "12-15", rest: 75, muscle: "Bicipiti" },
+                        { name: "Russian Twist", sets: 3, reps: "20 cad lato", rest: 60, muscle: "Core" }
+                    ]
+                },
+                C: {
+                    name: "Gambe, Glutei, Addome",
+                    exercises: [
+                        { name: "Squat con Bilanciere", sets: 4, reps: "8-10", rest: 180, muscle: "Gambe" },
+                        { name: "Pressa 45°", sets: 3, reps: "12-15", rest: 150, muscle: "Gambe" },
+                        { name: "Stacchi Rumeni", sets: 4, reps: "10-12", rest: 150, muscle: "Gambe" },
+                        { name: "Leg Curl", sets: 3, reps: "12-15", rest: 105, muscle: "Gambe" },
+                        { name: "Leg Extension", sets: 3, reps: "12-15", rest: 105, muscle: "Gambe" },
+                        { name: "Hip Thrust", sets: 3, reps: "12-15", rest: 105, muscle: "Glutei" },
+                        { name: "Calf in Piedi", sets: 4, reps: "15-20", rest: 90, muscle: "Polpacci" },
+                        { name: "Crunch", sets: 3, reps: "15-20", rest: 60, muscle: "Core" },
+                        { name: "Mountain Climbers", sets: 3, reps: "30 sec", rest: 45, muscle: "Core" },
+                        { name: "Dead Bug", sets: 3, reps: "10 cad lato", rest: 60, muscle: "Core" }
+                    ]
+                }
+            },
+            "Auri": {
+                A: {
+                    name: "Upper Body",
+                    exercises: [
+                        { name: "Panca Inclinata Manubri", sets: 3, reps: "10-12", rest: 120, muscle: "Petto" },
+                        { name: "Lat Machine Presa Larga", sets: 3, reps: "12-15", rest: 90, muscle: "Dorso" },
+                        { name: "Shoulder Press Manubri", sets: 3, reps: "10-12", rest: 120, muscle: "Spalle" },
+                        { name: "Rematore Seduto ai Cavi", sets: 3, reps: "12-15", rest: 90, muscle: "Dorso" },
+                        { name: "Alzate Laterali", sets: 3, reps: "12-15", rest: 75, muscle: "Spalle" },
+                        { name: "Curl Bicipiti Manubri", sets: 3, reps: "12-15", rest: 75, muscle: "Bicipiti" },
+                        { name: "Tricipiti ai Cavi", sets: 3, reps: "12-15", rest: 75, muscle: "Tricipiti" },
+                        { name: "Plank", sets: 3, reps: "30-45 sec", rest: 60, muscle: "Core" }
+                    ]
+                },
+                B: {
+                    name: "Lower Body",
+                    exercises: [
+                        { name: "Goblet Squat", sets: 3, reps: "12-15", rest: 120, muscle: "Gambe" },
+                        { name: "Stacchi Rumeni Manubri", sets: 3, reps: "10-12", rest: 120, muscle: "Gambe" },
+                        { name: "Leg Press", sets: 3, reps: "15-20", rest: 90, muscle: "Gambe" },
+                        { name: "Hip Thrust", sets: 3, reps: "12-15", rest: 90, muscle: "Glutei" },
+                        { name: "Leg Curl", sets: 3, reps: "12-15", rest: 75, muscle: "Gambe" },
+                        { name: "Leg Extension", sets: 3, reps: "12-15", rest: 75, muscle: "Gambe" },
+                        { name: "Calf Seduto", sets: 3, reps: "15-20", rest: 60, muscle: "Polpacci" },
+                        { name: "Glute Bridge", sets: 3, reps: "15-20", rest: 60, muscle: "Glutei" }
+                    ]
+                },
+                C: {
+                    name: "Full Body & Core",
+                    exercises: [
+                        { name: "Chest Press Macchina", sets: 3, reps: "10-12", rest: 90, muscle: "Petto" },
+                        { name: "Lat Machine Presa Stretta", sets: 3, reps: "12-15", rest: 90, muscle: "Dorso" },
+                        { name: "Leg Press", sets: 3, reps: "12-15", rest: 90, muscle: "Gambe" },
+                        { name: "Shoulder Press Macchina", sets: 3, reps: "10-12", rest: 75, muscle: "Spalle" },
+                        { name: "Hip Thrust", sets: 3, reps: "12-15", rest: 75, muscle: "Glutei" },
+                        { name: "Crunch", sets: 3, reps: "15-20", rest: 60, muscle: "Core" },
+                        { name: "Russian Twist", sets: 3, reps: "20 cad lato", rest: 60, muscle: "Core" },
+                        { name: "Dead Bug", sets: 3, reps: "10 cad lato", rest: 60, muscle: "Core" }
+                    ]
+                }
+            }
+        };
+
+        // Dati degli allenamenti (punta all'utente selezionato)
+        let workouts = {};
+
+        // Funzioni utility
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function playNotification() {
+            try {
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+                
+                oscillator.frequency.setValueAtTime(800, context.currentTime);
+                gainNode.gain.setValueAtTime(0.3, context.currentTime);
+                
+                oscillator.start();
+                oscillator.stop(context.currentTime + 0.5);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+            
+            setTimeout(() => {
+                alert("⏰ Tempo di riposo terminato! Inizia la prossima serie.");
+            }, 100);
+        }
+
+        // Funzioni timer
+        function startTimer(seconds) {
+            clearInterval(state.timerInterval);
+            state.timer = seconds;
+            state.isTimerRunning = true;
+            
+            state.timerInterval = setInterval(() => {
+                state.timer--;
+                if (state.timer <= 0) {
+                    state.isTimerRunning = false;
+                    clearInterval(state.timerInterval);
+                    playNotification();
+                }
+                render();
+            }, 1000);
+            render();
+        }
+
+        function stopTimer() {
+            state.isTimerRunning = false;
+            clearInterval(state.timerInterval);
+            render();
+        }
+
+        function resetTimer() {
+            state.timer = 0;
+            state.isTimerRunning = false;
+            clearInterval(state.timerInterval);
+            render();
+        }
+
+        // Funzioni utenti e workout
+        function selectUser(userName) {
+            state.selectedUser = userName;
+            workouts = userWorkouts[userName];
+            render();
+        }
+
+        function startWorkout(workoutKey) {
+            state.selectedWorkout = workoutKey;
+            state.workoutData = {};
+            state.openAccordions = new Set([0]);
+            
+            workouts[workoutKey].exercises.forEach((exercise, idx) => {
+                state.workoutData[idx] = {
+                    completedSets: 0,
+                    weights: Array(exercise.sets).fill(''),
+                    reps: Array(exercise.sets).fill('')
+                };
+            });
+            
+            render();
+        }
+
+        function completeSet(exerciseIdx, setIdx) {
+            const exerciseData = state.workoutData[exerciseIdx];
+            const weight = exerciseData.weights[setIdx];
+            const reps = exerciseData.reps[setIdx];
+            
+            if (!weight || !reps) return;
+            
+            exerciseData.completedSets = Math.max(exerciseData.completedSets, setIdx + 1);
+            
+            const exercise = workouts[state.selectedWorkout].exercises[exerciseIdx];
+            const isExerciseCompleted = exerciseData.completedSets >= exercise.sets;
+            
+            if (isExerciseCompleted) {
+                state.openAccordions.delete(exerciseIdx);
+                const nextExerciseIdx = findNextIncompleteExercise(exerciseIdx);
+                if (nextExerciseIdx !== -1 && !state.openAccordions.has(nextExerciseIdx)) {
+                    state.openAccordions.add(nextExerciseIdx);
+                }
+            }
+            
+            const restTime = workouts[state.selectedWorkout].exercises[exerciseIdx].rest;
+            startTimer(restTime);
+            
+            render();
+        }
+
+        function findNextIncompleteExercise(currentIdx) {
+            const exercises = workouts[state.selectedWorkout].exercises;
+            
+            for (let i = currentIdx + 1; i < exercises.length; i++) {
+                const exerciseData = state.workoutData[i];
+                if (!exerciseData || exerciseData.completedSets < exercises[i].sets) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        function toggleAccordion(exerciseIdx) {
+            if (state.openAccordions.has(exerciseIdx)) {
+                state.openAccordions.delete(exerciseIdx);
+            } else {
+                state.openAccordions.add(exerciseIdx);
+            }
+            render();
+        }
+
+        function updateWeight(exerciseIdx, setIdx, value) {
+            if (!state.workoutData[exerciseIdx]) {
+                state.workoutData[exerciseIdx] = {
+                    completedSets: 0,
+                    weights: Array(workouts[state.selectedWorkout].exercises[exerciseIdx].sets).fill(''),
+                    reps: Array(workouts[state.selectedWorkout].exercises[exerciseIdx].sets).fill('')
+                };
+            }
+            state.workoutData[exerciseIdx].weights[setIdx] = value;
+            render();
+        }
+
+        function updateReps(exerciseIdx, setIdx, value) {
+            if (!state.workoutData[exerciseIdx]) {
+                state.workoutData[exerciseIdx] = {
+                    completedSets: 0,
+                    weights: Array(workouts[state.selectedWorkout].exercises[exerciseIdx].sets).fill(''),
+                    reps: Array(workouts[state.selectedWorkout].exercises[exerciseIdx].sets).fill('')
+                };
+            }
+            state.workoutData[exerciseIdx].reps[setIdx] = value;
+            render();
+        }
+
+        function getCompletedSetsForMuscle(muscle) {
+            if (!state.selectedWorkout) return { completed: 0, total: 0 };
+            
+            const exercises = workouts[state.selectedWorkout].exercises.filter(ex => ex.muscle === muscle);
+            let completed = 0, total = 0;
+            
+            exercises.forEach((exercise) => {
+                const exerciseIdx = workouts[state.selectedWorkout].exercises.findIndex(ex => ex.name === exercise.name);
+                total += exercise.sets;
+                if (state.workoutData[exerciseIdx]) {
+                    completed += state.workoutData[exerciseIdx].completedSets;
+                }
+            });
+            
+            return { completed, total };
+        }
+
+        function getMuscleGroups() {
+            if (!state.selectedWorkout) return [];
+            return [...new Set(workouts[state.selectedWorkout].exercises.map(ex => ex.muscle))];
+        }
+
+        function downloadExcel() {
+            if (!state.selectedWorkout) return;
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Utente,Esercizio,Serie,Peso,Ripetizioni,Completato\n";
+            
+            workouts[state.selectedWorkout].exercises.forEach((exercise, idx) => {
+                const data = state.workoutData[idx];
+                if (data) {
+                    for (let i = 0; i < exercise.sets; i++) {
+                        const completed = i < data.completedSets ? "Sì" : "No";
+                        const weight = data.weights[i] || "";
+                        const reps = data.reps[i] || "";
+                        csvContent += `"${state.selectedUser}","${exercise.name}",${i + 1},"${weight}","${reps}","${completed}"\n`;
+                    }
+                }
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `allenamento_${state.selectedUser}_${state.selectedWorkout}_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        // Funzioni render
+        function renderUserSelection() {
+            return `
+                <div class="header">
+                    <h1>👋 Benvenuto in Gym Tracker Pro</h1>
+                    <p>Seleziona il tuo profilo per iniziare</p>
+                </div>
+                
+                <div class="workout-grid">
+                    <div class="card user-card" onclick="selectUser('Anto')">
+                        <div class="user-avatar">🏋️‍♂️</div>
+                        <h3 class="user-name">Anto</h3>
+                        <p class="user-subtitle">Allenamento Avanzato</p>
+                    </div>
+                    
+                    <div class="card user-card" onclick="selectUser('Auri')">
+                        <div class="user-avatar">💪</div>
+                        <h3 class="user-name">Auri</h3>
+                        <p class="user-subtitle">Allenamento Personalizzato</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderWorkoutSelection() {
+            return `
+                <div class="header">
+                    <h1>💪 Ciao ${state.selectedUser}!</h1>
+                    <p>Scegli il tuo allenamento per oggi</p>
+                    <button class="btn btn-secondary" onclick="state.selectedUser = null; render();" style="margin-top: 12px;">
+                        ← Cambia utente
+                    </button>
+                </div>
+                
+                <div class="workout-grid">
+                    ${Object.entries(workouts).map(([key, workout]) => `
+                        <div class="card workout-card" onclick="startWorkout('${key}')">
+                            <div class="workout-icon">${key}</div>
+                            <h3 class="workout-title">Giorno ${key}</h3>
+                            <p class="workout-subtitle">${workout.name}</p>
+                            <div class="workout-info">${workout.exercises.length} esercizi</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderWorkoutView() {
+            const currentWorkout = workouts[state.selectedWorkout];
+            const muscleGroups = getMuscleGroups();
+
+            return `
+                <!-- Header -->
+                <div class="card">
+                    <div class="workout-header">
+                        <div class="workout-title-section">
+                            <h1>
+                                <span class="target-icon">🎯</span>
+                                ${state.selectedUser} - Giorno ${state.selectedWorkout} - ${currentWorkout.name}
+                            </h1>
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                <a href="#" class="back-button" onclick="state.selectedWorkout = null; render(); return false;">
+                                    ← Cambia allenamento
+                                </a>
+                                <a href="#" class="back-button" onclick="state.selectedUser = null; state.selectedWorkout = null; render(); return false;">
+                                    ← Cambia utente
+                                </a>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" onclick="downloadExcel()">
+                                📥 Scarica Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timer -->
+                ${state.timer > 0 ? `
+                    <div class="card timer-section">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 16px;">
+                            <span style="font-size: 1.5rem;">⏰</span>
+                            <span style="font-size: 1.2rem; font-weight: 500;">Tempo di riposo</span>
+                        </div>
+                        <div class="timer-display">${formatTime(state.timer)}</div>
+                        <div class="timer-controls">
+                            <button class="btn btn-secondary" onclick="stopTimer()">
+                                ⏸️ Pausa
+                            </button>
+                            <button class="btn btn-secondary" onclick="resetTimer()">
+                                🔄 Reset
+                            </button>
+                            <button class="btn btn-danger" onclick="resetTimer()">
+                                ⏭️ Skip
+                            </button>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Progress -->
+                <div class="card progress-section">
+                    <h3 style="margin-bottom: 24px; font-size: 1.3rem;">📊 Progressi per Gruppo Muscolare</h3>
+                    <div class="progress-grid">
+                        ${muscleGroups.map(muscle => {
+                            const progress = getCompletedSetsForMuscle(muscle);
+                            const percentage = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
+                            
+                            return `
+                                <div class="progress-item">
+                                    <div class="progress-label">${muscle}</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: ${percentage}%"></div>
+                                    </div>
+                                    <div class="progress-text">${progress.completed}/${progress.total} serie</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+
+                <!-- Exercises -->
+                ${currentWorkout.exercises.map((exercise, exerciseIdx) => {
+                    const exerciseData = state.workoutData[exerciseIdx] || { 
+                        completedSets: 0, 
+                        weights: Array(exercise.sets).fill(''), 
+                        reps: Array(exercise.sets).fill('') 
+                    };
+                    
+                    const isOpen = state.openAccordions.has(exerciseIdx);
+                    const isCompleted = exerciseData.completedSets >= exercise.sets;
+                    
+                    return `
+                        <div class="card exercise-card ${isCompleted ? 'exercise-completed' : ''}">
+                            <div class="exercise-header" onclick="toggleAccordion(${exerciseIdx})">
+                                <div class="exercise-header-content">
+                                    <div class="exercise-info">
+                                        <h3 style="margin-bottom: 8px; display: flex; align-items: center;">
+                                            ${exercise.name}
+                                            ${isCompleted ? '<span style="margin-left: 8px;">✅</span>' : ''}
+                                            <span class="accordion-toggle ${isOpen ? 'rotated' : ''}">▼</span>
+                                        </h3>
+                                        <div class="exercise-details">
+                                            <span>📊 Serie: ${exercise.sets}</span>
+                                            <span>🔢 Ripetizioni: ${exercise.reps}</span>
+                                            <span>⏱️ Riposo: ${formatTime(exercise.rest)}</span>
+                                            <span class="muscle-highlight">💪 ${exercise.muscle}</span>
+                                        </div>
+                                    </div>
+                                    <div class="exercise-stats">
+                                        <div class="sets-counter">${exerciseData.completedSets}/${exercise.sets}</div>
+                                        <div class="sets-label">serie completate</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-content ${isOpen ? 'open' : ''}">
+                                <div class="sets-grid">
+                                    ${Array.from({ length: exercise.sets }, (_, setIdx) => {
+                                        const isSetCompleted = setIdx < exerciseData.completedSets;
+                                        const hasData = exerciseData.weights[setIdx] && exerciseData.reps[setIdx];
+                                        
+                                        return `
+                                            <div class="set-row ${isSetCompleted ? 'completed' : ''}">
+                                                <div class="set-content">
+                                                    <div class="set-number">
+                                                        <span>Serie ${setIdx + 1}</span>
+                                                        ${isSetCompleted ? '<span class="check-icon">✅</span>' : ''}
+                                                    </div>
+                                                    
+                                                    <div class="set-inputs">
+                                                        <div class="input-group">
+                                                            <label>Peso (kg)</label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.5"
+                                                                value="${exerciseData.weights[setIdx]}"
+                                                                onchange="updateWeight(${exerciseIdx}, ${setIdx}, this.value)"
+                                                                placeholder="0"
+                                                            />
+                                                        </div>
+                                                        
+                                                        <div class="input-group">
+                                                            <label>Ripetizioni</label>
+                                                            <input
+                                                                type="number"
+                                                                value="${exerciseData.reps[setIdx]}"
+                                                                onchange="updateReps(${exerciseIdx}, ${setIdx}, this.value)"
+                                                                placeholder="0"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <button
+                                                        class="btn ${isSetCompleted ? 'btn-primary' : hasData ? 'btn-primary' : 'btn-secondary'}"
+                                                        onclick="completeSet(${exerciseIdx}, ${setIdx})"
+                                                        ${isSetCompleted ? 'disabled' : ''}
+                                                        style="${!hasData && !isSetCompleted ? 'opacity: 0.5; cursor: not-allowed;' : ''}"
+                                                    >
+                                                        ${isSetCompleted ? '✅ Completata' : hasData ? '🏁 Completa Serie' : '⚠️ Inserisci dati'}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            `;
+        }
+
+        function render() {
+            const appElement = document.getElementById('app');
+            let content = '';
+            
+            if (!state.selectedUser) {
+                content = renderUserSelection();
+            } else if (!state.selectedWorkout) {
+                content = renderWorkoutSelection();
+            } else {
+                content = renderWorkoutView();
+            }
+            
+            appElement.innerHTML = content;
+        }
+
+        // Inizializza l'app
+        document.addEventListener('DOMContentLoaded', function() {
+            render();
+        });
+
+        // Gestione eventi globali
+        window.addEventListener('beforeunload', function() {
+            if (state.timerInterval) {
+                clearInterval(state.timerInterval);
+            }
+        });
+
+        // Prevenzione accidentale chiusura durante timer
+        window.addEventListener('beforeunload', function(e) {
+            if (state.isTimerRunning) {
+                e.preventDefault();
+                e.returnValue = 'Hai un timer attivo. Sei sicuro di voler uscire?';
+            }
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="UTF-8">
@@ -17,7 +825,7 @@
             min-height: 100vh;
             color: #f1f5f9;
             line-height: 1.6;
-            overflow-x: hidden; /* Previene scroll orizzontale */
+            overflow-x: hidden;
         }
 
         .container {
@@ -71,7 +879,7 @@
             margin-bottom: 40px;
         }
 
-        .workout-card {
+        .workout-card, .user-card {
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -79,12 +887,12 @@
             overflow: hidden;
         }
 
-        .workout-card:hover {
+        .workout-card:hover, .user-card:hover {
             transform: translateY(-8px);
             background: rgba(30, 41, 59, 0.95);
         }
 
-        .workout-card::before {
+        .workout-card::before, .user-card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -95,11 +903,11 @@
             transition: left 0.5s;
         }
 
-        .workout-card:hover::before {
+        .workout-card:hover::before, .user-card:hover::before {
             left: 100%;
         }
 
-        .workout-icon {
+        .workout-icon, .user-avatar {
             width: 80px;
             height: 80px;
             background: linear-gradient(135deg, #10b981, #059669);
@@ -114,15 +922,38 @@
             box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
 
-        .workout-title {
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            font-size: 3rem;
+        }
+
+        .user-card {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .workout-title, .user-name {
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 8px;
         }
 
-        .workout-subtitle {
+        .user-name {
+            font-size: 1.8rem;
+            color: #f1f5f9;
+        }
+
+        .workout-subtitle, .user-subtitle {
             color: #94a3b8;
             margin-bottom: 12px;
+        }
+
+        .user-subtitle {
+            font-size: 1rem;
         }
 
         .workout-info {
@@ -291,732 +1122,4 @@
         }
 
         .exercise-completed {
-            background: rgba(16, 185, 129, 0.1) !important;
-            border-color: rgba(16, 185, 129, 0.3) !important;
-        }
-
-        .exercise-completed .exercise-header {
-            color: #10b981;
-        }
-
-        .exercise-info h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .exercise-details {
-            display: flex;
-            gap: 20px;
-            color: #94a3b8;
-            font-size: 0.9rem;
-            flex-wrap: wrap;
-        }
-
-        .exercise-stats {
-            text-align: right;
-        }
-
-        .sets-counter {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-
-        .sets-label {
-            color: #94a3b8;
-            font-size: 0.9rem;
-        }
-
-        .sets-grid {
-            display: grid;
-            gap: 16px;
-        }
-
-        .set-row {
-            background: rgba(71, 85, 105, 0.3);
-            border: 2px solid rgba(71, 85, 105, 0.5);
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .set-row.completed {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.5);
-        }
-
-        .set-content {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            align-items: stretch;
-        }
-
-        .set-number {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: 600;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(71, 85, 105, 0.3);
-        }
-
-        .check-icon {
-            color: #10b981;
-            font-size: 1.2rem;
-        }
-
-        .set-inputs {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .input-group label {
-            color: #94a3b8;
-            font-size: 0.9rem;
-            margin-bottom: 6px;
-        }
-
-        .input-group input {
-            background: rgba(71, 85, 105, 0.5);
-            border: 1px solid rgba(100, 116, 139, 0.5);
-            border-radius: 8px;
-            padding: 12px;
-            color: #f1f5f9;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-        }
-
-        .back-button {
-            color: #94a3b8;
-            text-decoration: none;
-            margin-top: 12px;
-            display: inline-block;
-            transition: color 0.3s ease;
-        }
-
-        .back-button:hover {
-            color: #f1f5f9;
-        }
-
-        .workout-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .workout-title-section h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .target-icon {
-            color: #10b981;
-            font-size: 1.5rem;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .muscle-highlight {
-            color: #10b981;
-            font-weight: 500;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 12px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .timer-display {
-                font-size: 2.5rem;
-            }
-            
-            .exercise-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .exercise-stats {
-                text-align: left;
-            }
-            
-            .set-content {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-            
-            .set-inputs {
-                flex-direction: column;
-                gap: 12px;
-                width: 100%;
-            }
-            
-            .input-group {
-                width: 100%;
-            }
-            
-            .input-group input {
-                width: 100%;
-                min-width: 0;
-                padding: 12px;
-                font-size: 16px; /* Previene zoom su iOS */
-                box-sizing: border-box;
-            }
-            
-            .workout-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .card {
-                padding: 16px;
-                margin-bottom: 16px;
-            }
-            
-            .exercise-details {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .set-row {
-                padding: 16px;
-            }
-            
-            .input-group input {
-                padding: 10px;
-                font-size: 16px; /* Previene zoom su iOS */
-            }
-            
-            .btn {
-                padding: 12px 16px;
-                font-size: 0.9rem;
-                width: 100%;
-                margin-top: 12px;
-            }
-            
-            .timer-controls {
-                flex-direction: column;
-                gap: 8px;
-            }
-            
-            .timer-controls .btn {
-                width: auto;
-                margin-top: 0;
-            }
-            
-            .progress-grid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                gap: 16px;
-            }
-            
-            .workout-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div id="app"></div>
-    </div>
-
-    <script>
-        // Stato dell'applicazione
-        const state = {
-            selectedWorkout: null,
-            workoutData: {},
-            timer: 0,
-            isTimerRunning: false,
-            timerInterval: null,
-            openAccordions: new Set([0]) // Il primo accordion è aperto di default
-        };
-
-        // Dati degli allenamenti
-        const workouts = {
-            A: {
-                name: "Petto, Spalle, Tricipiti",
-                exercises: [
-                    { name: "Panca Piana con Bilanciere", sets: 4, reps: "8-10", rest: 150, muscle: "Petto" },
-                    { name: "Panca Inclinata 30° Manubri", sets: 3, reps: "10-12", rest: 120, muscle: "Petto" },
-                    { name: "Croci ai Cavi Alti", sets: 3, reps: "12-15", rest: 90, muscle: "Petto" },
-                    { name: "Military Press in Piedi", sets: 4, reps: "8-10", rest: 150, muscle: "Spalle" },
-                    { name: "Alzate Laterali", sets: 3, reps: "12-15", rest: 90, muscle: "Spalle" },
-                    { name: "Alzate Posteriori ai Cavi", sets: 3, reps: "15-18", rest: 75, muscle: "Spalle" },
-                    { name: "French Press", sets: 3, reps: "10-12", rest: 105, muscle: "Tricipiti" },
-                    { name: "Tricipiti ai Cavi", sets: 3, reps: "12-15", rest: 90, muscle: "Tricipiti" },
-                    { name: "Plank", sets: 3, reps: "45-60 sec", rest: 60, muscle: "Core" }
-                ]
-            },
-            B: {
-                name: "Dorso, Bicipiti",
-                exercises: [
-                    { name: "Trazioni Assistite/Lat Machine", sets: 4, reps: "8-10", rest: 150, muscle: "Dorso" },
-                    { name: "Rematore con Bilanciere", sets: 4, reps: "8-10", rest: 150, muscle: "Dorso" },
-                    { name: "Pulley Basso", sets: 3, reps: "10-12", rest: 120, muscle: "Dorso" },
-                    { name: "Rematore Unilaterale Manubrio", sets: 3, reps: "10-12 cad", rest: 105, muscle: "Dorso" },
-                    { name: "Pullover Manubrio", sets: 3, reps: "12-15", rest: 90, muscle: "Dorso" },
-                    { name: "Curl Bilanciere", sets: 4, reps: "10-12", rest: 105, muscle: "Bicipiti" },
-                    { name: "Curl Martello", sets: 3, reps: "12-15", rest: 90, muscle: "Bicipiti" },
-                    { name: "Curl ai Cavi", sets: 3, reps: "12-15", rest: 75, muscle: "Bicipiti" },
-                    { name: "Russian Twist", sets: 3, reps: "20 cad lato", rest: 60, muscle: "Core" }
-                ]
-            },
-            C: {
-                name: "Gambe, Glutei, Addome",
-                exercises: [
-                    { name: "Squat con Bilanciere", sets: 4, reps: "8-10", rest: 180, muscle: "Gambe" },
-                    { name: "Pressa 45°", sets: 3, reps: "12-15", rest: 150, muscle: "Gambe" },
-                    { name: "Stacchi Rumeni", sets: 4, reps: "10-12", rest: 150, muscle: "Gambe" },
-                    { name: "Leg Curl", sets: 3, reps: "12-15", rest: 105, muscle: "Gambe" },
-                    { name: "Leg Extension", sets: 3, reps: "12-15", rest: 105, muscle: "Gambe" },
-                    { name: "Hip Thrust", sets: 3, reps: "12-15", rest: 105, muscle: "Glutei" },
-                    { name: "Calf in Piedi", sets: 4, reps: "15-20", rest: 90, muscle: "Polpacci" },
-                    { name: "Crunch", sets: 3, reps: "15-20", rest: 60, muscle: "Core" },
-                    { name: "Mountain Climbers", sets: 3, reps: "30 sec", rest: 45, muscle: "Core" },
-                    { name: "Dead Bug", sets: 3, reps: "10 cad lato", rest: 60, muscle: "Core" }
-                ]
-            }
-        };
-
-        // Funzioni utility
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function playNotification() {
-            try {
-                const context = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = context.createOscillator();
-                const gainNode = context.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(context.destination);
-                
-                oscillator.frequency.setValueAtTime(800, context.currentTime);
-                gainNode.gain.setValueAtTime(0.3, context.currentTime);
-                
-                oscillator.start();
-                oscillator.stop(context.currentTime + 0.5);
-            } catch (e) {
-                console.log('Audio not supported');
-            }
-            
-            setTimeout(() => {
-                alert("⏰ Tempo di riposo terminato! Inizia la prossima serie.");
-            }, 100);
-        }
-
-        // Funzioni timer
-        function startTimer(seconds) {
-            clearInterval(state.timerInterval);
-            state.timer = seconds;
-            state.isTimerRunning = true;
-            
-            state.timerInterval = setInterval(() => {
-                state.timer--;
-                if (state.timer <= 0) {
-                    state.isTimerRunning = false;
-                    clearInterval(state.timerInterval);
-                    playNotification();
-                }
-                render();
-            }, 1000);
-            render();
-        }
-
-        function stopTimer() {
-            state.isTimerRunning = false;
-            clearInterval(state.timerInterval);
-            render();
-        }
-
-        function resetTimer() {
-            state.timer = 0;
-            state.isTimerRunning = false;
-            clearInterval(state.timerInterval);
-            render();
-        }
-
-        // Funzioni workout
-        function startWorkout(workoutKey) {
-            state.selectedWorkout = workoutKey;
-            state.workoutData = {};
-            state.openAccordions = new Set([0]); // Reset accordion: solo il primo aperto
-            
-            workouts[workoutKey].exercises.forEach((exercise, idx) => {
-                state.workoutData[idx] = {
-                    completedSets: 0,
-                    weights: Array(exercise.sets).fill(''),
-                    reps: Array(exercise.sets).fill('')
-                };
-            });
-            
-            render();
-        }
-
-        function completeSet(exerciseIdx, setIdx) {
-            const exerciseData = state.workoutData[exerciseIdx];
-            const weight = exerciseData.weights[setIdx];
-            const reps = exerciseData.reps[setIdx];
-            
-            if (!weight || !reps) return;
-            
-            exerciseData.completedSets = Math.max(exerciseData.completedSets, setIdx + 1);
-            
-            // Controlla se l'esercizio è completato
-            const exercise = workouts[state.selectedWorkout].exercises[exerciseIdx];
-            const isExerciseCompleted = exerciseData.completedSets >= exercise.sets;
-            
-            if (isExerciseCompleted) {
-                // Chiudi l'accordion corrente
-                state.openAccordions.delete(exerciseIdx);
-                
-                // Trova il prossimo esercizio non completato
-                const nextExerciseIdx = findNextIncompleteExercise(exerciseIdx);
-                if (nextExerciseIdx !== -1 && !state.openAccordions.has(nextExerciseIdx)) {
-                    // Apri il prossimo accordion solo se non è già aperto
-                    state.openAccordions.add(nextExerciseIdx);
-                }
-            }
-            
-            const restTime = workouts[state.selectedWorkout].exercises[exerciseIdx].rest;
-            startTimer(restTime);
-            
-            render();
-        }
-
-        function findNextIncompleteExercise(currentIdx) {
-            const exercises = workouts[state.selectedWorkout].exercises;
-            
-            for (let i = currentIdx + 1; i < exercises.length; i++) {
-                const exerciseData = state.workoutData[i];
-                if (!exerciseData || exerciseData.completedSets < exercises[i].sets) {
-                    return i;
-                }
-            }
-            return -1; // Nessun esercizio successivo trovato
-        }
-
-        function toggleAccordion(exerciseIdx) {
-            if (state.openAccordions.has(exerciseIdx)) {
-                state.openAccordions.delete(exerciseIdx);
-            } else {
-                state.openAccordions.add(exerciseIdx);
-            }
-            render();
-        }
-
-        function updateWeight(exerciseIdx, setIdx, value) {
-            if (!state.workoutData[exerciseIdx]) {
-                state.workoutData[exerciseIdx] = {
-                    completedSets: 0,
-                    weights: Array(workouts[state.selectedWorkout].exercises[exerciseIdx].sets).fill(''),
-                    reps: Array(workouts[state.selectedWorkout].exercises[exerciseIdx].sets).fill('')
-                };
-            }
-            state.workoutData[exerciseIdx].weights[setIdx] = value;
-            render(); // Aggiorna la pagina per abilitare/disabilitare i pulsanti
-        }
-
-        function updateReps(exerciseIdx, setIdx, value) {
-            if (!state.workoutData[exerciseIdx]) {
-                state.workoutData[exerciseIdx] = {
-                    completedSets: 0,
-                    weights: Array(workouts[state.selectedWorkout].exercises[exerciseIdx].sets).fill(''),
-                    reps: Array(workouts[state.selectedWorkout].exercises[exerciseIdx].sets).fill('')
-                };
-            }
-            state.workoutData[exerciseIdx].reps[setIdx] = value;
-            render(); // Aggiorna la pagina per abilitare/disabilitare i pulsanti
-        }
-
-        function getCompletedSetsForMuscle(muscle) {
-            if (!state.selectedWorkout) return { completed: 0, total: 0 };
-            
-            const exercises = workouts[state.selectedWorkout].exercises.filter(ex => ex.muscle === muscle);
-            let completed = 0, total = 0;
-            
-            exercises.forEach((exercise) => {
-                const exerciseIdx = workouts[state.selectedWorkout].exercises.findIndex(ex => ex.name === exercise.name);
-                total += exercise.sets;
-                if (state.workoutData[exerciseIdx]) {
-                    completed += state.workoutData[exerciseIdx].completedSets;
-                }
-            });
-            
-            return { completed, total };
-        }
-
-        function getMuscleGroups() {
-            if (!state.selectedWorkout) return [];
-            return [...new Set(workouts[state.selectedWorkout].exercises.map(ex => ex.muscle))];
-        }
-
-        function downloadExcel() {
-            if (!state.selectedWorkout) return;
-            
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Esercizio,Serie,Peso,Ripetizioni,Completato\n";
-            
-            workouts[state.selectedWorkout].exercises.forEach((exercise, idx) => {
-                const data = state.workoutData[idx];
-                if (data) {
-                    for (let i = 0; i < exercise.sets; i++) {
-                        const completed = i < data.completedSets ? "Sì" : "No";
-                        const weight = data.weights[i] || "";
-                        const reps = data.reps[i] || "";
-                        csvContent += `"${exercise.name}",${i + 1},"${weight}","${reps}","${completed}"\n`;
-                    }
-                }
-            });
-            
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `allenamento_${state.selectedWorkout}_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        }
-
-        // Funzioni render
-        function renderWorkoutSelection() {
-            return `
-                <div class="header">
-                    <h1>💪 Gym Tracker Pro</h1>
-                    <p>Scegli il tuo allenamento per iniziare</p>
-                </div>
-                
-                <div class="workout-grid">
-                    ${Object.entries(workouts).map(([key, workout]) => `
-                        <div class="card workout-card" onclick="startWorkout('${key}')">
-                            <div class="workout-icon">${key}</div>
-                            <h3 class="workout-title">Giorno ${key}</h3>
-                            <p class="workout-subtitle">${workout.name}</p>
-                            <div class="workout-info">${workout.exercises.length} esercizi</div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function renderWorkoutView() {
-            const currentWorkout = workouts[state.selectedWorkout];
-            const muscleGroups = getMuscleGroups();
-
-            return `
-                <!-- Header -->
-                <div class="card">
-                    <div class="workout-header">
-                        <div class="workout-title-section">
-                            <h1>
-                                <span class="target-icon">🎯</span>
-                                Giorno ${state.selectedWorkout} - ${currentWorkout.name}
-                            </h1>
-                            <a href="#" class="back-button" onclick="state.selectedWorkout = null; render(); return false;">
-                                ← Cambia allenamento
-                            </a>
-                        </div>
-                        <div>
-                            <button class="btn btn-primary" onclick="downloadExcel()">
-                                📥 Scarica Excel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Timer -->
-                ${state.timer > 0 ? `
-                    <div class="card timer-section">
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 16px;">
-                            <span style="font-size: 1.5rem;">⏰</span>
-                            <span style="font-size: 1.2rem; font-weight: 500;">Tempo di riposo</span>
-                        </div>
-                        <div class="timer-display">${formatTime(state.timer)}</div>
-                        <div class="timer-controls">
-                            <button class="btn btn-secondary" onclick="stopTimer()">
-                                ⏸️ Pausa
-                            </button>
-                            <button class="btn btn-secondary" onclick="resetTimer()">
-                                🔄 Reset
-                            </button>
-                            <button class="btn btn-danger" onclick="resetTimer()">
-                                ⏭️ Skip
-                            </button>
-                        </div>
-                    </div>
-                ` : ''}
-
-                <!-- Progress -->
-                <div class="card progress-section">
-                    <h3 style="margin-bottom: 24px; font-size: 1.3rem;">📊 Progressi per Gruppo Muscolare</h3>
-                    <div class="progress-grid">
-                        ${muscleGroups.map(muscle => {
-                            const progress = getCompletedSetsForMuscle(muscle);
-                            const percentage = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
-                            
-                            return `
-                                <div class="progress-item">
-                                    <div class="progress-label">${muscle}</div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: ${percentage}%"></div>
-                                    </div>
-                                    <div class="progress-text">${progress.completed}/${progress.total} serie</div>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-
-                <!-- Exercises -->
-                ${currentWorkout.exercises.map((exercise, exerciseIdx) => {
-                    const exerciseData = state.workoutData[exerciseIdx] || { 
-                        completedSets: 0, 
-                        weights: Array(exercise.sets).fill(''), 
-                        reps: Array(exercise.sets).fill('') 
-                    };
-                    
-                    const isOpen = state.openAccordions.has(exerciseIdx);
-                    const isCompleted = exerciseData.completedSets >= exercise.sets;
-                    
-                    return `
-                        <div class="card exercise-card ${isCompleted ? 'exercise-completed' : ''}">
-                            <div class="exercise-header" onclick="toggleAccordion(${exerciseIdx})">
-                                <div class="exercise-header-content">
-                                    <div class="exercise-info">
-                                        <h3 style="margin-bottom: 8px; display: flex; align-items: center;">
-                                            ${exercise.name}
-                                            ${isCompleted ? '<span style="margin-left: 8px;">✅</span>' : ''}
-                                            <span class="accordion-toggle ${isOpen ? 'rotated' : ''}">▼</span>
-                                        </h3>
-                                        <div class="exercise-details">
-                                            <span>📊 Serie: ${exercise.sets}</span>
-                                            <span>🔢 Ripetizioni: ${exercise.reps}</span>
-                                            <span>⏱️ Riposo: ${formatTime(exercise.rest)}</span>
-                                            <span class="muscle-highlight">💪 ${exercise.muscle}</span>
-                                        </div>
-                                    </div>
-                                    <div class="exercise-stats">
-                                        <div class="sets-counter">${exerciseData.completedSets}/${exercise.sets}</div>
-                                        <div class="sets-label">serie completate</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="accordion-content ${isOpen ? 'open' : ''}">
-                                <div class="sets-grid">
-                                    ${Array.from({ length: exercise.sets }, (_, setIdx) => {
-                                        const isSetCompleted = setIdx < exerciseData.completedSets;
-                                        const hasData = exerciseData.weights[setIdx] && exerciseData.reps[setIdx];
-                                        
-                                        return `
-                                            <div class="set-row ${isSetCompleted ? 'completed' : ''}">
-                                                <div class="set-content">
-                                                    <div class="set-number">
-                                                        <span>Serie ${setIdx + 1}</span>
-                                                        ${isSetCompleted ? '<span class="check-icon">✅</span>' : ''}
-                                                    </div>
-                                                    
-                                                    <div class="set-inputs">
-                                                        <div class="input-group">
-                                                            <label>Peso (kg)</label>
-                                                            <input
-                                                                type="number"
-                                                                step="0.5"
-                                                                value="${exerciseData.weights[setIdx]}"
-                                                                onchange="updateWeight(${exerciseIdx}, ${setIdx}, this.value)"
-                                                                placeholder="0"
-                                                            />
-                                                        </div>
-                                                        
-                                                        <div class="input-group">
-                                                            <label>Ripetizioni</label>
-                                                            <input
-                                                                type="number"
-                                                                value="${exerciseData.reps[setIdx]}"
-                                                                onchange="updateReps(${exerciseIdx}, ${setIdx}, this.value)"
-                                                                placeholder="0"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <button
-                                                        class="btn ${isSetCompleted ? 'btn-primary' : hasData ? 'btn-primary' : 'btn-secondary'}"
-                                                        onclick="completeSet(${exerciseIdx}, ${setIdx})"
-                                                        ${isSetCompleted ? 'disabled' : ''}
-                                                        style="${!hasData && !isSetCompleted ? 'opacity: 0.5; cursor: not-allowed;' : ''}"
-                                                    >
-                                                        ${isSetCompleted ? '✅ Completata' : hasData ? '🏁 Completa Serie' : '⚠️ Inserisci dati'}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        `;
-                                    }).join('')}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('')}
-            `;
-        }
-
-        function render() {
-            const appElement = document.getElementById('app');
-            const content = state.selectedWorkout ? renderWorkoutView() : renderWorkoutSelection();
-            appElement.innerHTML = content;
-        }
-
-        // Inizializza l'app
-        document.addEventListener('DOMContentLoaded', function() {
-            render();
-        });
-
-        // Gestione eventi globali
-        window.addEventListener('beforeunload', function() {
-            if (state.timerInterval) {
-                clearInterval(state.timerInterval);
-            }
-        });
-
-        // Prevenzione accidentale chiusura durante timer
-        window.addEventListener('beforeunload', function(e) {
-            if (state.isTimerRunning) {
-                e.preventDefault();
-                e.returnValue = 'Hai un timer attivo. Sei sicuro di voler uscire?';
-            }
-        });
-    </script>
-</body>
-</html>
+            background:
