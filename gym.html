@@ -318,9 +318,10 @@
         }
 
         .set-inputs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
         }
 
         .input-group {
@@ -342,6 +343,8 @@
             color: #f1f5f9;
             font-size: 1rem;
             transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .input-group input:focus {
@@ -421,8 +424,21 @@
             }
             
             .set-inputs {
-                grid-template-columns: 1fr 1fr;
+                flex-direction: column;
                 gap: 12px;
+                width: 100%;
+            }
+            
+            .input-group {
+                width: 100%;
+            }
+            
+            .input-group input {
+                width: 100%;
+                min-width: 0;
+                padding: 12px;
+                font-size: 16px; /* Previene zoom su iOS */
+                box-sizing: border-box;
             }
             
             .workout-header {
