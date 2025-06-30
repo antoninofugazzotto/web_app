@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Fingerprint Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .fingerprint-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .fingerprint-hash {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            word-break: break-all;
+            margin: 10px 0;
+            color: #495057;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .detail-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-top: 3px solid #667eea;
+        }
+
+        .detail-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .detail-card p {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: block;
+            margin: 20px auto 0;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 1.1em;
+        }
+
+        .canvas-demo {
+            border: 1px solid #dee2e6;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Device Fingerprint Demo</h1>
+            <p>Identificazione univoca del tuo dispositivo per il controllo accessi</p>
+        </div>
+
+        <div class="fingerprint-section">
+            <h2><span class="status-indicator"></span>Fingerprint del Dispositivo</h2>
+            <div id="fingerprint-display" class="loading">
+                Generazione fingerprint in corso...
+            </div>
+        </div>
+
+        <div class="details-grid" id="details-grid">
+            <!-- I dettagli verranno inseriti dinamicamente -->
+        </div>
+
+        <button class="refresh-btn" onclick="generateFingerprint()">
+            🔄 Rigenera Fingerprint
+        </button>
+    </div>
+
+    <script>
+        // Funzione principale per generare il fingerprint
+        async function generateFingerprint() {
+            const fingerprintDisplay = document.getElementById('fingerprint-display');
+            const detailsGrid = document.getElementById('details-grid');
+            
+            fingerprintDisplay.innerHTML = '<div class="loading">Generazione fingerprint in corso...</div>';
+            detailsGrid.innerHTML = '';
+
+            try {
+                // Raccolta dati del dispositivo
+                const deviceData = await collectDeviceData();
+                
+                // Generazione hash fingerprint
+                const fingerprintHash = await generateHash(JSON.stringify(deviceData));
+                
+                // Visualizzazione risultati
+                displayFingerprint(fingerprintHash);
+                displayDetails(deviceData);
+                
+            } catch (error) {
+                console.error('Errore nella generazione del fingerprint:', error);
+                fingerprintDisplay.innerHTML = '<p style="color: red;">Errore nella generazione del fingerprint</p>';
+            }
+        }
+
+        // Raccolta completa dei dati del dispositivo
+        async function collectDeviceData() {
+            const data = {
+                // Informazioni browser
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                languages: navigator.languages,
+                platform: navigator.platform,
+                cookieEnabled: navigator.cookieEnabled,
+                doNotTrack: navigator.doNotTrack,
+                
+                // Informazioni schermo
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                screenColorDepth: screen.colorDepth,
+                screenPixelDepth: screen.pixelDepth,
+                screenAvailWidth: screen.availWidth,
+                screenAvailHeight: screen.availHeight,
+                
+                // Informazioni finestra
+                windowWidth: window.innerWidth,
+                windowHeight: window.innerHeight,
+                
+                // Timezone
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                timezoneOffset: new Date().getTimezoneOffset(),
+                
+                // Canvas fingerprinting
+                canvasFingerprint: getCanvasFingerprint(),
+                
+                // WebGL fingerprinting
+                webglFingerprint: getWebGLFingerprint(),
+                
+                // Audio fingerprinting
+                audioFingerprint: await getAudioFingerprint(),
+                
+                // Fonts disponibili (metodo semplificato)
+                fonts: getFontFingerprint(),
+                
+                // Informazioni hardware
+                hardwareConcurrency: navigator.hardwareConcurrency,
+                deviceMemory: navigator.deviceMemory || 'non disponibile',
+                
+                // Timestamp
+                timestamp: new Date().toISOString()
+            };
+
+            return data;
+        }
+
+        // Canvas fingerprinting
+        function getCanvasFingerprint() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Disegna un pattern complesso
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(125, 1, 62, 20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('Device Fingerprint Test 🔍', 2, 15);
+            ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+            ctx.fillText('Canvas fingerprinting', 4, 35);
+            
+            // Aggiungi il canvas alla demo
+            canvas.className = 'canvas-demo';
+            canvas.width = 300;
+            canvas.height = 60;
+            
+            return canvas.toDataURL();
+        }
+
+        // WebGL fingerprinting
+        function getWebGLFingerprint() {
+            const canvas = document.createElement('canvas');
+            const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+            
+            if (!gl) return 'WebGL non supportato';
+            
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            
+            return {
+                vendor: gl.getParameter(gl.VENDOR),
+                renderer: gl.getParameter(gl.RENDERER),
+                version: gl.getParameter(gl.VERSION),
+                shadingLanguageVersion: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
+                unmaskedVendor: debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : 'non disponibile',
+                unmaskedRenderer: debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'non disponibile'
+            };
+        }
+
+        // Audio fingerprinting
+        function getAudioFingerprint() {
+            return new Promise((resolve) => {
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const analyser = audioContext.createAnalyser();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.value = 10000;
+                    
+                    gainNode.gain.value = 0;
+                    
+                    oscillator.connect(analyser);
+                    analyser.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.start(0);
+                    
+                    setTimeout(() => {
+                        const data = new Uint8Array(analyser.frequencyBinCount);
+                        analyser.getByteFrequencyData(data);
+                        
+                        const fingerprint = Array.from(data).slice(0, 30).join(',');
+                        
+                        oscillator.stop();
+                        audioContext.close();
+                        
+                        resolve(fingerprint);
+                    }, 100);
+                } catch (error) {
+                    resolve('Audio fingerprinting non disponibile');
+                }
+            });
+        }
+
+        // Font fingerprinting semplificato
+        function getFontFingerprint() {
+            const fonts = ['Arial', 'Helvetica', 'Times New Roman', 'Courier New', 'Verdana', 'Georgia', 'Palatino', 'Garamond', 'Bookman', 'Tahoma'];
+            const availableFonts = [];
+            
+            fonts.forEach(font => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                ctx.font = `12px ${font}, monospace`;
+                const width1 = ctx.measureText('mmmmmmmmmmlli').width;
+                
+                ctx.font = '12px monospace';
+                const width2 = ctx.measureText('mmmmmmmmmmlli').width;
+                
+                if (width1 !== width2) {
+                    availableFonts.push(font);
+                }
+            });
+            
+            return availableFonts;
+        }
+
+        // Generazione hash SHA-256
+        async function generateHash(data) {
+            const encoder = new TextEncoder();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(data));
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Visualizzazione fingerprint
+        function displayFingerprint(hash) {
+            const fingerprintDisplay = document.getElementById('fingerprint-display');
+            fingerprintDisplay.innerHTML = `
+                <h3>Hash SHA-256 del Dispositivo:</h3>
+                <div class="fingerprint-hash">${hash}</div>
+                <p><strong>Questo hash identifica univocamente il tuo dispositivo</strong></p>
+            `;
+        }
+
+        // Visualizzazione dettagli
+        function displayDetails(data) {
+            const detailsGrid = document.getElementById('details-grid');
+            
+            const cards = [
+                {
+                    title: '🌐 Informazioni Browser',
+                    content: `
+                        <strong>User Agent:</strong> ${data.userAgent.substring(0, 50)}...<br>
+                        <strong>Lingua:</strong> ${data.language}<br>
+                        <strong>Piattaforma:</strong> ${data.platform}<br>
+                        <strong>Cookie Abilitati:</strong> ${data.cookieEnabled ? 'Sì' : 'No'}
+                    `
+                },
+                {
+                    title: '📱 Informazioni Schermo',
+                    content: `
+                        <strong>Risoluzione:</strong> ${data.screenWidth}x${data.screenHeight}<br>
+                        <strong>Profondità Colore:</strong> ${data.screenColorDepth} bit<br>
+                        <strong>Finestra:</strong> ${data.windowWidth}x${data.windowHeight}<br>
+                        <strong>Area Disponibile:</strong> ${data.screenAvailWidth}x${data.screenAvailHeight}
+                    `
+                },
+                {
+                    title: '🕐 Informazioni Temporali',
+                    content: `
+                        <strong>Timezone:</strong> ${data.timezone}<br>
+                        <strong>Offset UTC:</strong> ${data.timezoneOffset} minuti<br>
+                        <strong>Timestamp:</strong> ${new Date(data.timestamp).toLocaleString('it-IT')}
+                    `
+                },
+                {
+                    title: '🎨 Canvas Fingerprint',
+                    content: `
+                        <strong>Hash Canvas:</strong> ${data.canvasFingerprint.substring(0, 50)}...<br>
+                        <em>Basato su rendering di testo e grafica</em>
+                    `
+                },
+                {
+                    title: '🖥️ Informazioni Hardware',
+                    content: `
+                        <strong>Core CPU:</strong> ${data.hardwareConcurrency || 'Non disponibile'}<br>
+                        <strong>Memoria Dispositivo:</strong> ${data.deviceMemory} GB<br>
+                        <strong>WebGL Vendor:</strong> ${typeof data.webglFingerprint === 'object' ? data.webglFingerprint.vendor : data.webglFingerprint}
+                    `
+                },
+                {
+                    title: '🔊 Audio & Font',
+                    content: `
+                        <strong>Audio Fingerprint:</strong> ${data.audioFingerprint.substring(0, 30)}...<br>
+                        <strong>Font Disponibili:</strong> ${data.fonts.length} rilevati<br>
+                        <strong>Esempi:</strong> ${data.fonts.slice(0, 3).join(', ')}
+                    `
+                }
+            ];
+
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'detail-card';
+                cardElement.innerHTML = `
+                    <h3>${card.title}</h3>
+                    <p>${card.content}</p>
+                `;
+                detailsGrid.appendChild(cardElement);
+            });
+        }
+
+        // Avvio automatico al caricamento della pagina
+        window.addEventListener('load', generateFingerprint);
+    </script>
+</body>
+</html>
