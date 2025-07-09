@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EnergiVita - Servizi Energetici e Ambientali</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo::before {
+            content: "⚡";
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #93c5fd;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(30, 58, 138, 0.8), rgba(59, 130, 246, 0.8)), 
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%23dbeafe" width="1200" height="600"/><circle fill="%23bfdbfe" cx="200" cy="150" r="80"/><circle fill="%2393c5fd" cx="800" cy="300" r="100"/><circle fill="%2360a5fa" cx="1000" cy="100" r="60"/></svg>');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 8rem 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-content p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            background: #ff6b35;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .cta-button:hover {
+            background: #e55a2b;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+        }
+
+        /* Services Section */
+        .services {
+            padding: 5rem 0;
+            background: white;
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #1e3a8a;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: #ff6b35;
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .service-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e9ecef;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .service-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .service-card h3 {
+            color: #1e3a8a;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            padding: 4rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: #93c5fd;
+        }
+
+        /* News Section */
+        .news {
+            padding: 5rem 0;
+            background: #f8f9fa;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .news-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .news-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .news-content {
+            padding: 1.5rem;
+        }
+
+        .news-date {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .news-card h3 {
+            color: #1e3a8a;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: #1e3a8a;
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: #93c5fd;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: #93c5fd;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid #3b82f6;
+            color: #ccc;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-content p {
+                font-size: 1.1rem;
+            }
+            
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .service-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .service-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .service-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .service-card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .service-card:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">EnergiVita</div>
+                <nav>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#servizi">Servizi</a></li>
+                        <li><a href="#sostenibilita">Sostenibilità</a></li>
+                        <li><a href="#azienda">Azienda</a></li>
+                        <li><a href="#contatti">Contatti</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Energia per il Futuro</h1>
+                <p>Leader nella fornitura di servizi energetici e ambientali con oltre 30 anni di esperienza. Energia elettrica, gas, acqua, gestione rifiuti e teleriscaldamento per famiglie e aziende.</p>
+                <a href="#servizi" class="cta-button">Scopri i nostri servizi</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="services" id="servizi">
+        <div class="container">
+            <h2 class="section-title">I Nostri Servizi</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <span class="service-icon">⚡</span>
+                    <h3>Energia Elettrica</h3>
+                    <p>Fornitura di energia elettrica da fonti rinnovabili con tariffe competitive e servizio clienti dedicato 24/7.</p>
+                </div>
+                <div class="service-card">
+                    <span class="service-icon">🔥</span>
+                    <h3>Gas Naturale</h3>
+                    <p>Distribuzione di gas naturale per uso domestico e industriale con soluzioni personalizzate e sicure.</p>
+                </div>
+                <div class="service-card">
+                    <span class="service-icon">💧</span>
+                    <h3>Servizio Idrico</h3>
+                    <p>Gestione completa del ciclo idrico integrato: dall'approvvigionamento alla depurazione delle acque.</p>
+                </div>
+                <div class="service-card">
+                    <span class="service-icon">♻️</span>
+                    <h3>Gestione Ambiente</h3>
+                    <p>Servizi di raccolta, smaltimento e riciclo dei rifiuti con focus sulla sostenibilità ambientale.</p>
+                </div>
+                <div class="service-card">
+                    <span class="service-icon">🏠</span>
+                    <h3>Teleriscaldamento</h3>
+                    <p>Sistemi di riscaldamento urbano efficienti e sostenibili per edifici residenziali e commerciali.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h3>250.000+</h3>
+                    <p>Clienti serviti</p>
+                </div>
+                <div class="stat-item">
+                    <h3>85%</h3>
+                    <p>Energia rinnovabile</p>
+                </div>
+                <div class="stat-item">
+                    <h3>30+</h3>
+                    <p>Anni di esperienza</p>
+                </div>
+                <div class="stat-item">
+                    <h3>95%</h3>
+                    <p>Soddisfazione clienti</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="news">
+        <div class="container">
+            <h2 class="section-title">Ultime Notizie</h2>
+            <div class="news-grid">
+                <div class="news-card">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'><rect fill='%233b82f6' width='400' height='200'/><circle fill='%2393c5fd' cx='200' cy='100' r='50'/><text x='200' y='170' text-anchor='middle' fill='white' font-size='16'>Panneli Solari</text></svg>" alt="Pannelli solari">
+                    <div class="news-content">
+                        <div class="news-date">5 Luglio 2025</div>
+                        <h3>Nuovo Parco Fotovoltaico Operativo</h3>
+                        <p>Inaugurato il più grande impianto fotovoltaico della regione, capace di produrre energia pulita per 15.000 famiglie.</p>
+                    </div>
+                </div>
+                <div class="news-card">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'><rect fill='%231e3a8a' width='400' height='200'/><circle fill='%23ff6b35' cx='200' cy='100' r='40'/><text x='200' y='170' text-anchor='middle' fill='white' font-size='16'>Innovazione</text></svg>" alt="Innovazione">
+                    <div class="news-content">
+                        <div class="news-date">28 Giugno 2025</div>
+                        <h3>Nuova App Mobile per Clienti</h3>
+                        <p>Lanciata l'applicazione mobile che permette di gestire tutte le utenze in modo semplice e intuitivo.</p>
+                    </div>
+                </div>
+                <div class="news-card">
+                    <img src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'><rect fill='%23dbeafe' width='400' height='200'/><circle fill='%2360a5fa' cx='200' cy='100' r='60'/><text x='200' y='170' text-anchor='middle' fill='%23333' font-size='16'>Sostenibilità</text></svg>" alt="Sostenibilità">
+                    <div class="news-content">
+                        <div class="news-date">20 Giugno 2025</div>
+                        <h3>Certificazione ISO 14001</h3>
+                        <p>Ottenuta la certificazione ambientale ISO 14001 per il nostro impegno nella sostenibilità e riduzione dell'impatto ambientale.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+		<script type='text/javascript'>
+				function initEmbeddedMessaging() {
+					try {
+						embeddedservice_bootstrap.settings.language = 'it'; // For example, enter 'en' or 'en-US'
+
+						embeddedservice_bootstrap.init(
+							'00DKN0000008aHw',
+							'HDT_Chat',
+							'https://heravendita--full2.sandbox.my.site.com/ESWHDTChat1747386989612',
+							{
+								scrt2URL: 'https://heravendita--full2.sandbox.my.salesforce-scrt.com'
+							}
+						);
+					} catch (err) {
+						console.error('Error loading Embedded Messaging: ', err);
+					}
+				};
+			</script>
+			<script type='text/javascript' src='https://heravendita--full2.sandbox.my.site.com/ESWHDTChat1747386989612/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Servizi</h3>
+                    <ul>
+                        <li><a href="#">Energia Elettrica</a></li>
+                        <li><a href="#">Gas Naturale</a></li>
+                        <li><a href="#">Servizio Idrico</a></li>
+                        <li><a href="#">Gestione Rifiuti</a></li>
+                        <li><a href="#">Teleriscaldamento</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Azienda</h3>
+                    <ul>
+                        <li><a href="#">Chi Siamo</a></li>
+                        <li><a href="#">Sostenibilità</a></li>
+                        <li><a href="#">Investitori</a></li>
+                        <li><a href="#">Carriere</a></li>
+                        <li><a href="#">News</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Supporto</h3>
+                    <ul>
+                        <li><a href="#">Centro Assistenza</a></li>
+                        <li><a href="#">Contatti</a></li>
+                        <li><a href="#">Emergenze</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Modulistica</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contatti</h3>
+                    <p>📞 800.123.456</p>
+                    <p>✉️ info@energivita.it</p>
+                    <p>📍 Via dell'Energia, 123<br>20100 Milano</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 EnergiVita S.p.A. - P.IVA 01234567890 - Tutti i diritti riservati</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling per i link di navigazione
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animazione contatore per le statistiche
+        function animateCounter(element, target) {
+            let current = 0;
+            const increment = target / 100;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(current).toLocaleString();
+            }, 20);
+        }
+
+        // Intersection Observer per attivare l'animazione quando la sezione è visibile
+        const observerOptions = {
+            threshold: 0.5,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const statItems = entry.target.querySelectorAll('.stat-item h3');
+                    statItems.forEach(item => {
+                        const text = item.textContent;
+                        const number = parseInt(text.replace(/[^\d]/g, ''));
+                        if (number && !item.classList.contains('animated')) {
+                            item.classList.add('animated');
+                            animateCounter(item, number);
+                        }
+                    });
+                }
+            });
+        }, observerOptions);
+
+        const statsSection = document.querySelector('.stats');
+        if (statsSection) {
+            observer.observe(statsSection);
+        }
+
+        // Effetto parallax leggero per la hero section
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.hero');
+            if (parallax) {
+                const speed = scrolled * 0.5;
+                parallax.style.transform = `translateY(${speed}px)`;
+            }
+        });
+    </script>
+</body>
+</html>
