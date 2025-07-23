@@ -625,18 +625,29 @@
             "Update the Opportunity page layout to mark these fields as required.",
             "Use a validation rule for each field that takes the Stage into consideration.",
             "Update these Opportunity field definitions in Setup to be required.",
-            "Salesforce - Data-Architect"
+            "Write an Apex trigger that checks each field when records are saved"
         ],
         "correct": 1
     },
     {
         "id": 26,
-        "text": "Universal Containers (UC) has a complex system landscape and is implementing a data governance program  for the first time Which two first steps would be appropriate for UC to initiate an assessment of data  architecture? Choose 2 optionss Engage with IT program managers to assess current velocity of projects in the pipeline. Engage with database administrators to assess current database performance metrics. Engage with executive sponsorship to assess enterprise data strategy and goals. Engage with business units and IT to assess current operational systems and data models.",
+        "text": "Universal Containers (UC) has a complex system landscape and is implementing a data governance program  for the first time Which two first steps would be appropriate for UC to initiate an assessment of data  architecture? Choose 2 optionss.",
         "options": [
-            "options: C D",
-            "Explanation",
-            "Engaging with executive sponsorship to assess enterprise data strategy and goals, and engaging with business",
-            "units and IT to assess current operational systems and data models are two first steps that would be"
+            "Engage with IT program managers to assess current velocity of projects in the pipeline.",
+            "Engage with database administrators to assess current database performance metrics",
+            "Engage with executive sponsorship to assess enterprise data strategy and goals.",
+            "Engage with business units and IT to assess current operational systems and data models."
+        ],
+        "correct": 1
+    },
+	{
+        "id": 27,
+        "text": "Developers at Universal Containers need to build a report for the business which displays Accounts opened in the past year grouped by industry. This report will also include information from contacts, opportunities, and orders. There are several million Accounts in the system. Which two options should be recommended to make this report perform well and satisfy the business need?",
+        "options": [
+            "Use triggers to populate denormalized related fields on the Account",
+            "Use an indexed data field with bounded data filters.",
+            "Use Formula fields to surface information I related entities on the report",
+            "Use unbounded date ranges to filter the report"
         ],
         "correct": 1
     },
@@ -644,10 +655,10 @@
         "id": 28,
         "text": "Universal Containers (UC) is implementing a new customer categorization process where customers should  be assigned to a Gold, Silver, or Bronze category if they've purchased UC's new support service. Customers  are expected to be evenly distributed across all three categories. Currently, UC has around 500,000 customers,  and is expecting 1% of existing non-categorized customers to purchase UC's new support service every month  over the next five years. What is the recommended solution to ensure long-term performance, bearing in mind  the above requirements?",
         "options": [
-            "Implement a new global picklist custom field with Gold, Silver, and Bronze values and enable it in",
-            "Account.",
-            "Implement a new picklist custom field in the Account object with Gold, Silver, and Bronze values.",
-            "Implement a new Categories custom object and a master-detail relationship from Account to Category."
+            "Implement a new global picklist custom field with Gold, Silver, and Bronze values and enable it in Account",
+            "Implement a new picklist custom field in the Account object with Gold, Silver, and Bronze values",
+            "Implement a new Categories custom object and a master-detail relationship from Account to Category.",
+            "Implement a new Categories custom object and create a lookup field from Account to Category."
         ],
         "correct": 1
     },
@@ -656,8 +667,8 @@
         "text": "NTO has been using salesforce for sales and service for 10 years. For the past 2 years, the marketing group  has noticed a raise from 0 to 35 % in returned mail when sending mail using the contact information stored in  salesforce. Which solution should the data architect use to reduce the amount of returned mails?",
         "options": [
             "Use a 3rd-party data source to update contact information in salesforce.",
-            "Email all customer and asked them to verify their information and to call NTO if their address is",
-            "incorrect.",
+            "Email all customer and asked them to verify their information and to call NTO if their address is incorrect",
+            "Have the sales team to call all existing customers and ask to verify the contact details.",
             "Delete contacts when the mail is returned to save postal cost to NTO."
         ],
         "correct": 0
@@ -675,12 +686,12 @@
     },
     {
         "id": 31,
-        "text": "Universal Containers (UC) has multi -level account hierarchies that represent departments within their major  Accounts. Users are creating duplicate Contacts across multiple departments. UC wants to clean the data so as  to have a single Contact across departments. What two solutions should UC implement to cleanse their data?",
+        "text": "Universal Containers (UC) has multi -level account hierarchies that represent departments within their major  Accounts. Users are creating duplicate Contacts across multiple departments. UC wants to clean the data so as  to have a single Contact across departments. What two solutions should UC implement to cleanse their data? Choose 2 optionss",
         "options": [
-            "Choose 2 optionss",
-            "Make use of a third -party tool to help merge duplicate Contacts across Accounts.",
-            "Use Data.com to standardize Contact address information to help identify duplicates.",
-            "Use Workflow rules to standardize Contact information to identify and prevent duplicates."
+            "Make use of a third -party tool to help merge duplicate Contacts across Accounts",
+            "Use Data.com to standardize Contact address information to help identify duplicates",
+            "Use Workflow rules to standardize Contact information to identify and prevent duplicates",
+            "Make use of the Merge Contacts feature of Salesforce to merge duplicates for an Account"
         ],
         "correct": 0
     },
