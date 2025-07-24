@@ -708,23 +708,35 @@
     },
     {
         "id": 33,
-        "text": "As part of a phased Salesforce rollout. there will be 3 deployments spread out over the year. The requirements  have been carefully documented. Which two methods should an architect use to trace back configuration  changes to the detailed requirements? Choose 2 optionss Review the setup audit trail for configuration changes. Put the business purpose in the Description of each field. Maintain a data dictionary with the justification for each field. Use the Force.com IDE to save the metadata files in source control.",
+        "text": "As part of a phased Salesforce rollout. there will be 3 deployments spread out over the year. The requirements have been carefully documented. Which two methods should an architect use to trace back configuration changes to the detailed requirements? Choose 2 answers",
         "options": [
-            "options: B D",
-            "Explanation",
-            "Option B is correct because putting the business purpose in the Description of each field is a method that an",
-            "architect can use to trace back configuration changes to the detailed requirements1. The Description of each"
+            "Review the setup audit trail for configuration changes.",
+            "Put the business purpose in the Description of each field.",
+            "Maintain a data dictionary with the justification for each field",
+            "Use the Force.com IDE to save the metadata files in source control"
+        ],
+        "correct": 1
+    },
+	{
+        "id": 34,
+        "text": "Northern Trail outfitters in migrating to salesforce from a legacy CRM system that identifies the agent relationships in a look-up table. What should the data architect do in order to migrate the data to Salesfoce?",
+        "options": [
+            "Create custom objects to store agent relationships",
+            "Migrate to Salesforce without a record owner",
+            "Assign record owner based on relationship",
+            "Migrate the data and assign to a non-person system user"
         ],
         "correct": 0
     },
     {
         "id": 35,
-        "text": "UC has one SF org (Org A) and recently acquired a secondary company with its own Salesforce org (Org B).  UC has decided to keep the orgs running separately but would like to bidirectionally share opportunities  between the orgs in near-real time. Which 3 options should a data architect recommend to share data between Org A and Org B?",
+        "text": "UC has one SF org (Org A) and recently acquired a secondary company with its own Salesforce org (Org B). UC has decided to keep the orgs running separately but would like to bidirectionally share opportunities between the orgs in near-real time.\n Which 3 options should a data architect recommend to share data between Org A and Org B? \nChoose 3 answers.",
         "options": [
-            "Choose 3 optionss.",
-            "Leverage Heroku Connect and Heroku Postgres to bidirectionally sync Opportunities.",
+            "Leverage Heroku Connect and Heroku Postgres to bidirectionally sync Opportunities",
             "Install a 3rd party AppExchange tool to handle the data sharing",
-            "Develop an Apex class that pushes opportunity data between orgs daily via the Apex schedule."
+            "Develop an Apex class that pushes opportunity data between orgs daily via the Apex schedule",
+            "Leverage middleware tools to bidirectionally send Opportunity data across orgs",
+			"Use Salesforce Connect and the cross-org adapter to visualize Opportunities into external objects"
         ],
         "correct": 0
     },
@@ -732,8 +744,8 @@
         "id": 36,
         "text": "UC is building a salesforce application to track contacts and their respective conferences that they have  attended with the following requirements: 1.Contacts will be stored in the standard contact object. 2.Conferences will be stored in a custom conference_ c object. 3.Each contact may attend multiple conferences and each conference may be related to multiple contacts. How should a data architect model the relationship between the contact and conference objects?",
         "options": [
-            "Implement a Contact Conference junction object with master detail relationship to both contact and",
-            "conference_c",
+            "Implement a Contact Conference junction object with master detail relationship to both contact and conference_c",
+            "Create a lookup relationship field on contact object",
             "Create a master detail relationship field on the Contact object.",
             "Create a master detail relationship field on the Conference object."
         ],
