@@ -11,6 +11,16 @@
             padding: 0;
             box-sizing: border-box;
         }
+        #gotoInput {
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        #gotoInput:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -335,6 +345,18 @@
             z-index: 1000;
         }
 
+        .option-label.correct {
+            background: #d4edda !important;
+            border-color: #28a745 !important;
+            color: #155724 !important;
+        }
+
+        .option-label.incorrect {
+            background: #f8d7da !important;
+            border-color: #dc3545 !important;
+            color: #721c24 !important;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -435,6 +457,10 @@
 
         <div class="controls">
             <div class="randomize-controls">
+                <input type="number" id="gotoInput" placeholder="N. domanda" min="1" style="padding: 10px; width: 120px; border-radius: 8px; border: 1px solid #ccc;">
+                <button class="btn btn-toggle" id="randomQuestionsBtn" onclick="goToQuestion()">
+                    <i class="fas fa-shuffle"></i> Vai alla domanda
+                </button>
                 <button class="btn btn-toggle" id="randomQuestionsBtn" onclick="toggleRandomQuestions()">
                     <i class="fas fa-random"></i> Domande Random
                 </button>
@@ -1549,8 +1575,8 @@
         "options": [
             "Define external IDs for an object, migrate second database to first database, and load into Salesforce.",
             "Define duplicate rules in Salesforce, and load data into Salesforce from both databases.",
-            "Salesforce - Data-Architect",
-            "Practice Test"
+            "Set up staging data base, and define external IDs to merge, clean duplicate data, and load into Salesforce",
+            "Define external IDs for an object, Insert data from one database, and use upsert for a second database"
         ],
         "correct": [
             2
@@ -1558,25 +1584,38 @@
     },
     {
         "id": 85,
-        "text": "UC needs to load a large volume of leads into salesforce on a weekly basis. During this process the validation  rules are disabled. What should a data architect recommend to ensure data quality is maintained in salesforce. Activate validation rules once the leads are loaded into salesforce to maintain quality. Allow validation rules to be activated during the load of leads into salesforce. Develop custom APEX batch process to improve quality once the load is completed. Ensure the lead data is preprocessed for quality before loading into salesforce.",
+        "text": "UC needs to load a large volume of leads into salesforce on a weekly basis. During this process the validation  rules are disabled. What should a data architect recommend to ensure data quality is maintained in salesforce.",
         "options": [
-            "options: D",
-            "Explanation",
-            "Ensuring the lead data is preprocessed for quality before loading into Salesforce is the best way to maintain",
-            "data quality2. Activating validation rules after the load or developing a custom Apex batch process may not"
+            "Activate validation rules once the leads are loaded into salesforce to maintain quality",
+            "Allow validation rules to be activated during the load of leads into salesforce",
+            "Develop custom APEX batch process to improve quality once the load is completed",
+            "Ensure the lead data is preprocessed for quality before loading into salesforce"
         ],
         "correct": [
-            1
+            3
+        ]
+    },
+    {
+        "id": 86,
+        "text": "Universal Container has a Sales Cloud implementation for a sales team and an enterprise resource planning (ERP) as a customer master Sales team are complaining about duplicate account and data quality issues with account data. Which two solutions should a data architect recommend to resolve the complaints?",
+        "options": [
+            "Build a nightly batch job to de-dupe data, and merge account records",
+            "Integrate Salesforce with ERP, and make ERP as system of truth",
+            "Build a nightly sync job from ERP to Salesforce.",
+            "Implement a de-dupe solution and establish account ownership in Salesforce"
+        ],
+        "correct": [
+            1,3
         ]
     },
     {
         "id": 87,
         "text": "Cloud Kicks is launching a Partner Community, which will allow users to register shipment requests that are  then processed by Cloud Kicks employees. Shipment requests contain header information, and then a list of  no more than 5 items being shipped. First, Cloud Kicks will introduce its community to 6,000 customers in North America, and then to 24,000  customers worldwide within the next two years. Cloud Kicks expects 12 shipment requests per week per  customer, on average, and wants customers to be able to view up to three years of shipment requests and use  Salesforce reports. What is the recommended solution for the Cloud Kicks Data Architect to address the requirements?",
         "options": [
-            "Create an external custom object to track shipment requests and a child external object to track",
-            "shipment items. External objects are stored off-platform in Heroku’s Postgres database.",
-            "Create an external custom object to track shipment requests with five lookup custom fields for each",
-            "item being shipped. External objects are stored off-platform in Heroku’s Postgres database."
+            "Create an external custom object to track shipment requests and a child external object to track shipment items. External objects are stored off-platform in Heroku’s Postgres database",
+            "Create an external custom object to track shipment requests with five lookup custom fields for each item being shipped. External objects are stored off-platform in Heroku’s Postgres database",
+            "Create a custom object to track shipment requests and a child custom object to track shipment items. Implement an archiving process that moves data off-platform after three years",
+            "Create a custom object to track shipment requests with five lookup custom fields for each item being shipped Implement an archiving process that moves data off-platform after three years"
         ],
         "correct": [
             2
@@ -1601,11 +1640,11 @@
         "options": [
             "Do client-side validation of phone number and email field formats.",
             "Prefer picklist form fields over free text fields, where possible.",
-            "Salesforce - Data-Architect",
-            "Practice Test"
+            "Ensure the website visitor is browsing using an HTTPS connection",
+            "Use cookies to track when visitors submit multiple forms"
         ],
         "correct": [
-            0
+            0,1
         ]
     },
     {
@@ -1651,10 +1690,10 @@
         "id": 93,
         "text": " 58 A shipping and logistics company has created a large number of reports within Sales Cloud since Salesforce  was introduced. Some of these reports analyze large amounts of data regarding the whereabouts of the  company's containers, and they are starting to time out when users are trying to run the reports. What is a  recommended approach to avoid these time-out issues?",
         "options": [
-            "Improve reporting performance by creating a custom Visualforce report that is using a cache of the",
-            "records in the report.",
-            "Improve reporting performance by replacing the existing reports in Sales Cloud with new reports based",
-            "on Analytics Cloud."
+            "Improve reporting performance by creating a custom Visualforce report that is using a cache of the records in the report.",
+            "Improve reporting performance by replacing the existing reports in Sales Cloud with new reports based on Analytics Cloud.",
+            "Improve reporting performance by creating an Apex trigger for the Report object that will pre-fetch data before the report is run.",
+            "Improve reporting performance by creating a dashboard that is scheduled to run the reports only once per day."
         ],
         "correct": [
             1
@@ -1679,8 +1718,8 @@
         "options": [
             "Account and opportunity data originates in Salesforce, and therefore Salesforce is the system of record.",
             "Whatever system updates the attribute or object should be the system of record for that field or object.",
-            "Whatever integration data flow runs last will, by default, determine which system is the system of",
-            "record."
+            "Whatever integration data flow runs last will, by default, determine which system is the system of record",
+            "Data flows should be reviewed with the business users to determine the system of record per object or field."
         ],
         "correct": [
             3
@@ -1690,13 +1729,13 @@
         "id": 96,
         "text": "DreamHouse Realty has a Salesforce org that is used to manage Contacts.  60 What are two things an Architect should consider using to maintain data quality in this situation? (Choose  two.) Use the private sharing model. Use Salesforce duplicate management. Use validation rules on new record create and edit. Use workflow to delete duplicate records.",
         "options": [
-            "options: B C",
-            "Explanation",
-            "Using Salesforce duplicate management and using validation rules on new record create and edit are two",
-            "things that an architect should consider using to maintain data quality for managing Contacts. Salesforce"
+            "Use the private sharing model.",
+            "Use Salesforce duplicate management",
+            "Use validation rules on new record create and edit",
+            "Use workflow to delete duplicate records."
         ],
         "correct": [
-            1
+            1,2
         ]
     },
     {
@@ -1744,8 +1783,8 @@
         "options": [
             "Enable defer sharing calculations, and suspend sharing rule calculations",
             "Load the data through data loader, and turn on parallel processing.",
-            "Salesforce - Data-Architect",
-            "Practice Test"
+            "Leverage the Bulk API and concurrent processing with multiple batches",
+            "Enable granular locking to avoid “UNABLE _TO_LOCK_ROW” error"
         ],
         "correct": [
             0
@@ -1755,23 +1794,36 @@
         "id": 102,
         "text": "UC is trying to switch from legacy CRM to salesforce and wants to keep legacy CRM and salesforce in place  till all the functionality is deployed in salesforce. The want to keep data in synch b/w Salesforce, legacy CRM  and SAP. What is the recommendation. Integrate legacy CRM to salesforce and keep data in synch till new functionality is in place Do not integrate legacy CRM to Salesforce, but integrate salesforce to SAP Integrate SAP with Salesforce, SAP to legacy CRM but not legacy CRM to Salesforce Suggest MDM solution and link MDM to salesforce and SAP",
         "options": [
-            "options: C D",
-            "Explanation",
-            "Integrate SAP with Salesforce, SAP to legacy CRM but not legacy CRM to Salesforce. This is a good",
-            "recommendation because it allows both Salesforce and the legacy CRM to interact with the ERP system,"
+            "Integrate legacy CRM to salesforce and keep data in synch till new functionality is in place",
+            "Do not integrate legacy CRM to Salesforce, but integrate salesforce to SAP",
+            "Integrate SAP with Salesforce, SAP to legacy CRM but not legacy CRM to Salesforce",
+            "Suggest MDM solution and link MDM to salesforce and SAP"
         ],
         "correct": [
-            1
+            2,3
+        ]
+    },
+    {
+        "id": 103,
+        "text": "Universal Containers has a requirement to store more than 100 million records in salesforce and needs to create a custom big object to support this business requirement. Which two tools should a data architect use to build custom object?",
+        "options": [
+            "Use DX to create big object",
+            "Use Metadata API to create big object",
+            "Go to Big Object in setup select new to create big object",
+            "Go to Object Manager in setup and select new to create big object"
+        ],
+        "correct": [
+            1,2
         ]
     },
     {
         "id": 104,
         "text": "Get Cloud Consulting needs to integrate two different systems with customer records into the Salesforce  Account object. So that no duplicate records are created in Salesforce, Master Data Management will be used. An Architect needs to determine which system is the system of record on a field level. What should the Architect do to achieve this goal?",
         "options": [
-            "Master Data Management systems determine system of record, and the Architect doesn't have to think",
-            "about what data is controlled by what system.",
-            "Key stakeholders should review any fields that share the same purpose between systems to see how",
-            "they will be used in Salesforce."
+            "Master Data Management systems determine system of record, and the Architect doesn't have to think about what data is controlled by what system.",
+            "Key stakeholders should review any fields that share the same purpose between systems to see how they will be used in Salesforce.",
+            "The database schema for each external system should be reviewed, and fields with different names should always be separate fields in Salesforce",
+            "Any field that is an input field in either external system will be overwritten by the last record integrated and can never have a system of record"
         ],
         "correct": [
             1
@@ -1792,41 +1844,55 @@
     },
     {
         "id": 106,
-        "text": "UC has a variety of systems across its technology landscape, including SF, legacy enterprise resource  planning (ERP) applications and homegrown CRM tools. UC has decided that they would like to consolidate  all customer, opportunity and order data into Salesforce as part of its master data management (MDM)  strategy. What are the 3 key steps that a data architect should take when merging data from multiple systems into  Salesforce? Choose 3 optionss: Create new fields to store additional values from all the systems. Install a 3rd party AppExchange tool to handle the merger Analyze each system’s data model and perform gap analysis Utilize an ETL tool to merge, transform and de-duplicate data. Work with Stakeholders to define record and field survivorship rules",
+        "text": "UC has a variety of systems across its technology landscape, including SF, legacy enterprise resource  planning (ERP) applications and homegrown CRM tools. UC has decided that they would like to consolidate  all customer, opportunity and order data into Salesforce as part of its master data management (MDM)  strategy. What are the 3 key steps that a data architect should take when merging data from multiple systems into  Salesforce? Choose 3 optionss:",
         "options": [
-            "options: C D E",
-            "Salesforce - Data-Architect",
-            "Practice Test",
-            "66 of 158"
+            "Create new fields to store additional values from all the systems.",
+            "Install a 3rd party AppExchange tool to handle the merger Analyze each system’s data model and perform gap analysis",
+            "Utilize an ETL tool to merge, transform and de-duplicate data",
+            "Work with Stakeholders to define record and field survivorship rules"
         ],
         "correct": [
-            0
+            2,3,4
+        ]
+    },
+    {
+        "id": 107,
+        "text": "Universal Containers (UC) has users complaining about reports timing out or simply taking too long to run What two actions should the data architect recommend to improve the reporting experience? Choose 2 answers",
+        "options": [
+            "Index key fields used in report criteria",
+            "Enable Divisions for large data objects",
+            "Create one skinny table per report",
+            "Share each report with fewer users."
+        ],
+        "correct": [
+            1,2
         ]
     },
     {
         "id": 108,
-        "text": "Universal Containers (UC) is implementing a Salesforce project with large volumes of data and daily  transactions. The solution includes both real-time web service integrations and Visualforce mash -ups with  back -end systems. The Salesforce Full sandbox used by the project integrates with full-scale back -end  testing systems. What two types of performance testing are appropriate for this project?",
+        "text": "Universal Containers (UC) is implementing a Salesforce project with large volumes of data and daily  transactions. The solution includes both real-time web service integrations and Visualforce mash -ups with  back -end systems. The Salesforce Full sandbox used by the project integrates with full-scale back -end  testing systems. What two types of performance testing are appropriate for this project? Choose 2 optionss:",
         "options": [
-            "Choose 2 optionss",
             "Pre -go -live automated page -load testing against the Salesforce Full sandbox.",
             "Post go -live automated page -load testing against the Salesforce Production org.",
-            "Pre -go -live unit testing in the Salesforce Full sandbox."
+            "Pre -go -live unit testing in the Salesforce Full sandbox.",
+            "Stress testing against the web services hosted by the integration middleware"
         ],
         "correct": [
-            0
+            0,3
         ]
     },
     {
         "id": 109,
-        "text": "NTO has outgrown its current salesforce org and will be migrating to new org shortly. As part of this process  NTO will be migrating all of its metadata and data. NTO’s data model in the source org has a complex  relationship hierarchy with several master detail and lookup relationships across objects, which should be  maintained in target org. What 3 things should a data architect do to maintain the relationship hierarchy during migration?",
+        "text": "NTO has outgrown its current salesforce org and will be migrating to new org shortly. As part of this process  NTO will be migrating all of its metadata and data. NTO’s data model in the source org has a complex  relationship hierarchy with several master detail and lookup relationships across objects, which should be  maintained in target org. What 3 things should a data architect do to maintain the relationship hierarchy during migration? Choose 3 optionss:",
         "options": [
-            "Choose 3 optionss:",
-            "Use data loader to export the data from source org and then import or Upsert into the target org in",
-            "sequential order.",
-            "Create a external id field for each object in the target org and map source record ID’s to this field."
+            "Use data loader to export the data from source org and then import or Upsert into the target org in sequential order.",
+            "Create a external id field for each object in the target org and map source record ID’s to this field.",
+            "Redefine the master detail relationship fields to lookup relationship fields in the target org",
+            "Replace source record ID’s with new record ID’s from the target org in the import file",
+            "Keep the relationship fields populated with the source record ID’s in the import file"
         ],
         "correct": [
-            0
+            0,1,3
         ]
     },
     {
@@ -3526,14 +3592,34 @@
                 optionsContainer.appendChild(optionDiv);
             });
         }
+        function goToQuestion() {
+            const input = document.getElementById("gotoInput");
+            const number = parseInt(input.value);
+
+            if (!isNaN(number) && number >= 1 && number <= questions.length) {
+                currentQuestionIndex = number - 1;
+                showQuestion();
+                updateNavigation();
+                updateProgress();
+                document.getElementById('quizContainer').classList.add('fade-in');
+                setTimeout(() => {
+                    document.getElementById('quizContainer').classList.remove('fade-in');
+                }, 500);
+            } else {
+                alert("Inserisci un numero valido tra 1 e " + questions.length);
+            }
+
+            input.value = ''; // reset campo input
+        }
+
 
         // Gestisce il cambiamento delle risposte
         function handleAnswerChange(optionIndex, isChecked) {
             const question = questions[currentQuestionIndex];
             const isMultiple = question.correct.length > 1;
-            
+            const optionsContainer = document.getElementById('optionsContainer');
+
             if (isMultiple) {
-                // Per domande a risposta multipla
                 if (isChecked) {
                     if (!userAnswers[currentQuestionIndex].includes(optionIndex)) {
                         userAnswers[currentQuestionIndex].push(optionIndex);
@@ -3543,11 +3629,26 @@
                         .filter(answer => answer !== optionIndex);
                 }
             } else {
-                // Per domande a risposta singola
                 if (isChecked) {
                     userAnswers[currentQuestionIndex] = [optionIndex];
                 }
             }
+
+            // Rimuovi tutte le classi di evidenziazione precedenti
+            optionsContainer.querySelectorAll('.option-label').forEach(label => {
+                label.classList.remove('correct');
+                label.classList.remove('incorrect');
+            });
+
+            // Verifica e colora
+            userAnswers[currentQuestionIndex].forEach(selectedIdx => {
+                const label = document.querySelector(`#option_${selectedIdx} + .option-label`);
+                if (question.correct.includes(selectedIdx)) {
+                    label.classList.add('correct');
+                } else {
+                    label.classList.add('incorrect');
+                }
+            });
         }
 
         // Naviga alla domanda successiva
