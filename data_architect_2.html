@@ -1805,7 +1805,7 @@
     },
     {
         "id": 102,
-        "text": "UC is trying to switch from legacy CRM to salesforce and wants to keep legacy CRM and salesforce in place  till all the functionality is deployed in salesforce. The want to keep data in synch b/w Salesforce, legacy CRM  and SAP. What is the recommendation. Integrate legacy CRM to salesforce and keep data in synch till new functionality is in place Do not integrate legacy CRM to Salesforce, but integrate salesforce to SAP Integrate SAP with Salesforce, SAP to legacy CRM but not legacy CRM to Salesforce Suggest MDM solution and link MDM to salesforce and SAP",
+        "text": "UC is trying to switch from legacy CRM to salesforce and wants to keep legacy CRM and salesforce in place  till all the functionality is deployed in salesforce. The want to keep data in synch b/w Salesforce, legacy CRM  and SAP. What is the recommendation.",
         "options": [
             "Integrate legacy CRM to salesforce and keep data in synch till new functionality is in place",
             "Do not integrate legacy CRM to Salesforce, but integrate salesforce to SAP",
@@ -1928,7 +1928,7 @@
         "options": [
             "Leverage Canvas to bring the order management UI in to the Salesforce tab.",
             "Build batch jobs to push order line items to salesforce.",
-            "leverage Salesforce Connect top bring the order line item from the legacy system to Salesforce.",
+            "leverage Salesforce Connect to bring the order line item from the legacy system to Salesforce.",
             "Build real-time integration to pull order line items into Salesforce when viewing orders"
         ],
         "correct": [
@@ -1958,7 +1958,7 @@
             "SecuritySettings"
         ],
         "correct": [
-           0,1
+           0,2
         ]
     },
     {
@@ -2043,7 +2043,7 @@
         "id": 120,
         "text": "Cloud Kicks has the following requirements: - Data needs to be sent from Salesforce to an external system to generate invoices from their Order  Management System (OMS). - A Salesforce administrator must be able to customize which fields will be sent to the external system  without changing code. What are two approaches for fulfilling these requirements? (Choose two.)    ",
         "options": [
-            "A set<sobjectFieldset> to determine which fields to send in an HTTP callout.",
+            "A set sobjectFieldset to determine which fields to send in an HTTP callout.",
             "An Outbound Message to determine which fields to send to the OMS.",
             "A Field Set that determines which fields to send in an HTTP callout.",
             "Enable the field -level security permissions for the fields to send."
@@ -2102,7 +2102,7 @@
             "Use a data warehouse."
         ],
         "correct": [
-            0
+            0,2
         ]
     },
     {
@@ -2137,8 +2137,8 @@
         "options": [
             "Truncate all 5 objects quickly and re-run the data migration test.",
             "Refresh the full copy sandbox and re-run the data migration test.",
-            "Salesforce - Data-Architect",
-            "Practice Test"
+            "Hard delete all 5 objects’ data and re-run the data migration test.",
+            "Truncate all 5 objects and hard delete before running the migration test."
         ],
         "correct": [
             1
