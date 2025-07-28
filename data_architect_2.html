@@ -454,7 +454,14 @@
                 <i class="fas fa-redo"></i> Ricomincia Quiz
             </button>
         </div>
-
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>
+                <i class="fas fa-arrow-left"></i> Precedente
+            </button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                Prossima <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
         <div class="controls">
             <div class="randomize-controls">
                 <input type="number" id="gotoInput" placeholder="N. domanda" min="1" style="padding: 10px; width: 120px; border-radius: 8px; border: 1px solid #ccc;">
@@ -470,14 +477,7 @@
             </div>
         </div>
 
-        <div class="navigation">
-            <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>
-                <i class="fas fa-arrow-left"></i> Precedente
-            </button>
-            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
-                Prossima <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
+        
     </div>
 
     <script>
@@ -1739,6 +1739,19 @@
         ]
     },
     {
+        "id": 97,
+        "text": "As part of addressing general data protection regulation (GDPR) requirements, UC plans to implement a data classification policy for all its internal systems that stores customer information including salesforce. What should a data architect recommend so that UC can easily classify consumer information maintained in salesforce under both standard and custom objects?",
+        "options": [
+            "Use App Exchange products to classify fields based on policy",
+            "Use data classification metadata fields available in field definition",
+            "Create a custom picklist field to capture classification of information on customer",
+            "Build reports for customer information and validate"
+        ],
+        "correct": [
+            1
+        ]
+    },
+    {
         "id": 98,
         "text": " 61 Northern Trail Outfitters (NTO) wants to implement backup and restore for Salesforce data, Currently, it has  data backup processes that runs weekly, which back up all Salesforce data to an enterprise data warehouse  (EDW). NTO wants to move to daily backups and provide restore capability to avoid any data loss in case of  outage. What should a data architect recommend for a daily backup and restore solution?",
         "options": [
@@ -1848,6 +1861,7 @@
         "options": [
             "Create new fields to store additional values from all the systems.",
             "Install a 3rd party AppExchange tool to handle the merger Analyze each system’s data model and perform gap analysis",
+            "Analyze each system’s data model and perform gap analysis",
             "Utilize an ETL tool to merge, transform and de-duplicate data",
             "Work with Stakeholders to define record and field survivorship rules"
         ],
@@ -1865,7 +1879,7 @@
             "Share each report with fewer users."
         ],
         "correct": [
-            1,2
+            0,2
         ]
     },
     {
@@ -1905,7 +1919,7 @@
             "Schedule a Batch Apex job to export the data."
         ],
         "correct": [
-            2
+            1
         ]
     },
     {
@@ -1915,7 +1929,7 @@
             "Leverage Canvas to bring the order management UI in to the Salesforce tab.",
             "Build batch jobs to push order line items to salesforce.",
             "leverage Salesforce Connect top bring the order line item from the legacy system to Salesforce.",
-            "Salesforce - Data-Architect"
+            "Build real-time integration to pull order line items into Salesforce when viewing orders"
         ],
         "correct": [
             2
@@ -1936,25 +1950,38 @@
     },
     {
         "id": 113,
-        "text": "A company wants to document the data architecture of a Salesforce organization. What are two valid metadata types that should be included? (Choose two.) RecordType Document CustomField SecuritySettings  70 ",
+        "text": "A company wants to document the data architecture of a Salesforce organization. What are two valid metadata types that should be included? (Choose two.)",
         "options": [
-            "options: A C",
-            "Explanation",
-            "Option A is correct because RecordType is a valid metadata type that should be included in documenting the",
-            "data architecture of a Salesforce organization1. RecordType defines different business processes, picklist"
+            "RecordType",
+            "Document",
+            "CustomField",
+            "SecuritySettings"
         ],
         "correct": [
-            1
+           0,1
+        ]
+    },
+    {
+        "id": 114,
+        "text": "Universal Containers (UC) management has identified a total of ten text fields on the Contact object as important to capture any changes made to these fields, such as who made the change, when they made the change, what is the old value, and what is the new value. UC needs to be able to report on these field data changes within Salesforce for the past 3 months. What are two approaches that will meet this requirement? Choose 2 answers",
+        "options": [
+            "Create a workflow to evaluate the rule when a record is created and use field update actions to store previous values for these ten fields in ten new fields.",
+            "Write an Apex trigger on Contact after insert event and after update events and store the old values in another custom object",
+            "Turn on field Contact object history tracking for these ten fields, then create reports on contact history",
+            "Create a Contact report including these ten fields and Salesforce Id, then schedule the report to run once a day and send email to the admin."
+        ],
+        "correct": [
+            1,2
         ]
     },
     {
         "id": 115,
-        "text": " 71 Universal Containers is integrating a new Opportunity engagement system with Salesforce. According to their  Master Data Management strategy, Salesforce is the system of record for Account, Contact, and Opportunity  data. However, there does seem to be valuable Opportunity data in the new system that potentially conflicts  with what is stored in Salesforce. What is the recommended course of action to appropriately integrate this  new system?",
+        "text": "Universal Containers is integrating a new Opportunity engagement system with Salesforce. According to their Master Data Management strategy, Salesforce is the system of record for Account, Contact, and Opportunity data. However, there does seem to be valuable Opportunity data in the new system that potentially conflicts with what is stored in Salesforce. What is the recommended course of action to appropriately integrate this new system?",
         "options": [
-            "The MDM strategy defines Salesforce as the system of record, so Salesforce Opportunity values prevail",
-            "in all conflicts.",
-            "A policy should be adopted so that the system whose record was most recently updated should prevail",
-            "in conflicts."
+            "The MDM strategy defines Salesforce as the system of record, so Salesforce Opportunity values prevail in all conflicts.",
+            "A policy should be adopted so that the system whose record was most recently updated should prevail in conflicts.",
+            "The Opportunity engagement system should become the system of record for Opportunity records",
+            "Stakeholders should be brought together to discuss the appropriate data strategy moving forward."
         ],
         "correct": [
             3
@@ -1975,12 +2002,25 @@
     },
     {
         "id": 117,
-        "text": "UC is migrating data from legacy system to SF. UC would like to preserve the following information on  records being migrated: Date time stamps for created date and last modified date. Ownership of records belonging to inactive users being migrated to Salesforce. Which 2 solutions should a data architect recommends to preserve the date timestamps and ownership on  records? Choose 2 optionss. Log a case with SF to update these fields Enable update records with Inactive Owners Permission Enable Set Audit fields upon Record Creation Permission Enable modify all and view all permission.",
+        "text": "UC is migrating data from legacy system to SF. UC would like to preserve the following information on records being migrated: Date time stamps for created date and last modified date. Ownership of records belonging to inactive users being migrated to Salesforce. Which 2 solutions should a data architect recommends to preserve the date timestamps and ownership on records? Choose 2 answers.",
         "options": [
-            "options: B C",
-            "Explanation",
-            "The two solutions that a data architect should recommend to preserve the date timestamps and ownership on",
-            "records being migrated are:"
+            "Log a case with SF to update these fields",
+            "Enable update records with Inactive Owners Permission",
+            "Enable Set Audit fields upon Record Creation Permission",
+            "Enable modify all and view all permission."
+        ],
+        "correct": [
+            1,2
+        ]
+    },
+    {
+        "id": 118,
+        "text": "A casino is implementing Salesforce and is planning to build a customer 360 degree view for a customer who visits its resorts. The casino currently maintains the following systems that record customer activity: L Pointof- sale system: All purchases for a customer 2. Salesforce; All customer service activity and sales activities for a customer 3. Mobile app: All bookings, preferences, and browser activity for a customer 4. Marketing: All email, SMS, and social campaigns for a customer Customer service agents using Salesforce would like to view the activities from all four systems to provide support to customers. The information has to be current and real time. What strategy should the data architect implement to satisfy this requirement?",
+        "options": [
+            "Explore external data sources in Salesforce to build a 360-degree view of the customer",
+            "Use a customer data mart to create the 360-degree view of the customer.",
+            "Periodically upload summary information in Salesforce to build a 360-degree view",
+            "Migrate customer activities fro, all four system into Salesforce."
         ],
         "correct": [
             0
@@ -1990,10 +2030,10 @@
         "id": 119,
         "text": "US has released a new disaster recovery (DR)policy that states that cloud solutions need a business continuity  plan in place separate from the cloud providers built in data recovery solution. Which solution should a data architect use to comply with the DR policy?",
         "options": [
-            "Leverage a 3rd party tool that extract salesforce data/metadata and stores the information in an external",
-            "protected system.",
-            "Leverage salesforce weekly exports, and store data in Flat files on a protected system.",
-            "Utilize an ETL tool to migrate data to an on-premise archive solution."
+            "Leverage a 3rd party tool that extract salesforce data/metadata and stores the information in an external protected system",
+            "Leverage salesforce weekly exports, and store data in Flat files on a protected system",
+            "Utilize an ETL tool to migrate data to an on-premise archive solution",
+            "Write a custom batch job to extract data changes nightly, and store in an external protected system."
         ],
         "correct": [
             0
@@ -2001,15 +2041,29 @@
     },
     {
         "id": 120,
-        "text": "Cloud Kicks has the following requirements: - Data needs to be sent from Salesforce to an external system to generate invoices from their Order  Management System (OMS). - A Salesforce administrator must be able to customize which fields will be sent to the external system  without changing code. What are two approaches for fulfilling these requirements? (Choose two.) A set<sobjectFieldset> to determine which fields to send in an HTTP callout. An Outbound Message to determine which fields to send to the OMS. A Field Set that determines which fields to send in an HTTP callout. Enable the field -level security permissions for the fields to send.",
+        "text": "Cloud Kicks has the following requirements: - Data needs to be sent from Salesforce to an external system to generate invoices from their Order  Management System (OMS). - A Salesforce administrator must be able to customize which fields will be sent to the external system  without changing code. What are two approaches for fulfilling these requirements? (Choose two.)    ",
         "options": [
-            "options: B C",
-            "Explanation",
-            "An Outbound Message is a native Salesforce feature that allows sending data to an external system without",
-            "code. It can be configured to include any fields from the source object3. A Field Set is a collection of fields"
+            "A set<sobjectFieldset> to determine which fields to send in an HTTP callout.",
+            "An Outbound Message to determine which fields to send to the OMS.",
+            "A Field Set that determines which fields to send in an HTTP callout.",
+            "Enable the field -level security permissions for the fields to send."
         ],
         "correct": [
-            1
+            1,2
+        ]
+    },
+    {
+        "id": 121,
+        "text": "The architect is planning a large data migration for Universal Containers from their legacy CRM system to Salesforce. What three things should the architect consider to optimize performance of the data migration? Choose 3 answers",
+        "options": [
+            "Review the time zones of the User loading the data",
+            "Remove custom indexes on the data being loaded.",
+            "Determine if the legacy system is still in use.",
+            "Defer sharing calculations of the Salesforce Org.",
+            "Deactivate approval processes and workflow rules"
+        ],
+        "correct": [
+            1,3,4
         ]
     },
     {
@@ -2027,7 +2081,7 @@
     },
     {
         "id": 123,
-        "text": " 76    A large multinational B2C Salesforce customer is looking to implement their distributor management  application is Salesforce. the application has the following capabilities: 1.Distributor create sales order in salesforce 2.Sales order are based on product prices applicable to their region 3. Sales order are closed once they are fulfilled 4. It is decided to maintain the order in opportunity object How should the data architect model this requirement?",
+        "text": "A large multinational B2C Salesforce customer is looking to implement their distributor management  application is Salesforce. the application has the following capabilities: 1.Distributor create sales order in salesforce 2.Sales order are based on product prices applicable to their region 3. Sales order are closed once they are fulfilled 4. It is decided to maintain the order in opportunity object How should the data architect model this requirement?",
         "options": [
             "Create lookup to Custom Price object and share with distributors.",
             "Configure price Books for each region and share with distributors.",
@@ -2040,7 +2094,7 @@
     },
     {
         "id": 124,
-        "text": " 77 Universal Containers (UC) is using Salesforce Sales & Service Cloud for B2C sales and customer service but  they are experiencing a lot of duplicate customers in the system. Which are two recommended approaches for  UC to avoid duplicate data and increase the level of data quality?",
+        "text": "Universal Containers (UC) is using Salesforce Sales & Service Cloud for B2C sales and customer service but  they are experiencing a lot of duplicate customers in the system. Which are two recommended approaches for  UC to avoid duplicate data and increase the level of data quality?",
         "options": [
             "Use Duplicate Management.",
             "Use an Enterprise Service Bus.",
@@ -2131,15 +2185,16 @@
     },
     {
         "id": 131,
-        "text": "UC is rolling out Sales App globally to bring sales teams together on one platform. UC expects millions of  opportunities and accounts to be creates and is concerned about the performance of the application. Which 3 recommendations should the data architect make to avoid the data skew? Choose 3 optionss. Use picklist fields rather than lookup to custom object. Limit assigning one user 10000 records ownership. Assign 10000 opportunities to one account. Limit associating 10000 opportunities to one account. Limit associating 10000 records looking up to same records.",
+        "text": "UC is rolling out Sales App globally to bring sales teams together on one platform. UC expects millions of opportunities and accounts to be creates and is concerned about the performance of the application. Which 3 recommendations should the data architect make to avoid the data skew? Choose 3 answers",
         "options": [
-            "options: B D E",
-            "Explanation",
-            "Data skew occurs when a large number of child records are associated with a single parent record, or when a",
-            "single user owns a large number of records. This can cause performance issues and lock contention. To avoid"
+            "Use picklist fields rather than lookup to custom object",
+            "Limit assigning one user 10000 records ownership",
+            "Assign 10000 opportunities to one account.",
+            "Limit associating 10000 opportunities to one account",
+            "Limit associating 10000 records looking up to same records"
         ],
         "correct": [
-            3
+            1,3,4
         ]
     },
     {
@@ -2157,12 +2212,25 @@
     },
     {
         "id": 134,
-        "text": "DreamHouse Realty has a Salesforce deployment that manages Sales, Support, and Marketing efforts in a  multi-system ERP environment. The company recently reached the limits of native reports and dashboards  and needs options for providing more analytical insights. What are two approaches an Architect should recommend? (Choose two.)  84 Weekly Snapshots Einstein Analytics Setup Audit Trails AppExchange Apps",
+        "text": "DreamHouse Realty has a Salesforce deployment that manages Sales, Support, and Marketing efforts in a  multi-system ERP environment. The company recently reached the limits of native reports and dashboards  and needs options for providing more analytical insights. What are two approaches an Architect should recommend? (Choose two.)",
         "options": [
-            "options: B D",
-            "Explanation",
-            "Einstein Analytics can provide more analytical insights than native reports and dashboards by allowing users",
-            "to explore data from multiple sources, create interactive visualizations, and apply AI-powered"
+            "Weekly Snapshots",
+            "Einstein Analytics",
+            "Setup Audit Trails",
+            "AppExchange Apps"
+        ],
+        "correct": [
+            1,3
+        ]
+    },
+    {
+        "id": 135,
+        "text": "Universal Containers (UC) is transitioning from Classic to Lightning Experience. What does UC need to do to ensure users have access to its notices and attachments in Lightning Experience?",
+        "options": [
+            "Add Notes and Attachments Related List to page Layout in Lighting Experience",
+            "Manually upload Notes in Lighting Experience",
+            "Migrate Notes and Attachment to Enhanced Notes and Files a migration tool",
+            "Manually upload Attachments in Lighting Experience"
         ],
         "correct": [
             2
@@ -2170,12 +2238,25 @@
     },
     {
         "id": 136,
-        "text": "Get Cloudy Consulting monitors 15,000 servers, and these servers automatically record their status every 10  minutes. Because of company policy, these status reports must be maintained for 5 years. Managers at Get  Cloudy Consulting need access to up to one week's worth of these status reports with all of their details.  85 An Architect is recommending what data should be integrated into Salesforce and for how long it should be  stored in Salesforce. Which two limits should the Architect be aware of? (Choose two.) Data storage limits Workflow rule limits API Request limits Webservice callout limits",
+        "text": "Get Cloudy Consulting monitors 15,000 servers, and these servers automatically record their status every 10  minutes. Because of company policy, these status reports must be maintained for 5 years. Managers at Get  Cloudy Consulting need access to up to one week's worth of these status reports with all of their details. An Architect is recommending what data should be integrated into Salesforce and for how long it should be  stored in Salesforce. Which two limits should the Architect be aware of? (Choose two.)",
         "options": [
-            "options: A C",
-            "Explanation",
-            "Data storage limits and API request limits are two important factors that affect the data integration and",
-            "storage in Salesforce. Data storage limits determine how much data can be stored in Salesforce, and API"
+            "Data storage limits",
+            "Workflow rule limits",
+            "API Request limits",
+            "Webservice callout limits"
+        ],
+        "correct": [
+            0,2
+        ]
+    },
+    {
+        "id": 137,
+        "text": "Northern trail Outfitters (NTO) uses Sales Cloud and service Cloud to manage sales and support processes. Some of NTOs team are complaining they see new fields on their page unsure of which values need be input. NTO is concerned about lack of governance in making changes to Salesforce. Which governance measure should a data architect recommend to solve this issue?",
+        "options": [
+            "Add description fields to explain why the field is used, and mark the field as required",
+            "Create and manage a data dictionary and ups a governance process for changes made to common objects",
+            "Create reports to identify which users are leaving blank, and use external data sources o agreement the missing data",
+            "Create validation rules with error messages to explain why the fields is used"
         ],
         "correct": [
             1
@@ -2183,7 +2264,7 @@
     },
     {
         "id": 138,
-        "text": "During the implementation of Salesforce, a customer has the following requirements for Sales Orders: 1. Sales Order information needs to be shown to users in Salesforce. 2. Sales Orders are maintained in the on-premises enterprise resource planning (ERP). 3. Sales Order information has more than 150 million records. 4. Sales Orders will not be updated in Salesforce. What should a data architect recommend for maintaining Sales Orders in salesforce?",
+        "text": "During the implementation of Salesforce, a customer has the following requirements for Sales Orders: \n1. Sales Order information needs to be shown to users in Salesforce. \n2. Sales Orders are maintained in the on-premises enterprise resource planning (ERP). \n3. Sales Order information has more than 150 million records. \n4. Sales Orders will not be updated in Salesforce. \nWhat should a data architect recommend for maintaining Sales Orders in salesforce?",
         "options": [
             "Us custom objects to maintain Sales Orders in Salesforce.",
             "Use custom big objects to maintain Sales Orders in Salesforce.",
@@ -2200,8 +2281,8 @@
         "options": [
             "Create a custom lookup filed on the standard Product to reference the child record in the hierarchy.",
             "Create a custom lookup field on the standard Product to reference the parent record in the hierarchy.",
-            "Salesforce - Data-Architect",
-            "Practice Test"
+            "Create a custom master-detail field on the standard Product to reference the child record in the hierarchy",
+            "Create an Apex trigger to synchronize the Product Family standard picklist field on the Product object"
         ],
         "correct": [
             1
@@ -2217,7 +2298,7 @@
             "Use the Salesforce Metadata API."
         ],
         "correct": [
-            2
+            2,3
         ]
     },
     {
