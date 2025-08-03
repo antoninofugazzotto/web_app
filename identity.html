@@ -367,37 +367,215 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 8px;
+                background: #667eea;
+            }
+            
             .container {
-                margin: 10px;
-                border-radius: 15px;
+                border-radius: 12px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             }
             
-            .question-container {
-                padding: 20px;
-            }
-            
-            .navigation {
-                padding: 20px;
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .controls {
-                padding: 20px;
-            }
-
-            .randomize-controls {
-                flex-direction: column;
-                gap: 10px;
+            .header {
+                padding: 15px;
             }
             
             .header h1 {
-                font-size: 2rem;
+                font-size: 1.6rem;
+                margin-bottom: 8px;
+            }
+            
+            .progress-container {
+                margin: 12px 0;
+                padding: 3px;
+            }
+            
+            .progress-bar {
+                height: 8px;
             }
             
             .stats {
+                margin-top: 12px;
+                gap: 8px;
+            }
+            
+            .stat {
+                flex: 1;
+            }
+            
+            .stat-number {
+                font-size: 1.2rem;
+            }
+            
+            .stat span:last-child {
+                font-size: 0.85rem;
+            }
+            
+            .question-container {
+                padding: 12px;
+                min-height: auto;
+            }
+            
+            .question {
+                margin-bottom: 12px;
+            }
+            
+            .question-header {
                 flex-direction: column;
-                gap: 10px;
+                gap: 8px;
+                margin-bottom: 12px;
+                align-items: stretch;
+            }
+            
+            .question-number {
+                padding: 8px 12px;
+                font-size: 0.95rem;
+                text-align: center;
+                border-radius: 8px;
+            }
+            
+            .question-type {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                text-align: center;
+                border-radius: 8px;
+                border-width: 1px;
+            }
+            
+            .question-text {
+                font-size: 1rem;
+                line-height: 1.4;
+                margin-bottom: 15px;
+                padding: 12px;
+                border-radius: 8px;
+                border-left-width: 3px;
+            }
+            
+            .options {
+                gap: 8px;
+            }
+            
+            .option-label {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+                line-height: 1.3;
+                border-radius: 8px;
+                border-width: 1px;
+            }
+            
+            .option:hover .option-label {
+                transform: none;
+            }
+            
+            .option input:checked + .option-label {
+                transform: none;
+            }
+            
+            .checkmark {
+                width: 16px;
+                height: 16px;
+                margin-right: 10px;
+                flex-shrink: 0;
+            }
+            
+            .navigation {
+                padding: 12px;
+                flex-direction: row;
+                gap: 8px;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+                border-radius: 8px;
+                letter-spacing: 0.3px;
+                flex: 1;
+            }
+            
+            .controls {
+                padding: 12px;
+            }
+            
+            .randomize-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            #gotoInput {
+                width: 100%;
+                max-width: 120px;
+                padding: 8px;
+                font-size: 0.9rem;
+                border-radius: 6px;
+            }
+            
+            .btn-toggle {
+                width: 100%;
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                border-radius: 6px;
+            }
+            
+            #explanationBox {
+                margin-top: 12px;
+                padding: 10px;
+                font-size: 0.9rem;
+                line-height: 1.3;
+                border-left-width: 3px;
+                border-radius: 6px;
+            }
+            
+            .results {
+                padding: 20px 12px;
+            }
+            
+            .score {
+                font-size: 2.5rem;
+                margin: 15px 0;
+            }
+            
+            .results-details {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin: 20px 0;
+            }
+            
+            .result-card {
+                padding: 12px;
+                border-radius: 8px;
+                border-left-width: 3px;
+            }
+            
+            .result-title {
+                font-size: 0.95rem;
+                margin-bottom: 6px;
+            }
+            
+            /* Ottimizzazioni specifiche per schermi molto piccoli */
+            @media (max-width: 480px) {
+                .results-details {
+                    grid-template-columns: 1fr;
+                }
+                
+                .question-text {
+                    font-size: 0.95rem;
+                    padding: 10px;
+                }
+                
+                .option-label {
+                    font-size: 0.85rem;
+                    padding: 8px 10px;
+                }
+                
+                .header h1 {
+                    font-size: 1.4rem;
+                }
+                
+                .btn {
+                    font-size: 0.8rem;
+                    padding: 8px 12px;
+                }
             }
         }
     </style>
