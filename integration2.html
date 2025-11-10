@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App - Integration Architect</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #gotoInput {
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        #gotoInput:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: slideIn 0.6s ease-out;
+        }
+        #explanationBox {
+            margin-top: 20px;
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            border-radius: 8px;
+        }
+
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .progress-container {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 5px;
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            background: white;
+            height: 10px;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .question-container {
+            padding: 40px;
+            min-height: 400px;
+        }
+
+        .question {
+            margin-bottom: 30px;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .question-type {
+            background: #f0f8ff;
+            color: #2196F3;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 2px solid #e3f2fd;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            line-height: 1.5;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover .option-label {
+            background: #e3f2fd;
+            border-color: #2196F3;
+            transform: translateX(5px);
+        }
+
+        .option input:checked + .option-label {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border-color: #4CAF50;
+            transform: translateX(5px);
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .option input:checked + .option-label .checkmark {
+            background: white;
+            border-color: white;
+        }
+
+        .option input:checked + .option-label .checkmark::after {
+            content: '✓';
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 30px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .controls {
+            padding: 20px 40px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .randomize-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-toggle {
+            background: #e9ecef;
+            color: #495057;
+            transition: all 0.3s ease;
+        }
+
+        .btn-toggle.active {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
+            color: white;
+        }
+
+        .btn-toggle:hover {
+            background: #dee2e6;
+        }
+
+        .btn-toggle.active:hover {
+            background: linear-gradient(135deg, #FF5252, #FF7979);
+        }
+
+        .results {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .score {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .score.low {
+            color: #f44336;
+        }
+
+        .score.medium {
+            color: #ff9800;
+        }
+
+        .results-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .result-card.incorrect {
+            border-left-color: #f44336;
+        }
+
+        .result-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .option-label.correct {
+            background: #d4edda !important;
+            border-color: #28a745 !important;
+            color: #155724 !important;
+        }
+
+        .option-label.incorrect {
+            background: #f8d7da !important;
+            border-color: #dc3545 !important;
+            color: #721c24 !important;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 8px;
+                background: #667eea;
+            }
+            
+            .container {
+                border-radius: 12px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            }
+            
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.6rem;
+                margin-bottom: 8px;
+            }
+            
+            .progress-container {
+                margin: 12px 0;
+                padding: 3px;
+            }
+            
+            .progress-bar {
+                height: 8px;
+            }
+            
+            .stats {
+                margin-top: 12px;
+                gap: 8px;
+            }
+            
+            .stat {
+                flex: 1;
+            }
+            
+            .stat-number {
+                font-size: 1.2rem;
+            }
+            
+            .stat span:last-child {
+                font-size: 0.85rem;
+            }
+            
+            .question-container {
+                padding: 12px;
+                min-height: auto;
+            }
+            
+            .question {
+                margin-bottom: 12px;
+            }
+            
+            .question-header {
+                flex-direction: column;
+                gap: 8px;
+                margin-bottom: 12px;
+                align-items: stretch;
+            }
+            
+            .question-number {
+                padding: 8px 12px;
+                font-size: 0.95rem;
+                text-align: center;
+                border-radius: 8px;
+            }
+            
+            .question-type {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+                text-align: center;
+                border-radius: 8px;
+                border-width: 1px;
+            }
+            
+            .question-text {
+                font-size: 1rem;
+                line-height: 1.4;
+                margin-bottom: 15px;
+                padding: 12px;
+                border-radius: 8px;
+                border-left-width: 3px;
+            }
+            
+            .options {
+                gap: 8px;
+            }
+            
+            .option-label {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+                line-height: 1.3;
+                border-radius: 8px;
+                border-width: 1px;
+            }
+            
+            .option:hover .option-label {
+                transform: none;
+            }
+            
+            .option input:checked + .option-label {
+                transform: none;
+            }
+            
+            .checkmark {
+                width: 16px;
+                height: 16px;
+                margin-right: 10px;
+                flex-shrink: 0;
+            }
+            
+            .navigation {
+                padding: 12px;
+                flex-direction: row;
+                gap: 8px;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+                border-radius: 8px;
+                letter-spacing: 0.3px;
+                flex: 1;
+            }
+            
+            .controls {
+                padding: 12px;
+            }
+            
+            .randomize-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            #gotoInput {
+                width: 100%;
+                max-width: 120px;
+                padding: 8px;
+                font-size: 0.9rem;
+                border-radius: 6px;
+            }
+            
+            .btn-toggle {
+                width: 100%;
+                padding: 8px 12px;
+                font-size: 0.8rem;
+                border-radius: 6px;
+            }
+            
+            #explanationBox {
+                margin-top: 12px;
+                padding: 10px;
+                font-size: 0.9rem;
+                line-height: 1.3;
+                border-left-width: 3px;
+                border-radius: 6px;
+            }
+            
+            .results {
+                padding: 20px 12px;
+            }
+            
+            .score {
+                font-size: 2.5rem;
+                margin: 15px 0;
+            }
+            
+            .results-details {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                margin: 20px 0;
+            }
+            
+            .result-card {
+                padding: 12px;
+                border-radius: 8px;
+                border-left-width: 3px;
+            }
+            
+            .result-title {
+                font-size: 0.95rem;
+                margin-bottom: 6px;
+            }
+            
+            /* Ottimizzazioni specifiche per schermi molto piccoli */
+            @media (max-width: 480px) {
+                .results-details {
+                    grid-template-columns: 1fr;
+                }
+                
+                .question-text {
+                    font-size: 0.95rem;
+                    padding: 10px;
+                }
+                
+                .option-label {
+                    font-size: 0.85rem;
+                    padding: 8px 10px;
+                }
+                
+                .header h1 {
+                    font-size: 1.4rem;
+                }
+                
+                .btn {
+                    font-size: 0.8rem;
+                    padding: 8px 12px;
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="google_translate_element" style="text-align: right; padding: 10px;"></div>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-graduation-cap"></i> Quiz Integration Architect</h1>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-number" id="currentQuestion">1</span>
+                    <span>Domanda</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="totalQuestions">0</span>
+                    <span>Totale</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number" id="correctAnswers">0</span>
+                    <span>Corrette</span>
+                </div>
+            </div>
+        </div>
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>
+                <i class="fas fa-arrow-left"></i> Precedente
+            </button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                Prossima <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <div id="quizContainer" class="question-container">
+            <div class="question">
+                <div class="question-header">
+                    <div class="question-number">
+                        Domanda <span id="questionNumber">1</span>
+                    </div>
+                    <div class="question-type" id="questionType">
+                        Risposta Singola
+                    </div>
+                </div>
+                <div class="question-text" id="questionText">
+                    Caricamento domanda...
+                </div>
+                <div class="options" id="optionsContainer">
+                    <!-- Le opzioni verranno generate dinamicamente -->
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-toggle" onclick="showCorrectAnswer()">Mostra risposta corretta</button>
+                </div>
+                <div id="explanationBox" class="question-text hidden" style="border-left-color: #2196F3;">
+                    <!-- Spiegazione inserita dinamicamente -->
+                </div>
+
+            </div>
+        </div>
+
+        <div id="resultsContainer" class="results hidden">
+            <i class="fas fa-trophy" style="font-size: 4rem; color: #4CAF50; margin-bottom: 20px;"></i>
+            <h2>Quiz Completato!</h2>
+            <div class="score" id="finalScore">0%</div>
+            <div class="results-details" id="resultsDetails">
+                <!-- I dettagli dei risultati verranno generati dinamicamente -->
+            </div>
+            <button class="btn btn-primary" onclick="restartQuiz()">
+                <i class="fas fa-redo"></i> Ricomincia Quiz
+            </button>
+        </div>
+        <div class="navigation">
+            <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>
+                <i class="fas fa-arrow-left"></i> Precedente
+            </button>
+            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                Prossima <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+        <div class="controls">
+            <div class="randomize-controls">
+                <input type="number" id="gotoInput" placeholder="N. domanda" min="1" style="padding: 10px; width: 120px; border-radius: 8px; border: 1px solid #ccc;">
+                <button class="btn btn-toggle" id="gotobutton" onclick="goToQuestion()">
+                    <i class="fas fa-shuffle"></i> Vai alla domanda
+                </button>
+                <button class="btn btn-toggle" id="randomQuestionsBtn" onclick="toggleRandomQuestions()">
+                    <i class="fas fa-random"></i> Domande Random
+                </button>
+                <button class="btn btn-toggle" id="randomAnswersBtn" onclick="toggleRandomAnswers()">
+                    <i class="fas fa-shuffle"></i> Risposte Random
+                </button>
+            </div>
+        </div>
+
+        
+    </div>
+
+    <script>
+        // Dati delle domande
+        const originalQuestions = [{"id":1,"text":"Universal Containers has chosen Salesforce Wave as their Analytics Platform. There is a requirement to join data from multiple systems (including Salesforce) to be displayed in a single Wave Lens.\nWhat should the Architect recommend?","options":["Use an ETL tool to load the data into Salesforce, upsets to ensure that the data in properly joined.","Use an ETL tool to join multiple sources and load them into a single data set.","Use Data flow to load Salesforce data, and an ETL tool to load other data sets.","Use data flow to load Salesforce data and lightning connect to access the other data sets in real time."],"correct":[1],"explanation":"Einstein Analytics non unisce automaticamente dati da fonti diverse; la pratica corretta è usare un ETL per unire tutte le fonti e creare un unico dataset Wave."},{"id":2,"text":"The Integration Team at Universal Containers is frustrated because the developers keep changing the data model and trigger behaviors during development, resulting in frequent rework and unexpected bugs late in the development process.\nWhich two recommendations should a Technical Architect make to resolve this issue?","options":["Implement a Regression Testing policy to catch issues earlier in the development process.","Encourage code developers and integration developers to work in separate sandboxes.","Implement a Continuous Integration process to identify issues earlier in the development process.","Use a requirements traceability matrix to track data model changes back to the requirement that prompted them."],"correct":[0,2],"explanation":"Regression Testing e Continuous Integration sono le due misure principali per intercettare modifiche rischiose e prevenire bug tardivi durante lo sviluppo."},{"id":3,"text":"Universal Containers (UC) is planning to roll out a new Force.com app to a regional business unit. UC has partial copy and a full sandbox available for deployment. UC’s Architect has been asked to design an environment strategy for integration testing and performance testing, as well as user acceptance testing.\nWhat is the recommended use of available sandbox types that an Architect should consider?","options":["Use the partial copy for performance testing and full sandbox for integration and user acceptance testing.","Use the full sandbox for performance and user acceptance testing and the partial copy for integration testing.","Use the full sandbox for integration testing and the partial copy for user acceptance and performance testing.","Use the full sandbox for user acceptance testing and use the partial copy for integration and performance testing."],"correct":[1],"explanation":"Solo la full sandbox consente veri performance test e UAT; la partial sandbox è più adatta per integration testing."},{"id":4,"text":"Universal Containers (UC) would like to provide near real-time updates on their customer-facing external portal when a Sales Manager approves a new feature that is recommended by a customer. UC has no middleware, and the portal exposes a REST API therefore, UC is considering a custom-built system process to handle the integration.\nWhat is the recommended approach for the custom-built system process to retrieve updates in near real-time?","options":["Leverage a related push topic that pushed information to the portal client.","Leverage a Streaming API client to subscribe to the related push topic.","Leverage Canvas to send information to the portal whenever an idea is voted on.","Leverage an outbound message to the portal whenever an idea is voted on the saved."],"correct":[1],"explanation":"La Streaming API permette notifiche push in near real-time senza middleware; i client possono iscriversi ai relativi PushTopic."},{"id":5,"text":"Universal Containers has a call center that would like to have a dashboard that updates in real time and shows information about phone calls that have been completed today (recorded in the Activity object). There are several teams in the call center, and each dashboard should only show calls from that team. An employee can start the board each morning, but after that no further user interaction should be needed.\nWhat is a recommended pattern that would minimize implementation time?","options":["Develop a Visualforce page that uses the Steaming API.","Use Heroku to develop a dashboard page that uses the REST API.","Use native Salesforce dashboard functionality.","Develop a Visualforce page that uses JavaScript Remoting."],"correct":[0],"explanation":""},{"id":6,"text":"Universal Containers (UC) sends Order data to an external ERP system via ESB. UC sends an outbound message on update or Order to ESB. Once ESB completes creating the Order in the back-end ERP, it send back the Order with the Order Number from the ERP. During development, UC is experiencing an issue. When the Order is updated by ESB, it again fires a workflow rule that sends the outbound message again.\nWhich two recommended steps can be done to prevent this looping issue?","options":["Write an Apex trigger to send an outbound message to ESB.","Update workflow rule conditions to exclude the ERP Order Number field update.","Update workflow rule conditions to exclude the Integration User.","Update the outbound message to exclude the Integration User."],"correct":[1,2],"explanation":"Il loop viene evitato filtrando la workflow rule per ignorare aggiornamenti fatti dall’Integration User e aggiornamenti del campo ERP Order Number."},{"id":7,"text":"Universal Containers has a custom Salesforce UI that is used by all users to check on a container’s status. This check is done via an integration to its back-end system which all users have access to. However, some users have a higher privilege access into that back-end system, which allows them to retrieve more details in the same container status check. Those users would like the same Salesforce UI to recognize their higher privilege access and display those extra details for them, but without allowing all users to see the same level of details.\nWhat is the recommended security approach to satisfy this requirement?","options":["Named credential set with “per-user” identify type to control the Apex callout.","Custom permission to control the Apex callout to retrieve different levels of details.","Hierarchical custom setting to store back-end system user credentials and referenced in the Apex callout.","Permission set to identify users with higher-level privileges in order to control the Apex callout."],"correct":[0],"explanation":"Le Named Credentials impostate per utente permettono al callout di utilizzare credenziali personalizzate, riflettendo il livello di accesso effettivo nel sistema esterno."},{"id":8,"text":"Universal Containers (UC) has Wave Analytics in their Salesforce org. UC has expertise and access to the Dell boomi ETL tool. UC would like to get all leads and opportunities from the org and data from a few other Marketing tools to a Wave instance for enhanced analysis.\nWhat is the recommended solution to set up the data process?","options":["Dell Boomi for data from Salesforce and data from other sources.","Wave Data flow for Salesforce data and Dell Boomi for data from other sources.","Export data from all sources into Excel and use Wave connector to import data.","Use Wave data flow for Salesforce data and data from other sources."],"correct":[1],"explanation":"Best practice: usare il Dataflow di Wave per i dati Salesforce e un ETL (Boomi) per estrarre e trasformare dati esterni."},{"id":9,"text":"Universal Containers is planning to develop a native mobile app for their employees to interact with Salesforce.\nWhich two options should the Architect recommend?","options":["Leverage Identity Product","Leverage SOAP API","Leverage Message Queue Product","Leverage REST API"],"correct":[0,3],"explanation":"Le mobile app usano normalmente REST API (leggero, JSON) e Identity per OAuth/Login; SOAP non è adatto a un'app mobile."},{"id":10,"text":"UC leverages customer MDM as a source of truth. The requirement is to dedupe and store any account or contact created in MDM before the same is created in Salesforce. This ensures data is clean and not duplicated in Salesforce. During peak season, users experience a “Concurrent Request Limit Exceeded” error.\nWhat is the recommended solution?","options":["Invoke a continuation callout to MDM from a VF Page controller.","Invoke a continuation callout to MDM from a before insert trigger.","Invoke a continuation callout to MDM from a VF Page JavaScript.","Invoke a continuation callout to MDM from a VF Page @future call."],"correct":[0],"explanation":"I continuation callout sono possibili solo da controller Visualforce; non funzionano da trigger o da JavaScript. Questa è l’unica soluzione corretta."},{"id":11,"text":"Universal Containers requires Salesforce to send order data to an ERP system that requires a system-defined username/password for authentication.\nWhich two integration options are recommended from a security perspective?\nChoose 2 Answers.","options":["A. Fire outbound messages to a middleware that stores the credentials instead of an Apex callout.","B. Use custom settings to store the username and password allowing the Apex callout to read it.","C. Set up a Named Credential with a Named Principal Identity Type allowing the Apex callout to use it.","D. Store the username/hashed password in a private Static Resource, allowing the Apex callout to read it."],"correct":[0,2],"explanation":"Outbound Messaging evita di gestire credenziali in Salesforce delegandole al middleware (A). In alternativa, la pratica consigliata è usare Named Credential con Named Principal per memorizzare in modo sicuro username/password ed esporle agli Apex callout (C). Custom Settings e Static Resource non sono sicuri per segreti."},{"id":12,"text":"Universal Containers has Logistics Engineers that observe a near real-time dashboard in Salesforce of shipping containers that are in transit. Without leaving the dashboard, an Engineer can select a container to request an updated status on that container. These requests are handled by a proprietary shipping system that queues the requests to send to each container. Containers are connected devices and check in with the shipping system every 30 seconds to receive any status requests.\nWhat integration pattern or combination of patterns would be needed to connect Salesforce and the shipping system?","options":["A. UI Update Based on Data Changes and Batch Data Synchronization","B. Remote Process Invocation-Fire and Forget, with UI Update Based on Data Changes","C. Remote Call-In, with UI Update Based on Data Changes","D. Remote Process Invocation-Request and Reply"],"correct":[1],"explanation":"Salesforce invia la richiesta senza attendere (Fire & Forget) e la dashboard si aggiorna automaticamente quando arrivano gli stati (UI Update Based on Data Changes)."},{"id":13,"text":"Universal Containers (UC) stores inventory of products in one Salesforce org. UC wants regional and local branch offices who have their own Salesforce orgs to see the latest information about the product.\nWhat is the recommended approach to provide data access?","options":["A. Use Heroku Connect to provide access to products as external objects from other orgs.","B. Use Salesforce Connect with oData to provide access to products as external objects.","C. Use Apex HTTP Callouts to call Salesforce Rest APIs and provide access restrictions within the Apex class.\nwww.salesforcekeeda.com","D. Use Cross-Org adapter for Salesforce Connect to provide access to products as external objects."],"correct":[3],"explanation":"Quando la sorgente è un’altra org Salesforce, la scelta nativa è Salesforce Connect con Cross-Org adapter per esporre gli oggetti come External Objects in near real-time."},{"id":14,"text":"Universal Containers has an external ERP that will manage inventory and initiate shipping logistics after an Opportunity is marked “Closed Won” in Salesforce. A “Shipping Number” needs to be written back to the Opportunity to track related records in the ERP. Sales Reps need to move quickly from one Opportunity to the next.\nWhat integration pattern will satisfy the system requirements while maximizing the efficiency of the Sales Reps?","options":["A. Remote Process Invocation – Fire and Forget","B. Batch Data Synchronization","C. Remote Process Invocation – Request and Reply","D. Remote Call-In"],"correct":[0],"explanation":"I Sales Rep non devono attendere la risposta: invio immediato al sistema esterno (Fire & Forget) e aggiornamento asincrono del “Shipping Number”."},{"id":15,"text":"Universal Containers send quotes to customers periodically when the customer contract is near expiration. Quoting is generated by an external quoting engine. The VP recommends that the quote generated request should be sent one week prior to the contract expiration. The Quote engine requires the latest account, contact, and contract information from Salesforce to generate the quote.\nWhat is the recommended solution?","options":["A. A scheduled batch Apex to gather additional information from Salesforce and make a sync callout to the quote engine.","B. Workflow-initiated alert to the Sales Rep, who will submit a request from a custom controller in a Visualforce page.","C. Workflow-initiated outbound message with a callback to gather additional information from Salesforce.","D. Workflow-initiated Apex to gather additional information from Salesforce and make a sync callout to the quote engine."],"correct":[0],"explanation":"L’invio va schedulato una settimana prima ed essere affidabile: un Outbound Message (C) attiva il motore, che può richiamare (callback) Salesforce per recuperare i dati necessari senza bloccare l’utente."},{"id":16,"text":"Universal Containers is using Sales Could with Order Capture. It has been integrated with an SAP system for Order fulfillment. The SAP system sends the Order status updates to Salesforce on a nightly basis. The SAP system tracks Order status more granularly than required by Salesforce.\nWhich two options should an Architect recommend to address different statuses in Salesforce and SAP?\nChoose 2 Answers.","options":["A. Create a batch Apex to run on a daily basis, which converts order status to pre-defined order status.","B. ETL Change Data Capture interface to send only required status updates to Salesforce.\nwww.salesforcekeeda.com","C. ETL change Data capture interface transforms the SAP order statuses to Salesforce order status.","D. Update the SAP Order fulfilment process to match Salesforce Order Statuses against the SAP order status."],"correct":[1,2],"explanation":"Meglio normalizzare/filtrare nello strato di integrazione: l’ETL può inviare solo gli stati necessari (B) e trasformare i codici SAP in quelli Salesforce (C)."},{"id":17,"text":"Universal Containers would like to send all the closed opportunity records to the back-end legacy order management system. The order management system exposes REST API endpoints.\nWhat is the recommended approach to send the data to the order management system?","options":["A. Workflow Outbound SOAP API message to a middleware system.","B. Workflow Outbound SOAP message to the order management system.","C. Workflow Outbound SOAP message to a middleware system.","D. Workflow Outbound REST message to the order management system."],"correct":[0],"explanation":"L’OMS è solo REST. Salesforce non invia REST da workflow; quindi inviare **Outbound SOAP** a un **middleware** che converte in REST (A)."},{"id":18,"text":"Universal Containers (UC) wants to start sharing some of the information collected from customers in Salesforce to other systems. UC wants to start sharing some sales data (orders) with a third-party application to help forecast inventory. This is a web application that supports SOAP and REST interfaces to send and receive data.\nWhat is the recommended solution for integrating with this product?","options":["A. Create a Submit to Forecast Button on the Order Page to send the data to the Web application via REST.","B. Configure an Outbound Message to send a SOAP call via a Workflow rule to the Forecasting application on close.","C. Create an APEX trigger that makes the REST callout to the Forecasting application with the data when the deal closes.","D. Utilize a third-party ETL tool to synchronize the data from Salesforce to the Forecasting application using the Bulk API."],"correct":[0],"explanation":"La via più semplice/affidabile senza codice è un **Outbound Message (SOAP)** alla chiusura; l’app supporta SOAP, quindi può ricevere la notifica ed eventualmente fare callback per dettagli."},{"id":19,"text":"Universal Containers is planning to use Bulk API instead of SOAP API to load 1 million activity records from Accounts, Opportunities, and Cases.\nWhich are two advantages of using Bulk API over SOAP API?","options":["A. Bulk API needs fewer network round trips to complete the data load.","B. Bulk API doesn’t need a login to Salesforce and can process data offline.","C. Bulk API doesn’t need XML processing and can send data using CSV.","D. Bulk API needs Partner WSDL, whereas SOAP API needs Enterprise WSDL."],"correct":[0,2],"explanation":"Bulk API riduce i round-trip via batch asincroni (A) e usa **CSV** evitando parsing XML (C). Le opzioni B e D sono errate."},{"id":20,"text":"Universal Containers (UC) has an existing web-based application that a group of employees use on a regular basis. These employees often have Salesforce and the web-based application open and find themselves manually moving the data between both. UC would like the two systems to be integrated so that the employees will see all the data in one screen without the need for manually updating the data.\nWhat integration pattern can help accomplish this requirement?\nwww.salesforcekeeda.com","options":["A. Use the Force.com canvas framework to embed the external application into Salesforce.","B. Use Steaming API to create a push topic to send the message to the external system asynchronously.","C. Use Rest API to pull data from Salesforce and update the external application."],"correct":[0],"explanation":"Serve un’unica schermata che includa l’app esterna dentro Salesforce: **Force.com Canvas** permette l’embedding dell’app web con single-pane-of-glass."},{"id":21,"text":"Universal Containers has a back-end ordering system that restricts access on a per-user basis, It was determined that a “Named Credential” will be used to allow per-user identity type access for all integration with the system. One of the requirements is to have order information sent to the system when the status changes to “Confirmed”.\nWhich two valid integration scenarios can take advantage of such a security setup?\nChoose 2 Answers.","options":["A. Order information sent to the system via outbound message with session ID.","B. Order information sent via a Visualforce page with an Apex callout.","C. Order information inserted or updated via Salesforce Connect: OData 2.0.","D. Order information sent via process builder via invocable method/future method callout."],"correct":[2,3],"explanation":"Solo i callout Apex possono utilizzare Named Credential con identità per-utente. Salesforce Connect (C) supporta Named Credential per-user e un invocable method/future da Process Builder (D) esegue callout Apex configurati con Named Credential. Gli outbound message non supportano Named Credential e una pagina Visualforce non è automatizzabile sull'evento richiesto."},{"id":22,"text":"Developers at Universal Containers have created a custom commandline tool to help with their application lifecycle management by allowing them to deploy metadata changes such as page layouts, custom labels, and list views to their org using the Metadata API.\nWhat integration pattern does this tool utilize?","options":["A. Request and Reply","B. Fire and Forget","C. Remote Call-In","D. UI Update Based on Data Changes"],"correct":[2],"explanation":"Un tool esterno che chiama Salesforce tramite API è un classico esempio del pattern Remote Call-In."},{"id":23,"text":"Universal Containers’ Customer Service Managers wants to be automatically notified when a Customer Service Representative successfully closes a case. What is the recommended approach for the Service Manager to be notified in the Salesforce user interface without having to refresh the screen?","options":["A. Have the user refresh the standard Visualforce page to see closed case updates by setting up the refresh interval on the browser.","B. Use a standard Visualforce page and embed JavaScript in the standard Visualforce page to refresh the porting of the standard page layout.","C. Create a custom Visualforce page, subscribe to the “closed cases” push topic, and display alerts onscreen.","D. Create a custom Visualforce page with a custom polling mechanism to poll for closed cases and display alerts on the Visualforce page."],"correct":[2],"explanation":"L'unico modo per ricevere notifiche real-time senza refresh è usare Streaming API e PushTopic, come indicato in (C)."},{"id":24,"text":"What is the recommended approach to implement a login authentication call for an inbound integration call to Salesforce?","options":["A. Perform the login call only when the session/access token has expired or no longer works.","B. Perform the login authentication call before each integration call to Salesforce every time.","C. Only perform a single login call forever and store the session/access token permanently.","D. Perform the login authentication call before a single transaction of multiple calls to Salesforce."],"correct":[0],"explanation":"La best practice è ri-autenticarsi solo quando il token non è più valido (A), riducendo logins e rispettando i limiti."},{"id":25,"text":"Universal Containers is integrating their Salesforce platform with their on-premise ERP system. As part of the test class design DML operations are to be performed before making the test callout.\nWhat capability does Salesforce provides to facilitate this?","options":["A. Perform the DML operation within the Test.StartTest and Test.Stop Test and make the callout within Test.StartTest and Test.StopTest block.","B. Perform the DML operation outside the Test.StartTest and Test.StopTest and make the callout with the Test.StartTest and Test.StopTest block.","C. Perform the DML operation inside the Test.StartTest and Test.Stop Test and make the callout outside the Test.StartTest and Test.Stop Test block.","D. Perform the DML operation outside the Test.StartTest and Test.StopTest and make the callout outside of the Test.StartTest and Test.StopTest block."],"correct":[1],"explanation":"I DML vanno eseguiti fuori dal blocco StartTest/StopTest. Il callout mock deve essere eseguito dentro StartTest/StopTest (B) per avere contatori e comportamento coerenti."},{"id":26,"text":"Universal Containers (UC) has integrations developed between Salesforce and back-end ERP applications. During peak load, UC is getting an error at the integration layer indicating, “Login Rate Exceeded”.\nWhich two recommendations would mitigate this issue?","options":["A. Use a different user for each integration.","B. Set the permission login to never expire for the user.","C. Cache the session ID to avoid a login call.","D. Keep re-typing the login call until it’s successful."],"correct":[0,2],"explanation":"La riduzione dei login si ottiene attraverso caching del session ID (C). Distribuire i login su utenti diversi (A) abbassa il rate per utente. Le altre opzioni non risolvono il problema."},{"id":27,"text":"Universal Containers has a custom Visualforce page that makes a callout to an external service to show historical sales data from the warehouse. Due to heavy usage and slow response time of the external web service, Salesforce continues to hit the Apex Concurrent limit. Assuming that external web service response time can’t be improved, what changes can be made to the custom Visualforce page and Apex Controller to avoid hitting the Apex Concurrent limit?","options":["A. Use @future annotation to make the HTTP Callout.","B. Replace the standard HTTP Callout with Continuation.","C. Invoke a Workflow Outbound message from the Apex trigger.","D. Set a timeout on the web service HTTP callout."],"correct":[1],"explanation":"Le Continuation permettono long-running callout senza occupare thread sincroni, evitando il limite Concurrent Apex (B)."},{"id":28,"text":"Universal Containers has a homegrown application that polls Salesforce using SOAP API every 2 minutes to obtain newly created case information. This causes both performance issues and API usage limits to be exceeded.\nWhat should an Architect recommend to improve performance and optimum use the API limits?","options":["A. Use an Apex callout to indentify new case records and send them to the client.","B. Use Streaming API to publish new case records to a push topic and subscribe to it.","C. Use Generic Streaming to send push notifications of case creation events to the client.","D. Use REST API to identify new case records in Salesforce every 15 minutes."],"correct":[1],"explanation":"Il problema è il polling. La soluzione corretta è passare a un modello push tramite Streaming API e PushTopic (B)."},{"id":29,"text":"Universal Containers requires Salesforce to send expense data to an accounting system. Each user has their own username/password credential to access the account system via integration.\nWhat is a recommended option for an integration approach from a security perspective?","options":["A. Set up a Named-Principal Named Credential and have the administrator set up the username/password.","B. Set up a Per-User Named Credential and have the users each set up their username/password.","C. Fire outbound messages to a middleware that stores the credentials instead of an Apex callout.","D. Use hierarchical custom settings to store the username/password allowing the Apex callout to read it."],"correct":[1],"explanation":"Quando ogni utente deve usare le proprie credenziali, l’unica soluzione sicura e nativa è un Named Credential per-user (B)."},{"id":30,"text":"When an opportunity is closed in Salesforce, an order should be created in the back-office SAP system. At the end of the day, Universal Containers allows customers to call back and cancel an order within 24 hours. To cancel an order, the Sales Rep has to set the opportunity status to Open from Closed. The Sales Manager wants all opportunities that changed from Closed to Open to be sent over to the SAP system for order cancellation on nightly basis. Salesforce has a total of 20M opportunities.\nWhat is the recommended way to achieve this? (Key is Modified Opportunities and not all Opportunities. So Bulk is ruled out and similar way all Opportunities is ruled out.)","options":["A. An ETL job to leverage Bulk API to extract modified opportunities.","B. An ETL job to leverage REST API to extract all opportunities.","C. An ETL job to leverage SOAP API to extract modified opportunities.","D. An ETL job to leverage SOAP API to extract all opportunities."],"correct":[2],"explanation":"Solo il SOAP API supporta getUpdated per estrarre esclusivamente i record modificati. Con 20M di record, estrarre solo i cambiati è essenziale: quindi (C)."},{"id":31,"text":"Universal Containers (UC) wants to connect their on-premise ERP system to view Order data in Salesforce. UC is considering a solution to integrate the on-premise system using Salesforce Connect via OData.\nWhich three considerations should an Architect keep in mind when recommending use of Salesforce Connect?","options":["A. Customer wants the ability to query external data using Global Search and reports.","B. Customer does not want real-time access to the ERP data and is willing to wait for hourly refreshes.","C. Customer wants to create a master-detail relationship between Opportunity and the external object.","D. Customer needs to query small amounts of data at any time and display using a related list.","E. Customer has a large amount of data that they do not want to load into Salesforce."],"correct":[0,3,4],"explanation":"Salesforce Connect non supporta Global Search avanzata o reporting complesso altamente performante, ma *supporta query in tempo reale* per piccoli dataset (D) e permette di evitare la copia di grandi volumi di dati (E). Non supporta master-detail con oggetti esterni (C) e non è pensato per dati non real-time (B). L'opzione A è parzialmente vera solo per External Objects indicizzati, ma non offre la piena ricerca/reportistica come gli oggetti standard, quindi va esclusa."},{"id":32,"text":"Universal Containers (UC) has Salesforce integrated with their mainframe system. All the orders placed in Salesforce are sent to the mainframe system in a nightly batch process.\nWhich two capabilities are required for middleware to support this integration?\nChoose 2 Answers.","options":["A. Support for Metadata API","B. Extract, transform, and load","C. Message queuing","D. Synchronous transactions"],"correct":[1,2],"explanation":"Un’integrazione batch notturna richiede capacità ETL (B) e sistemi di coda o buffer per gestire grandi volumi (C). Non serve Metadata API (A) né transazioni sincrone (D)."},{"id":33,"text":"Universal Containers has 1,200 active users... They have a trigger on the Order object that has a @future method calling an external web service. Due to growth, some calls are delayed for hours.\nWhat can be issue for this delay and what integration pattern would an Architect recommend?","options":["A. The system is reaching daily limits of @future calls. Replace the HTTP Callout with a Workflow Rule and Outbound messages.","B. The system is reaching daily limits of web service callouts. Batch web service callouts to stay under the limit.","C. The system is reaching daily limits of @future calls. Remove @future annotation and call the web service directly from the trigger.","D. The system is reaching daily limits of web service callouts. Create a ticket to Salesforce support to increase the limit."],"correct":[0],"explanation":"Il numero di @future è limitato (le code si saturano). La soluzione è evitare @future e usare un meccanismo più robusto per integrazioni asincrone come Outbound Messages (A)."},{"id":34,"text":"UC maintains the Customer Master outside Salesforce and syncs daily. They must test Account trigger logic with bulk inserts using a CSV file.\nWhat is the recommended way to use this data in a test class?","options":["A. Load the customer-provided csv file as a static resource and refer to it in the test classes.","B. Load the customer-provided csv file as a Chatter file and refer to it in the test classes.","C. Load the customer-provided csv file under Documents and refer to it in the test classes.","D. Load the customer-provided csv file to a custom object for testing and delete the test records after testing."],"correct":[0],"explanation":"Le test class possono accedere solo a risorse statiche. Le altre opzioni non sono accessibili dai test."},{"id":35,"text":"UC has a third-party MDM database maintaining Customer and Contacts. UC wants bi-directional synchronization with Salesforce.\nWhat is the recommended approach?","options":["A. Create a VisualForce page that pulls data from MDM and sends changes.","B. Implement a third-party middleware tool to maintain the synchronization between Salesforce and the MDM database as they occur.","C. Create a Batch process running every 5 minutes.","D. Modify the MDM database to send/receive updates to/from Salesforce."],"correct":[1],"explanation":"Una sincronizzazione bidirezionale affidabile richiede middleware specializzato (B). Le altre opzioni non gestiscono correttamente conflitti, scaling o orchestrazione."},{"id":36,"text":"UC is planning a production release with large data migration. Data keeps updating and UC wants near real-time sync.\nWhat is the recommended approach?","options":["A. Bulk API for one-time migration + Apex web service for incremental load.","B. Bulk API for one-time migration + SOAP API for incremental load.","C. SOAP one-time migration + REST incremental load.","D. Bulk API for one-time migration + Bulk API for incremental load."],"correct":[1],"explanation":"Bulk API è ottimo per la migrazione iniziale, mentre per l’incrementale la soluzione classica è SOAP API call-in (B)."},{"id":37,"text":"Connected device sends data packets as customer presses buttons. Support Rep must see updates in near real-time.\nWhat integration pattern enables this?","options":["A. UI Update Based on Data Changes","B. Remote Process Invocation-Request and Reply","C. Remote Process Invocation-Fire and Forget","D. Remote Call-In"],"correct":[0],"explanation":"UI Update Based on Data Changes abilita aggiornamenti UI real-time tramite Streaming API, perfetto per flussi continui."},{"id":38,"text":"UC wants to gather information from a third-party app to update shipping info. A user triggers an update and UI refreshes with current status.\nWhich two options follow the Remote Process Invocation–Request and Reply pattern?","options":["A. A batch Apex job performing an Apex SOAP or HTTP callout in a synchronous manner.","B. A custom Visualforce page/button that initiates an Apex REST callout in a synchronous manner.","C. A custom Visualforce page/button that initiates an Apex SOAP callout in a synchronous manner.","D. A trigger invoked from data changes performing a synchronous SOAP callout."],"correct":[1,2],"explanation":"Request & Reply richiede un callout sincrono invocato dall’utente tramite UI: REST (B) o SOAP (C). I trigger non possono fare callout sincroni (D)."},{"id":39,"text":"UC must send order details via Apex callout HTTPS to ERP REST API securely.\nWhich two approaches ensure secure transmission?","options":["A. The REST API should be SSLO enabled with a CA-signed certificate.","B. The order details should be passed in a URL parameter in the REST API endpoint.","C. The REST API should be SSL enabled with a Salesforce client certificate.","D. The order details should be passed in the body of the REST API callout."],"correct":[0,3],"explanation":"La connessione deve essere sicura (HTTPS con certificato CA, A) e i dati sensibili devono andare nel body, non nella URL (D). L'uso di certificati client dipende dallo scenario e non è sempre richiesto."},{"id":40,"text":"When a Sales Rep closes an opportunity in Salesforce, an Order should be created in Universal Containers’ SAP system and the Sales Rep should be notified with an order number as soon as possible.\nWhat is the recommended solution?","options":["A. Apex @ future callout from an update trigger with an opportunity page refresh using Streaming API.","B. Workflow Outbound message with an email notification on callback from SAP","C. Apex callout from an update trigger with an opportunity page refresh using Streaming API.","D. Workflow Outbound message with an email notification on acknowledgement from SAP"],"correct":[2],"explanation":"Serve una risposta immediata da SAP con un ordine da notificare subito al Sales Rep. L’unica opzione sincrona è un callout diretto dal trigger (C), con Streaming API per aggiornare la UI. Le altre opzioni sono asincrone o non garantiscono risposta immediata."},{"id":41,"text":"Universal Containers has a data warehouse system that collects information from upstream systems in order to do proprietary reporting. Every day there are several thousand record insertions and updates in Salesforce that might be of interest to this data warehouse. Reports in the data warehouse are run at the end of the month.\nWhat is a recommended way to transfer record insertions and updates to the data warehouse?","options":["A. Use the SOAP API’s getUpdated() method to retrieve changed record IDs, then retrieve records.","B. Use scheduled Apex to do an Apex callout to the data warehouse.","C. Use native Outbound message functionality to send a message with each record change.","D. Use a trigger to do an Apex callout to the data warehouse with each record change."],"correct":[0],"explanation":"Poiché i report sono mensili e i volumi giornalieri elevati, la soluzione migliore è un’integrazione batch con getUpdated() (A). Le soluzioni per-record (C, D) non sono scalabili."},{"id":42,"text":"Universal Containers has a requirement to update the Salesforce Account object any time the corresponding account is updated within their financial system.\nWhich three Salesforce capabilities should the Architect consider?\nChoose 3 Answers.","options":["A. Partner WSDL because of a requirement to utilize SOAP based web services.","B. Partner WSDL because of a requirement to dynamically inspect field names during runtime.","C. Streaming API because of a requirement to dynamically inspect field names during runtime.","D. Enterprise WSDL because of a requirement to utilize SOAP based services","E. Partner WSDL because of a requirement to utilize REST-based web services"],"correct":[0,1,3],"explanation":"La necessità è integrare *verso Salesforce* usando SOAP. Enterprise WSDL (D) è tipicamente scelto quando il modello è fisso, mentre Partner WSDL (A, B) permette flessibilità dinamica. Streaming API (C) non c’entra e il Partner WSDL non riguarda REST (E)."},{"id":43,"text":"UC has an ERP with millions of customer orders; some include PII that must remain in ERP. They want the five most recent orders displayed on the Account page in Salesforce.\nHow should an Architect design this requirement considering both security and scalability?","options":["A. Leverage Salesforce Connect to display order information in Salesforce.","B. Write an outbound message to receive orders from ERP system as they are created.","C. Build a scheduled ETL job to sync all customer order history in the Orders object.","D. Leverage the REST API to receive orders from the ERP system as they are created."],"correct":[0],"explanation":"Salesforce Connect permette accesso on-demand, non copia dati sensibili in Salesforce e restituisce solo i record necessari. Le altre soluzioni copierebbero milioni di record o anche PII vietata."},{"id":44,"text":"UC aggregates leads daily from multiple partners, causing duplicates.\nWhich two options should an Architect recommend to improve data quality?\nChoose 2 Answers.","options":["A. Extract Salesforce lead data into a staging table and use ETL to de-duplicate.","B. Create a custom web service to identify duplicate leads and load.","C. Design an ETL job to eliminate duplicates from the lead aggregation system.","D. Use duplicate management rules on Lead to report duplicate records."],"correct":[0,3],"explanation":"La deduplica dovrebbe avvenire a monte tramite ETL (A) o tramite regole di Duplicate Management e reporting (D). La creazione di web service custom (B) non è necessaria e (C) è troppo restrittivo per un processo che continua a ricevere dati duplicati."},{"id":45,"text":"UC uses Salesforce to manage Accounts and Opportunities. An on-prem usage system must update Opportunity usage statistics. The remote system supports contract-first integration and UC does NOT want custom Salesforce development.\nWhich three steps should the Architect consider?\nChoose 3 Answers.","options":["A. Create a Workflow outbound message during Opportunity creation and provide the Opportunity ID and Session ID to the remote system.","B. Use a REST API callback to update the Opportunity record with the product usage data from the remote system.","C. Create a Process Builder outbound message during Opportunity creation and provide the Opportunity ID and Session ID to the remote system.","D. Use a SOAP API callback to update the Opportunity record with the product usage data from the remote system.","E. Generate a partner WSDL in Salesforce and provide it to the remote system to create a client stub."],"correct":[0,3,4],"explanation":"Nessuno sviluppo custom significa usare funzionalità point-and-click: outbound messages (A, C) e callback SOAP tramite WSDL (D/E). Il partner WSDL (E) è compatibile con contract-first. REST callback (B) richiederebbe sviluppo Apex."},{"id":46,"text":"When the ERP creates an Order, it must also be created in Salesforce in real time. How can UC ensure duplicate Orders are not created?\nChoose 2 Answers.","options":["A. Use outbound messaging to send a unique message ID to the ERP system.","B. Use the upsert() function instead of create() to prevent the creation of unwanted duplicate records.","C. Use a middleware tool to handle the responsibility for managing multiple duplicate calls.","D. Customize the Apex web service REST call to send a unique message ID to the ERP system."],"correct":[1,3],"explanation":"La deduplica su Salesforce si fa tramite upsert() (B) o includendo un message-ID univoco nella richiesta (D). L'outbound message (A) riguarda l'opposto del flusso in questione. Middleware (C) aiuta ma non garantisce deduplica in Salesforce."},{"id":47,"text":"UC uses external MDM as customer master. When an agent creates/updates an account in Salesforce, it must be created/updated in MDM *before* saving in Salesforce. Users may navigate away while save completes.\nWhat is the recommended approach?","options":["A. Make an @future callout to MDM from a trigger with page refresh using Action region.","B. Make a continuation callout from VF page controller with page refresh using Action poller.","C. Make an asynchronous callout from VF page controller with page refresh using Action region.","D. Make a synchronous callout from VF page controller with page refresh using Action region."],"correct":[2],"explanation":"Serve controllo del flusso UI (quindi VF controller) e callout *asincrono* per permettere all’utente di navigare (C). Il trigger non può bloccare fino a MDM, e la callout sincrona (D) bloccherebbe la UI."},{"id":48,"text":"UC manages customers in Sales Cloud and wants to view real-time order info from ERP (OData 4.0) and update ERP with service info.\nWhich two options are recommended?","options":["A. Set up data replication for order and service data syncing.","B. Use an Apex callout to look up order information on the ERP system.","C. Use Salesforce Connect for looking up order information from ERP.","D. Use Salesforce Connect to write service data into UC’s ERP system."],"correct":[2,3],"explanation":"ERP supporta OData 4.0 → Salesforce Connect è ideale per consultare dati in tempo reale (C) e anche per CRUD verso l’esterno tramite External Objects, incluse scritture (D)."},{"id":49,"text":"UC has multiple Salesforce orgs and wants to consolidate them, needing data cleaning and standardization.\nWhat should an Architect recommend?","options":["A. Use staging tables with an ETL tool for data cleaning and standardization.","B. Use a custom REST service for data cleaning and standardization.","C. Use a custom SOAP service for data cleaning and standardization.","D. Use standard SOAP API for data cleaning and standardization."],"correct":[0],"explanation":"La normalizzazione dei dati multi-org è un tipico scenario da ETL con staging area (A). Le altre opzioni richiederebbero sviluppo custom inutile."},{"id":50,"text":"UC has many existing apps including Salesforce. They want to integrate these apps into Salesforce UI so users can do all tasks in one place.\nWhat is the recommended solution?","options":["A. Set up the external applications as Connected apps into the Salesforce user interface.","B. Use streaming API to integrate these applications into the Salesforce user interface.","C. Set up the external applications as Canvas apps into the Salesforce user interface.","D. Connect the external applications into the Salesforce user interface using Salesforce Connect."],"correct":[2],"explanation":"Canvas consente di incorporare applicazioni esterne *dentro l'interfaccia Salesforce* mantenendo sessione e contesto utente (C). Connected Apps riguarda autenticazione, Streaming API invia eventi, Salesforce Connect non integra UI."},{"id":51,"text":"Universal Containers would like to ensure that the server and client-side app’s identity is mutually authenticated for all integrations.\nWhich two of the integration patterns below support such authentication?\nChoose 2 Answers.","options":["A. Apex callout to the client-side app with the callout payload encrypted with custom Apex code.","B. Outbound message received by client-side app that uses a Salesforce-provided client certificate.","C. Apex callout with the client-side app that provides Salesforce with a CA-signed client certificate.","D. Outbound message sent to a client-side app endpoint defined with a Per-User Named Credential."],"correct":[1,2],"explanation":"L’autenticazione mutua richiede certificati. Gli Outbound Messages possono usare un certificato client Salesforce (B). I callout Apex possono utilizzare certificati CA-signed per mutual TLS (C). L'opzione D non abilita mutua autenticazione."},{"id":52,"text":"Universal Containers uses Sales Cloud. For every opportunity, three back-office systems must be updated online in parallel within a single transaction (Unit of Work). If any update fails, all must roll back. Calls may take >10s.\nWhich two options should an Integration Architect introduce?\nChoose 2 Answers.","options":["A. Salesforce Outbound Messaging","B. Integration Middleware","C. Message-oriented Middleware","D. Salesforce Continuation."],"correct":[1,2],"explanation":"Una transazione distribuita con rollback richiede coordinazione (XA, compensation, saga) → serve middleware (B) e strumenti MOM per orchestrare e gestire esiti (C). Salesforce Continuation (D) risolve solo latenze, non transazioni distribuite."},{"id":53,"text":"UC wants to use a hard-coded username/password/security token of a System Admin user for inbound API calls.\nWhich two security issues are associated?\nChoose 2 Answers","options":["A. All back-end systems get uncontrolled access to any data within the Salesforce environment.","B. Unintended password resets will cause the integration to stop working and disrupt business processes.","C. Apex web services can execute with system privileges with such Salesforce credentials.","D. Unsecure storage of the credentials may result in hackers gaining unauthorized access to Salesforce."],"correct":[1,3],"explanation":"Il rischio maggiore è la compromissione credenziali (D) e l'interruzione del servizio a causa di reset password (B). L'opzione A non è corretta perché l’integrazione non «espone» accesso a tutti i sistemi; C non è specifica del problema."},{"id":54,"text":"A system at UC needs to update opportunity details (including line items and team) and retrieve the new information *in real time* as one atomic operation.\nWhat approach conserves API limits?","options":["A. Use a publisher action to update the data and callback.","B. Use the generic streaming API to publish changes.","C. Use a custom Apex class with a webservice method that performs both actions.","D. Use the SOAP API to upsert the data. The API will then return all opportunity details."],"correct":[3],"explanation":"Le SOAP API consentono upsert + risposta completa in un’unica chiamata (D), risparmiando API. Le altre opzioni richiedono più round-trip."},{"id":55,"text":"What Salesforce technology should an Integration Architect consider when needing to securely expose an external system UI *within* Salesforce and pass user info?","options":["A. Custom Web Tab","B. Lightning Component","C. Visualforce","D. Canvas"],"correct":[3],"explanation":"Canvas permette single sign-on e integrazione UI bidirezionale, ideale per incorporare applicazioni esterne e passare contesto utente in modo sicuro."},{"id":56,"text":"UC has a simple on-prem web app that is unauthenticated. What capability should make the app accessible from within Salesforce?","options":["A. Custom Web Tab","B. Visualforce","C. Lightning Connect","D. Apex callout"],"correct":[0],"explanation":"Un'app semplice e non autenticata può essere esposta tramite Web Tab (A). Non serve callout né connessioni oData."},{"id":57,"text":"Need to synchronize data changed in Salesforce to a third-party system with a JSON endpoint.\nWhat capability should be considered?","options":["A. Use an Outbound Message with the record's data.","B. Use an Apex class to perform the REST Callout asynchronously.","C. Use the REST API with Content-Type JSON.","D. Use Lightning Connect to save data to an external object."],"correct":[1],"explanation":"Per inviare JSON a un endpoint esterno serve un callout Apex asincrono (B). Outbound Messages non supportano JSON."},{"id":58,"text":"UC is migrating from a legacy system with SMTP-based integrations. What Salesforce capability should be considered?","options":["A. Custom Apex class implementing SMTP protocol.","B. Custom Apex batch job checking for SMTP messages.","C. Lightning Connect with OData/SMTP interchange.","D. Custom InboundEmailHandler to process messages."],"correct":[3],"explanation":"Salesforce può elaborare email in ingresso tramite InboundEmailHandler (D). Le altre opzioni non sono supportate."},{"id":59,"text":"What are two benefits of Web-to-Lead?\nChoose 2 answers","options":["A. Web-to-Lead requests have their own limits separate from other APIs.","B. Web-to-Lead can be utilized for Lead data migrations.","C. Web-to-Lead can be used to de-duplicate leads during integrations.","D. Web-to-Lead is a simple way to capture responses to marketing landing pages."],"correct":[0,3],"explanation":"Web-to-Lead ha un limite separato (A) ed è ottimo per catturare dati da landing page (D). Non è fatto per migrazioni o deduplica."},{"id":60,"text":"UC must query all Accounts updated in last 24h and download 500–1500 of them nightly.\nWhich three techniques should be considered?\nChoose 3 answers","options":["A. Use Data Replication API getUpdated().","B. Use Enterprise WSDL getUpdated().","C. Use time-based workflow to trigger outbound messages.","D. Use ETL with dynamic SOQL for last 24h.","E. Use REST API /sobjects/Account/updated."],"correct":[0,1,4],"explanation":"getUpdated() è pensato per questo scenario, sia da Replication API (A) che da Enterprise WSDL (B). Anche REST espone l’endpoint /updated (E). L’ETL dinamico (D) è possibile ma meno efficiente; C non è adatto per batch notturni."},{"id":61,"text":"What are three capabilities of the Bulk API?\nChoose 3 answers","options":["A. Process multiple batch jobs asynchronously.","B. Process multiple batch jobs synchronously.","C. Roll back all transactions within a batch of 10000 records.","D. Monitor job status via the Web UI.","E. Monitor job status via the API."],"correct":[0,3,4],"explanation":"Bulk API elabora job asincroni (A), permette monitoraggio da UI (D) e via API (E). Non supporta esecuzione sincrona (B) né rollback di massa all'interno del batch (C)."},{"id":62,"text":"What are three capabilities of Salesforce outbound messaging?","options":["Provide a session ID as part of the outbound message.","Repeatedly send a SOAP notification for up to 24 hours until an acknowledgement is received.","Build integration components without the use of Apex.","Define a WSDL based upon 2 objects related via Master-Detail relationship.","Define a custom WSDL based upon an Apex Interface class definition."],"correct":[0,1,2],"explanation":"Outbound Messaging include il session ID, effettua retry fino a 24 ore e funziona senza Apex. Non supporta WSDL personalizzati né relazioni multiple."},{"id":63,"text":"What are two considerations of Apex REST services that an Integration Architect should keep in mind when building custom integrations?","options":["They cannot utilize publisher actions.","They require unit and functional testing.","They cannot be built or maintained declaratively.","They consume more API limits than SOAP or REST API."],"correct":[1,2],"explanation":"Apex REST richiede test (unit e functional) e non è dichiarativo. Le altre affermazioni non sono corrette."},{"id":64,"text":"What are two considerations to make when performing SOAP callouts from within Apex?","options":["WSDL2Apex can be used to generate stub code.","WSDL2Apex supports RPC-style SOAP callouts.","SOAP callouts cannot occur after any DML statements.","SOAP callouts consume API limits."],"correct":[0,3],"explanation":"WSDL2Apex genera lo stub SOAP e i callout consumano API limits. Il supporto RPC non è previsto e i callout possono avvenire dopo DML se eseguiti correttamente."},{"id":65,"text":"What are two scenarios that utilize the Chatter REST API?","options":["When integrating chatter into custom mobile apps.","When migrating Opportunity data.","When uploading large files.","When posting status updates to social media."],"correct":[0,3],"explanation":"La Chatter REST API è progettata per integrazioni mobile e per pubblicare aggiornamenti. Non è fatta per migrazioni o grandi upload."},{"id":66,"text":"Universal Containers is using the Enterprise WSDL to integrate their financial system to Salesforce. While reading the release notes for the upcoming Salesforce release, the architect discovers a new object will be added to the Salesforce data model that would be beneficial for the financial system integration. What two actions should the architect take to ensure the new object will be available to the financial system integration?","options":["Download the latest enterprise WSDL that contains the new object definition to generate web service stubs for the new Salesforce object.","Download the latest partner WSDL that contains the new object definition to generate web services stubs for the new Salesforce object.","Migrate to the partner WSDL to generate a generic sObject service stub that can be leveraged for existing and future Salesforce objects.","Migrate to the metadata API to download the new Salesforce sObject definition into the financial system integration."],"correct":[0],"explanation":"Enterprise WSDL è statico: per vedere il nuovo oggetto occorre rigenerare il WSDL. Le altre opzioni non sono necessarie o non risolvono il problema."},{"id":67,"text":"Universal Containers is building a native mobile application that queries and updates data in their Salesforce org in real time. What statement is correct about the Salesforce APIs?","options":["Enterprise WSDL supports WS-Security.","Enterprise WSDL minimizes payload size.","REST API supports WS-Security.","REST API supports oAuth."],"correct":[3],"explanation":"Per app mobile la scelta standard è REST API con OAuth. WS-Security non è supportato da REST e il WSDL Enterprise non minimizza payload."},{"id":68,"text":"Universal Containers is planning a data migration into Salesforce and must decide whether to use the Bulk API or the SOAP API. Which three statements are true about the Bulk and SOAP APIs?","options":["The SOAP API avoids record locking contention on parent objects of Master-Detail relationships.","DML limits on Bulk jobs are not governed on Salesforce servers.","The Bulk API may cause record locking contention on parent objects of Master-Detail relationships.","The SOAP API provides job monitoring on the Salesforce setup menu.","The Bulk API allows multiple attachments to be loaded from within a single ZIP file."],"correct":[0,2,4],"explanation":"Bulk API può generare lock su parent; SOAP no. Bulk consente caricamento ZIP con più allegati. Le altre opzioni sono false."},{"id":69,"text":"Universal Containers would like to update their accounting system every time an opportunity is changed to Closed-Won. Their accounting system occasionally is offline for 3–4 hours to support month-end processing, and they would like the integration design to ensure that no transactions are lost during this down time. Which two integration designs should the architect consider?","options":["Use Outbound Messaging with a retry strategy.","Use a Middleware queue to store events and replay when the accounting system is available.","Perform Apex callouts synchronously within the Opportunity trigger.","Use Streaming API to push changes directly to the accounting system."],"correct":[0,1],"explanation":"Outbound Messaging ha retry automatici per 24 ore. Un middleware con coda garantisce durabilità quando il sistema è offline."},{"id":70,"text":"Universal Containers has an ERP with REST services for financial data. Salesforce users need to view financial data on Account records in real time without storing it in Salesforce. What approach should an architect recommend?","options":["Use Salesforce Connect (External Objects) with an OData adapter.","Build a Visualforce page with Apex callouts to the ERP.","Schedule a nightly ETL to replicate the data into Salesforce.","Use Outbound Messaging to pull data from ERP on demand."],"correct":[1],"explanation":"L’ERP espone REST, non OData: quindi Salesforce Connect non è applicabile. Una pagina VF/LWC con Apex callout garantisce dati real-time senza storage."},{"id":71,"text":"Universal Containers wants to publish platform events for changes to Orders and have multiple downstream systems subscribe. Which integration pattern should be considered?","options":["Request and Reply","Remote Call-In","Fire and Forget","Batch Data Synchronization"],"correct":[2],"explanation":"Platform Events implementano un modello publish/subscribe → Fire and Forget."},{"id":72,"text":"Universal Containers has a requirement to expose Salesforce data to an external portal so users can search for and view Cases without logging in to Salesforce. Which approach should be recommended?","options":["Create a public Site and expose Visualforce pages that surface Case data.","Use Outbound Messaging to send Case data to the portal.","Require Community licenses for portal users.","Use Salesforce Connect to expose Case data on the portal."],"correct":[0],"explanation":"Un Salesforce Site pubblico può esporre dati Case senza richiedere login. Le altre opzioni non soddisfano il requisito."},{"id":73,"text":"Universal Containers needs to ensure integrations can continue working after future Salesforce releases without code changes on the client side. Which WSDL should be recommended for custom integrations to minimize breakage?","options":["Enterprise WSDL","Partner WSDL","Metadata WSDL","Apex WSDL"],"correct":[1],"explanation":"Il Partner WSDL è dinamico e non cambia struttura tra release, riducendo il rischio di rotture rispetto all’Enterprise WSDL che è statico."},{"id":74,"text":"Universal Containers uses a legacy system to receive and handle Level 1 service requests, and Salesforce Service Cloud for Level 2 requests and above. Cases will be pushed from the legacy system to Service Cloud by a nightly batch process. Once the cases are closed in Salesforce, the case status needs to be updated in the legacy system as soon as possible. How should the Technical Architect recommend that case status be updated in the legacy system?","options":["Use a middleware tool to pull case status from Salesforce and push to the legacy system at regular intervals.","Use Apex callout to send case status from Salesforce to the legacy system.","Write an Apex web service returning case status, to be called from the legacy system.","Use Outbound messages to send status updates from Salesforce to the legacy system."],"correct":[3],"explanation":"Gli Outbound Messages inviano notifiche non appena il caso viene aggiornato, con retry automatici, garantendo aggiornamento immediato nel sistema legacy."},{"id":75,"text":"Universal Containers sells its products online using a system built on Force.com Sites. The orders are captured and processed in Salesforce. The company uses an external marketing system and would like to make use of the customer data captured in Salesforce. The marketing system has REST API that can be used to push data into it. Which three options should a Technical Architect consider that do not require building custom web services on the marketing system?","options":["Build a custom Java application using the Enterprise WSDL to pull data from Salesforce and push it to the marketing system.","Use Outbound Messages to send customer data from Salesforce to the marketing system.","Write a custom Apex web service, which will be called from the marketing system to retrieve customer data.","Use a middleware tool to pull customer data from Salesforce and push it to the marketing system on a daily basis.","Use Apex callout to send customer data from Salesforce to the marketing system."],"correct":[0,3,4],"explanation":"Le opzioni 0, 3 e 4 permettono di inviare dati al sistema di marketing usando la sua REST API senza che esso debba esporre nuovi servizi. Gli Outbound Messages (1) richiedono un endpoint SOAP, non REST."},{"id":76,"text":"Universal Containers acquires several companies and decides to consolidate all customer service systems used by the acquired companies into one Salesforce Service Cloud. They decide to use an ETL to extract service requests from various systems, apply appropriate transformations, and load cases into Salesforce. Different requests captured by different customer service systems could belong to common accounts in Salesforce, so care must be taken to avoid creating duplicate accounts. Which two API options should be considered to load cases into Salesforce that would be safe from record-locking issues?","options":["Bulk API with parallel option and a batch size of 1000 or less.","Bulk API with serial option and a batch size of 1000 or less.","SOAP API with a batch size of 1000 or less.","SOAP API with a batch size of 200 or less."],"correct":[1,3],"explanation":"Il Bulk API in modalità seriale (1) evita lock concorrenti. SOAP con batch molto piccoli (3) riduce ulteriormente la probabilità di record locking."},{"id":77,"text":"Universal Containers merges with Planetary Shipping. They decide to consolidate their systems and migrate all the customer accounts into one Salesforce org. After some data analysis, they find out that their systems have common accounts that they would like to merge and avoid duplicate accounts in Salesforce. They find out that customer email, available in both the systems, can be used to match common accounts. The customer data can be exported as CSV files from their systems. Which two options should be considered to load accounts into Salesforce and eliminate duplicate accounts?","options":["ETL tool that is capable of identifying common accounts using email address and performs updates.","Dataloader upsert operation with a custom External ID field containing the email address.","ETL tool that is capable of identifying common accounts using a Salesforce ID and performing updates.","Data loader insert operation and Salesforce’s native deduplication after the load."],"correct":[0,1],"explanation":"La deduplica va fatta prima del caricamento: usare email come chiave in ETL (0) o un External ID basato su email con upsert (1)."},{"id":78,"text":"Universal Containers decided to use Salesforce Sales Cloud for their sales processes. Won Opportunities must be sent to an external ERP system for order fulfillment. All the line items must also be sent along with opportunities. The ERP system supports only SOAP-based messages for receiving orders. What limitation of Outbound Messages might present a problem in this scenario?","options":["Outbound messaging does not offer any reliability.","Outbound messaging does not support SOAP.","Outbound messaging cannot be made secure.","Outbound messaging does not support multiple objects."],"correct":[3],"explanation":"Gli Outbound Messages generano payload basati su un solo oggetto: non possono includere sia Opportunity che Line Items nello stesso messaggio."},{"id":79,"text":"Universal Containers wishes to move data between three back office systems: ERP, financials, and a legacy home-grown shipping system that will be replaced three months after integration is scheduled to be complete. What integration pattern should an architect recommend to ensure minimal throwaway code?","options":["Apex Batch Processing","Point-to-Point","Web Mashup","Middleware"],"correct":[3],"explanation":"Il middleware evita collegamenti diretti tra sistemi che verrebbero eliminati a breve, riducendo al minimo il codice da riscrivere."},{"id":80,"text":"Universal Containers has used Outbound Messaging to integrate with their billing system. Their billing system has frequent outages that don't last more than a couple of hours. Which two aspects of Outbound Messaging might the customer experience issues with as a result of these outages?","options":["Exceeding Governor Limits.","Duplicate messages.","Out-of-order delivery.","Orphaned Requests."],"correct":[1,2],"explanation":"Il retry degli Outbound Messages può causare duplicati (1) e l’ordine non è garantito (2)."},{"id":81,"text":"Universal Containers needs to integrate Salesforce with several homegrown systems. These systems require custom code to be written in order to integrate with them, and the CIO argues that if custom code needs to be written, then there is no reason to invest in middleware. Which three considerations should an Architect bring up to the CIO?","options":["Orchestration","Logging","Performance","Bulkification","Error Handling"],"correct":[0,1,4],"explanation":"Il middleware fornisce orchestrazione (0), logging centralizzato (1) e gestione robusta degli errori (4), tutti difficili da ottenere in una soluzione point-to-point."},{"id":82,"text":"Universal Containers is replacing a home-grown CRM system. Currently, a .NET application runs a batch process to query the CRM system nightly and create a CSV file that is picked up via SFTP and loaded to a SQL database. What technology should an architect use to minimize custom development when replacing the CRM system with Salesforce?","options":["Middleware","APEX Callout","Outbound Messaging","APEX Batch"],"correct":[0],"explanation":"Un middleware permette di riutilizzare il processo esistente e minimizzare lo sviluppo, gestendo estrazione e trasformazione senza costruire nuova logica complessa."},{"id":83,"text":"In order to avoid slowing down inbound call center sales agents, Universal Containers wants to deduplicate Lead records against their 3rd party Master Data Management (MDM) system after the agent has saved the record in Salesforce. What integration strategy should an Architect recommend?","options":["Sync the MDM system to a custom object in Salesforce and execute a lookup validation rule against this object.","Use Out-of-the-Box Lead Deduplication Rules to check against MDM.","Outbound message to MDM with a callback to Salesforce to mark duplicate Leads.","Batch APEX process to deduplicate all records first in Salesforce, then against MDM, deleting the newest MDM record."],"correct":[2],"explanation":"Un Outbound Message consente di inviare il Lead all'MDM senza bloccare l’agente, e il sistema può richiamare Salesforce per marcare i duplicati."},{"id":84,"text":"Universal Containers has complex data transformation, error handling and process automation requirements as part of their integration strategy. What technology should an Architect recommend in order to minimize Salesforce code customizations?","options":["Data Loader","Middleware","Process Builder","Canvas"],"correct":[1],"explanation":"Il middleware gestisce trasformazioni complesse, orchestrazione ed error handling, riducendo la necessità di codice personalizzato in Salesforce."},{"id":85,"text":"Universal Containers has just purchased a large volume of contact data from an external vendor. The head of sales would like to use the new data set within the existing production org. The production org currently contains a large volume of Contacts. What should an architect recommend to prevent data duplication in Salesforce?","options":["Create a de-duplication trigger before loading the data.","Load the data into Salesforce and then utilize the Contact Duplicate Rule feature.","Utilize a batch apex process to de-duplicate the data after loading.","Utilize an off-platform de-duplication tool prior to loading."],"correct":[3],"explanation":"La deduplica va fatta prima del caricamento per evitare sporcare l’org. Uno strumento esterno consente match avanzati e pulizia preventiva."},{"id":86,"text":"Which two API options should be considered to permit automatic retry of failed updates when loading data into Salesforce?","options":["Bulk API with serial option.","Standard API with serial option.","Bulk API with parallel option.","Standard API with parallel option."],"correct":[0,2],"explanation":"La modalità seriale riduce il rischio di lock e consente retry affidabili. La modalità parallela non garantisce ordinamento né ripetibilità."},{"id":87,"text":"Which two statements are correct about External IDs?","options":["External IDs can be used to upsert records.","External ID fields are always unique.","External IDs must be Text fields.","External IDs are always searchable."],"correct":[0,3],"explanation":"Gli External ID consentono upsert e sono ricercabili. Non sono obbligatoriamente unici e possono essere di tipo Number o Email."},{"id":88,"text":"Universal Containers is hearing complaints from users that recently released changes are breaking existing functionality. What type of testing program should a Technical Architect implement to reduce or eliminate this complaint?","options":["Unit Testing","Performance Testing","User Acceptance Testing","Regression Testing"],"correct":[3],"explanation":"La regression testing garantisce che nuove modifiche non impattino funzionalità già esistenti."},{"id":89,"text":"89. Universal Containers is currently doing User Acceptance Testing for small changes in a Developer sandbox. Users are complaining that, after release to production, some functionality is broken, and performance is often negatively impacted.\nWhat is causing these complaints?","options":["A. Users should be testing in a Developer Pro sandbox in order to replicate Production functionality and performance characteristics.","B. Users should be testing in a Full Sandbox in order to replicate Production functionality and performance characteristics.","C. Users should be testing in a Partial Sandbox in order to replicate Production functionality and performance characteristics.","D. Users should be testing with real data loaded into the Developer sandbox in order to replication Production functionality and performance. characteristics"],"correct":[1],"explanation":"Solo il Full Sandbox replica fedelmente dati, configurazione e performance dell’ambiente di produzione."},{"id":90,"text":"90. Universal Containers has a SOAP -based integration that runs nightly to update the Product (Product2) object in Salesforce with updated product availability for over 500,000 products. The source system is a green -screen ERP that must be taken offline to produce nightly production reports, such as the inventory availability report used for this integration. The integration is performing very slowly and does not complete within the allocated four-hour time slot.\nWhat three recommendations might a Technical Architect make to resolve this issue?\nChoose 3 answers","options":["A. Store the Salesforce Product ID in the source system to eliminate the need for External IDs and UPSERT API calls.","B. Pre-process the data to avoid the need for workflow rules or triggers.","C. Use Outbound Messaging to notify Salesforce promptly when product availability changes in the source system.","D. Contact Salesforce Support to request that they turn off record locking on the Product2 object.","E. Use the Bulk API to UPDATE or UPSERT records more efficiently."],"correct":[0,1,4],"explanation":"Salvare il Salesforce ID elimina costosi UPSERT; il pre-processing evita trigger che rallentano l’elaborazione; Bulk API è progettata per carichi massivi ad alta performance."},{"id":91,"text":"91. Universal Containers is implementing Salesforce, including a new business process for order management. All Opportunities that reach the Close -Won stage need to be sent to an order management system. When this Opportunity is marked as Complete, a record must be created in their billing system. After the bill is processed, their billing system will be marked as Paid. Each status change from each system must be reflected in Salesforce so call center agents can answer questions about the status of a customer order. All system administrators have agreed to use recent Production data to seed their test systems.\nWhat types of sandbox should an Architect recommend end -to -end testing occur in?\nChoose 2 answers","options":["A. Developer Pro Sandbox","B. Full Sandbox","C. Partial Copy Sandbox","D. Developer Org"],"correct":[1,2],"explanation":"Per test end-to-end servono dati realistici: Full replica tutto, Partial copia dati significativi e relazioni."},{"id":92,"text":"92. Universal Containers (UC) ships millions of orders per year and releases code fixes to the Production org nightly. Their corporate testing strategy requires that tests must be performed against Production data in an isolated test environment before code can be released to Production.\nHow can UC achieve this requirement?","options":["A. Use Salesforce-to-Salesforce to keep data synchronized between Production and Full Sandboxes.","B. Request that Salesforce schedule a Full Sandbox refresh on a nightly basis.","C. Utilize a middleware solution and bulk API to do a nightly sync from Production to Full Sandbox.","D. Create Apex unit tests so testing can be done against Production data, but rolled back before being committed."],"correct":[2],"explanation":"I Full Sandbox non possono essere refreshati giornalmente; solo un middleware può sincronizzare dati ogni notte."},{"id":93,"text":"93. In which three ways can Production data be moved into a sandbox for testing purposes?\nChoose 3 answers","options":["A. Use the Metadata API.","B. Use the Apex Data Loader.","C. Refresh a Full Sandbox.","D. Refresh a Partial Copy Sandbox.","E. Request a Snapshot from Support."],"correct":[1,2,3],"explanation":"Data Loader può caricare dati; Full e Partial Copy portano dati tramite refresh. Metadata API non importa record."},{"id":94,"text":"94. What are two benefits of Named Credentials?\nChoose 2 answers","options":["A. They securely store credentials in a maintainable way.","B. They enforce secure communication to external systems.","C. They simplify utilizing oAuth for Apex callouts.","D. They secure integrations to Salesforce from other systems."],"correct":[0,2],"explanation":"Named Credentials semplificano la gestione sicura delle credenziali e dei flussi OAuth. Non proteggono integrazioni inbound."},{"id":95,"text":"95. When making an Apex callout, what approach should an Integration Architect recommend for securely transporting sensitive data from Salesforce over an unsecure network connection?","options":["A. Use Platform Encryption to secure the data before transporting.","B. Encrypt the data with a shared key before performing the Apex callout.","C. Base64 encode the data before performing the callout from Apex.","D. Salesforce automatically secures all data transmissions to external systems."],"correct":[1],"explanation":"Solo la cifratura con chiave condivisa protegge realmente i dati in transito. Base64 non è sicurezza."},{"id":96,"text":"96. Which protocol should an Integration Architect utilize to create a secure channel between Salesforce and another system?","options":["A. TLS","B. SSH","C. SMTP","D. SFTP"],"correct":[0],"explanation":"TLS è lo standard per la cifratura delle connessioni HTTPS usate da Salesforce."},{"id":97,"text":"97. Universal Containers has two integrations to Salesforce; System A requires read-only access to all Opportunity data while System B requires read-write access to all Accounts.\nWhich approach ensures compliance with the principle of least privilege?","options":["A. Use a single \"Integration User\" with Profile settings restricted to \"View All for Opportunity and \"Modify All for Accounts.","B. Utilize a single \"Integration User\" with the \"Modify All Data\" profile setting enabled so that all integrations always have access to all data.","C. Utilize separate credentials for each system with both credentials having the \"modify all data\" permission on the profile.","D. Utilize separate credentials and profiles for each integration, one having \"View All\" to Opportunities and the other having \"Modify All\" to Accounts."],"correct":[3],"explanation":"Least privilege richiede utenti separati con permessi limitati e specifici per l’integrazione."},{"id":98,"text":"98. Universal Containers would like to integrate to an external system from Salesforce over a secure channel; however, the external system does not support HTTP-basic authentication. What approach should an Integration Architect recommend that enables the external system to trust the data being received?","options":["A. Utilize a 3rd -party SSO solution to authenticate the session.","B. Digitally sign the payload using a private key trusted by the external system.","C. Include a secret passphrase in the payload that is validated by the external system.","D. Base64 encode the data to ensure untrusted 3rd parties don't see it."],"correct":[1],"explanation":"La firma digitale permette al sistema esterno di verificare integrità e autenticità del messaggio."},{"id":99,"text":"99. Universal Containers is building an integration between their instance of Salesforce and their business partner's fulfilment systems. The security officer would like to ensure that only the authorized data for each business partner is accessible across all interfaces.\nHow should the architect ensure this requirement is met?","options":["A. Provide each business partner a shared integration username/password with a specific role/profile provisioned to the appropriate data.","B. Provide each business partner their own username/password with a specific role/profile provisioned to the appropriate data.","C. Provide each business partner their own username/password with a shared integration profile provisioned to the appropriate data.","D. Provide each business partner their own username/password with an Apex custom web service to filter the data appropriately."],"correct":[1],"explanation":"Ogni partner deve avere credenziali uniche e un ruolo/profilo che limita l’accesso ai soli dati autorizzati."},{"id":100,"text":"100. Universal Containers is building an integration from their employee portal to Salesforce Chatter. They would like their employee portal to read and write to the Chatter API on behalf of the employee using the portal.\nWhat is the correct way to authenticate to the Chatter API to meet this requirement?","options":["A. Use oAuth which will pass their portal credentials to the Chatter API.","B. Use oAuth to authorize the portal to access the Chatter API on behalf of the user.","C. Use a Chatter API integration user which authenticates to Salesforce using oAuth.","D. Use a Chatter API integration user which authenticates to Salesforce using Enterprise WSDL login ()."],"correct":[1],"explanation":"L’employee portal deve agire a nome dell’utente: serve OAuth con delega (user-agent / web server flow), non un utente di integrazione."},{"id":101,"text":"101. Universal Containers (UC) would like to integrate Salesforce to their accounting system. Salesforce must notify the accounting system for every new account that has been created. The security team will not allow Salesforce to integrate directly to the Accounting system due to potential security issues.\nWhich three strategies should the Architect consider to reduce the security concerns for this integration use case?\nChoose 3 answers","options":["A. Whitelist the Salesforce IP range on the firewall to ensure only Salesforce originated traffic can access the network.","B. Enable platform encryption in the Salesforce org to ensure network communication to the Accounting system is encrypted.","C. Utilize an Enterprise Service Bus to ensure Accounting system credentials are not stored within Salesforce.","D. Enable WS -Security for web services made between Salesforce and the accounting system.","E. Terminate the SSL connection at a reverse proxy in the DMZ which establishes trust in the connection using mutual SSL."],"correct":[0,2,4],"explanation":"L’ESB isola l’Accounting system; whitelisting limita il traffico; un reverse proxy in DMZ con mutual SSL aggiunge sicurezza. Platform Encryption non protegge traffico outbound."},{"id":102,"text":"102. Universal Containers is building a mobile application that connects to Salesforce for reading and updating data.\nWhat is the appropriate authentication solution?","options":["A. Prompt for the mobile user's username and password; utilize the oAuth Username-Password flow to obtain an oAuth token.","B. Create a mobile integration user ID whose credentials are stored within the mobile application code.","C. Prompt for the mobile user's username and password; utilize the Enterprise WSDL login() operation to obtain a session ID.","D. Redirect to Salesforce via the User -agent oAuth flow to obtain an access token and refresh token."],"correct":[3],"explanation":"Per app mobile interattive il flusso consigliato è l’OAuth user-agent, con refresh token e senza memorizzare password."},{"id":103,"text":"103. Universal Containers would like their end users to be able to periodically import lists of leads into the Salesforce lead object. What tool should an architect recommend to support this?","options":["A. Bulk Web -to -Lead","B. Data Import Wizard","C. Salesforce Workbench","D. Salesforce Data Loader"],"correct":[1],"explanation":"Il Data Import Wizard è pensato per utenti finali, semplice e con controlli sui duplicati."},{"id":104,"text":"104. Universal Containers is implementing Salesforce for the first time. As part of the implementation, approximately 10 Million contact records will need to be migrated into the new environment. What tool should an architect recommend?","options":["A. Salesforce Workbench","B. Salesforce Data Loader","C. Excel Connector","D. Data Import Wizard"],"correct":[1],"explanation":"Il Data Loader supporta grandi volumi; il Wizard non scala a decine di milioni."},{"id":105,"text":"105. Universal Containers has decided that they will be using the Bulk API to migrate their existing data into Salesforce, as they will be importing a total of 80 million records. While planning for the data migration, what techniques should the Technical Architect recommend to make sure the loads go according to schedule?\nChoose 2 answers","options":["A. Perform loads over a weekend to ensure server resource availability.","B. Perform a test load using a full sandbox prior to the production load.","C. Pre-process data so that triggers and workflows can be deactivated.","D. Leverage several workstations, loading different objects simultaneously."],"correct":[1,2],"explanation":"Un test completo è essenziale; disattivare automazioni migliora drasticamente la velocità dei bulk load."},{"id":106,"text":"106. Universal Containers has decided that acquisition of other companies will be a key focus of their growth for the next several years. All acquired customer service agents will use UC's pre-existing customer support process built in Salesforce. The ERP application at any acquired company will not be immediately replaced, and customer service agents must be able to see up-to-date order status from all ERP systems.\nWhat recommendation should a Technical Architect make to minimize complexity during new acquisitions?","options":["A. Build all integrations as nightly ETL batches to minimize real-time overhead.","B. Leverage Apex Callouts to integrate directly with acquired applications.","C. Use an ESB to abstract the Salesforce integration from other enterprise\napplications.","D. Use Custom Links to direct users to the appropriate ERP system to view order status."],"correct":[2],"explanation":"Un ESB isola Salesforce dal proliferare di ERP diversi, semplificando future acquisizioni."},{"id":107,"text":"107. Which tool would an architect likely leverage while diagnosing issues with an inbound RESTful integration to Salesforce?","options":["A. Workbench","B. Data Loader","C. Metadata Audit Trail","D. Force.com SOAP Explorer"],"correct":[0],"explanation":"Workbench consente diagnostica REST, visualizzazione log, test di chiamate e risposta."},{"id":108,"text":"108. Which two automated methods should an architect use to solve an issue with duplicate contacts?\nChoose 2 answers","options":["A. Enable duplicate management in the Org to prevent duplicates.","B. Write a Batch Apex class to manage the deduplication.","C. Leverage an AppExchange data management tool to deduplicate contacts.","D. Assign new contacts to queues to be reviewed by a data quality team."],"correct":[0,2],"explanation":"La Duplicate Management è nativa e automatica; gli strumenti AppExchange gestiscono la deduplicazione avanzata."},{"id":109,"text":"109. Universal Containers has an Outbound Messaging -based integration that posts closed Opportunities to an ERP system for fulfilment. In 1% of the test cases, the Integration creates multiple orders for a closed Opportunity.\nWhich three steps should a Technical Architect take to diagnose this issue?\nChoose 3 answers","options":["A. Review the firewall logs to make sure that the outbound messages are being delivered.","B. Review the Outbound Messaging Audit logs to make sure that the messages are being successfully processed by the target system.","C. Review the Enterprise Service Bus logs to make sure that orders are being created only one time.","D. Review the Enterprise Service Bus logs to make sure that successful orders are being acknowledged.","E. Review the Outbound Messaging Delivery Status logs to make sure that the messages are being delivered and acknowledged by the target system."],"correct":[1,3,4],"explanation":"Le duplicazioni derivano quasi sempre da mancati acknowledgement: vanno verificati gli audit log e gli ESB logs relativi agli ACK."},{"id":110,"text":"110. Universal Containers (UC) has a batch integration that runs every five minutes to load Shipment records related to existing Orders that have been updated in the previous five minutes. The integration is not reporting any errors, but some Shipment records are not being loaded.\nWhat could be the problem?","options":["A. The integration is causing UC to exceed its API limits.","B. The integration cannot find the parent Orders for some Shipments.","C. The integration takes more than five minutes to run.","D. Error reporting is not enabled in Salesforce."],"correct":[2],"explanation":"Se il job impiega più di 5 minuti, un intervallo mobile di 5 minuti perde aggiornamenti: alcuni Shipments non vengono mai processati."},{"id":111,"text":"111. Universal Containers has a trigger on the Order Object to update the parent Account with the date and time of the last closed Opportunity. An integration that inserts orders for high -volume customers is failing periodically, with no obvious pattern to the timing of failures.\nWhat could be the cause of this issue?","options":["A. Data skew is causing record locking issues on the OrderShare object.","B. The trigger is failing Unit Tests that access the new data.","C. API limits being exceeded.","D. Record locking contention on the parent Account."],"correct":[3],"explanation":"Molti ordini legati allo stesso Account causano contesa del record dell’Account aggiornato dal trigger."},{"id":112,"text":"112. Universal containers utilizes the REST API to update the multiple Salesforce objects in real time based upon changes from their ERP system. They recently started encountering API Limits and have consulted the Integration Architect on possible solutions.\nWhat two possible strategies should the architect consider?\nChoose 2 answers","options":["A. Migrate the integration to the partner WSDL to support 200 DML operations in a single API call.","B. Migrate the integration to the Bulk API which does not count towards the API limits.","C. Utilize the REST API batch URI to consolidate 100 DML operations into single API call.","D. Utilize workflow outbound messaging which does not count towards the API limits."],"correct":[2,3],"explanation":"La REST Batch API riduce le chiamate. Gli Outbound Messages non consumano API e riducono traffico dal sistema ERP."},{"id":113,"text":"113. Universal containers built an integration using the Bulk API to load records from a legacy system into Salesforce, Parallel option with batch size 1000 was used However, the batches often fail due to \" Max CPU time exceeded\" errors which could be resolved with a smaller batch size.\nWhat are two risks involved with batch sizes that are too small?\nChoose 2 answers","options":["A. Possibility of hitting the daily limit for number of batches.","B. Possibility of very long bulk job execution times","C. Possibility of failures due to record-locking errors.","D. Possibility of hitting the \"Too many concurrent batches\" limit"],"correct":[0,1],"explanation":"Batch piccoli generano più batch (rischio limiti) e esecuzioni molto più lente."},{"id":114,"text":"114. Universal containers are building an integration between Salesforce and their data warehouse. The architect has the following requirements:\n1. Salesforce users need the ability to CRUD (create,read,update and delete) data from their data warehouse without leaving the Salesforce user interface.\n2. The integration to the data warehouse should maintain the same look and feel as the existing Salesforce user interface.\n3. The use of custom development Should be minimized\nWhich two solutions should the architect consider?\nChoose two options","options":["A. Utilize lightning connect with custom Apex Adapter to provided CRUD access to the data warehouse","B. Utilize a canvas application to render the data warehouse data from within Salesforce","C. Utilize a visual force page from 3rd party JavaScript library that will provide CRUD capabilities to the data warehouse.","D. Utilize a 3rd party tool from the App-Exchange that will provide CRUD capabilities between the data warehouse and salesforce"],"correct":[1,3],"explanation":"Canvas mantiene UI coerente e riduce sviluppo. AppExchange evita custom code. Lightning Connect non supporta CRUD nativamente senza sviluppo pesante."},{"id":115,"text":"115. Universal Containers has built an integration using the SOAP API to load records from a back-office system into Salesforce. The records created in the back-office\nsystem must be loaded into Salesforce in almost real time. So, a custom module was written to identify CRUD events in the back-office system and perform sync with Salesforce. UC has several other systems that integrate with Salesforce through the SOAP API using separate integration users.\nWhat is a risk involved with this sort of integration?\n1. Too many concurrent sessions\n2. Reaching an API call limit.\n3. Reaching a logins per Day limit.\n4. Too many record-lock errors","options":["1. Too many concurrent sessions","2. Reaching an API call limit.","3. Reaching a logins per Day limit.","4. Too many record-lock errors"],"correct":[1],"explanation":"Molte integrazioni SOAP in near real-time aumentano rapidamente il consumo di API, rischiando il superamento delle API call."},{"id":116,"text":"116. Universal Containers has multiple Salesforce orgs as a result of a number of acquisitions over time. They decide to let the subsidiaries continue using their own orgs but would like to streamline their lead processing. They identified one org that would act as a gateway to receive all the leads for the group and then distribute them to subsidiary orgs based on lead type. Changes to lead status in subsidiary orgs must be reflected in the gateway org They decide to use Salesforce-to-Salesforce for lead distribution.\nWhat limitation of Salesforce-to-Salesforce must be considered to ensure search less two-way integration?","options":["A. Salesforce-to-Salesforce has no built-in support bi-directional(two-way) integrations.","B. Salesforce-to-Salesforce has a limit on number of records shared between systems.","C. Salesforce-to-Salesforce does not support linking/sharing with existing records in a receiving org.","D. Salesforce-to-Salesforce has no built-in support for objects with Parent-child relationship"],"correct":[2],"explanation":"S2S non può collegare record esistenti nel destinatario: genera duplicati e ostacola la bi-direzionalità reale."},{"id":117,"text":"117. Universal Containers would like to display data from an external system inside of Salesforce, and has chosen not to enable lightning Experience. They do not need the data for any other purposes within Salesforce.\nWhich approach should an Integration Architect recommend that matches the Salesforce UI?\nChoose 2 answers","options":["A. An iFrame embedding a custom .Net application that displays data from the other systems.","B. A custom visualforce page with a controller that calls-out to the other systems.","C. A custom Visualforce page with client- side calls out to the other systems.","D. A middleware orchestration to continuously persist data from other systems into Salesforce"],"correct":[0,1],"explanation":"Un iFrame o un VF con controller Apex mantengono l’esperienza Salesforce Classic e non richiedono Lightning."},{"id":118,"text":"118. What should an integration Architect consider when building a visualforce page that makes client-side callouts to multiple domains that may violate the browser's same-origin policy?\nChoose 2 answers","options":["A. Setup CORS to whitelist all domains that the client scripts communicate with.","B. Utilize the canvas SDK to perform the callouts.","C. Ensure each javascript resource communicates only with its origin.","D. Set up Remote site settings for all domains that the client scripts communicate with"],"correct":[0,3],"explanation":"Per chiamate client-side multi-dominio servono CORS + Remote Site Settings. Canvas non risolve i limiti same-origin."},{"id":119,"text":"119. Universal Containers decided to use Salesforce Sales Cloud for their sales processes. Won Opportunities must be sent to an external source for Order fulfillment. All line items must also be sent, along with opportunities. The ERP system has SOAP based web services orders. UC chose to use Apex callouts.\nWhich two design trade-offs must be taken into account when using Apex callouts to SOAP base web services?\nChoose 2 answers","options":["A. Code changes may be required following upgrades to the ERP system.","B. DML operations are not allowed right after Apex callouts.","C. Too many callouts resulting in exceeding the daily limit for number of callouts.","D. Appropriate error handling to retry failed messages"],"correct":[0,2],"explanation":"WSDL-based callouts possono rompersi dopo upgrade del sistema ERP; molte chiamate rischiano il superamento dei limiti di callout."},{"id":120,"text":"120. Universal container has an integration that runs nightly to update the product(product2) object in Salesforce with updated product availability for over 500,000 products. Occasionally (less than 1 time per month) a product record fails to update due to a data validation issue that cannot be predicted in advance.\nHow should universal Containers monitor this nightly batch import of data into Salesforce so that any error can be corrected promptly?","options":["A. Configure an Enterprise Server Monitoring tool to process ETL success and failure logs.","B. Configure Salesforce to email an administrator when Bulk API batches fail.","C. Monitor the Bulk Data Load Jobs page daily for failed batches","D. Configure the ETL middleware to notify an administrator via email when a record update fail"],"correct":[1],"explanation":"Salesforce può notificare automaticamente fallimenti dei batch Bulk API: soluzione più immediata e affidabile."},{"id":121,"text":"121. Universal Containers has a requirement for users of a Validation page to be notified of data updates from Salesforce as well as message from other systems in real time.\nWhich three approaches should be considered when selecting the correct API?\nChoose 3 answers","options":["A. REST API to continuously poll Salesforce for updates to records.","B. Generic Streaming API to support notifications coming from other systems.","C. Streaming API to support push notifications to users on mobile devices using Salesforce1.","D. Utilize ActionPoller to perform an Apex Callout to the external system to retrieve data.","E. Streaming API to support real-time data updates by other users within Salesforce"],"correct":[1,2,4],"explanation":"Per notifiche real-time la soluzione è Streaming API (PushTopic/Generic/EventBus). Polling non è real-time né scalabile."},{"id":122,"text":"122. Universal Containers wants to ensure Salesforce will only accept secure connections from their ETL tool.\nHow should calls to a custom Apex web service be secured?","options":["A. Two-Way SSL","B. VPN","C. IP Whitelisting","D. Profile Security"],"correct":[0],"explanation":"Two-Way SSL garantisce che anche Salesforce riconosca il chiamante come affidabile, ideale per connessioni ETL sicure."},{"id":123,"text":"123. Which mechanism should an Integration Architect recommend to make a secure, authenticated connection to a remote system that results in the remote system trusting Salesforce?\nChoose one answer","options":["A. Use a pre-shared key in a query parameter","B. Implement two-way (or mutual) SSL certificates","C. Utilize CA-signed certificates on the host","D. Encrypt the payload with a shared key"],"correct":[1],"explanation":"Mutual SSL è l’unico meccanismo in cui *il sistema remoto può autenticare Salesforce* tramite certificati."},{"id":124,"text":"124. Universal Containers has a customer setup process... What Salesforce technology best fulfills this requirement?","options":["A. Write a nightly batch synchronization to send customer information to the external database.","B. Write an outbound message to send customer Information to an ESB.","C. Write an outbound message to send customer Information to the external database.","D. Write a trigger with an @future method to send customer Information to the external database"],"correct":[3],"explanation":"Serve invio quasi immediato verso un servizio SOAP → @future con callout è la soluzione corretta."},{"id":125,"text":"125. ... What are the three ways that the call back can authenticate itself to Salesforce?\nChoose 3 answers","options":["A. Utilize the Enterprise WSDL login() operation to obtain a new session ID.","B. Utilize an oAuth Username-Password flow to obtain a new oAuth token for the session ID.","C. Utilize the REST API login() operation to obtain a new session ID","D. Utilize the session ID contained within the outbound message notification as the authorization header.","E. Utilize the partner WSDL with oAuth to obtain a valid oAuth token for the session ID"],"correct":[0,1,3],"explanation":"Il callback può: usare login() SOAP, usare OAuth username-password, oppure riutilizzare la sessionId presente nel messaggio OM."},{"id":126,"text":"126. Which two approaches should an Integration Architect recommend to allow access to on-premise systems by Salesforce?\nChoose 2 answers","options":["A. Place the systems in aDMZ.","B. Whitelist Salesforce IPs on the firewall.","C. Utilize two-way(mutual) SSL","D. Whitelist the corporate IP’S in Salesforce"],"correct":[0,1],"explanation":"Per far accedere Salesforce a sistemi on-prem: porre i sistemi in DMZ e whitelistare gli IP Salesforce sul firewall."},{"id":127,"text":"127. ... Which two methods should the architect consider in order to protect these credentials?\nChoose 2 answers","options":["A. Utilize named credentials to store the username/password of the web service end post.","B. Utilize a custom object with an encrypted text field to store the username/password of the web service end point.","C. Utilize protected custom settings to store the username/password of the web service end point.","D. Store the username/password directly in the Apex class that will be obfuscated in the managed package."],"correct":[0,2],"explanation":"In pacchetti gestiti si usano Named Credentials o Protected Custom Settings. Mai hard-codare credenziali."},{"id":128,"text":"128. Universal Containers wishes to validate street addresses... What integration pattern should an Architect suggest?","options":["A. Remote Invocation initiated by Middleware","B. @Future method with an Apex callout.","C. Nightly batch validating records modified the previous day.","D. Outbound Message with a Callback"],"correct":[0],"explanation":"La verifica richiede 7–12 secondi: non può essere sincrona → deve essere gestita da middleware con invocazione asincrona."},{"id":129,"text":"129. What are two benefits of utilizing Canvas...?\nChoose 2 answers.","options":["A. Canvas can provide authentication information via the signed request.","B. The canvas SDK can be used to make an external systems UI look like Salesforce.","C. Canvas can send data to an external system asynchronously.","D. Canvas endpoint URLs can be dynamically changed via a Lifecycle Handler."],"correct":[0,1],"explanation":"Canvas offre Signed Request (auth sicura) e possibilità di integrare l’UI esterna nello stile Salesforce."},{"id":130,"text":"130. ... jobs are failing... Which two options should be considered?\nChoose 2 answers","options":["A. No change to API options and move the trigger code into a future method.","B. No change to API options, and move the trigger code into a Queuetable apex","C. Bulk API with serial option and batch size 100, and no code changes","D. Bulk API with parallel option and batch size 100, and no code change"],"correct":[1,3],"explanation":"Spostare logica pesante in Queueable evita CPU time; Bulk API parallel rende più rapide le esecuzioni rispetto alla serial."},{"id":131,"text":"131. ... How should an Architect fulfill this requirement?","options":["A. Write a nightly batch job to send customer information to ERP.","B. Write a visualforce page to send order information to ERP.","C. Write an opportunity trigger to send order information to ERP.","D. Write an outbound message to send order information to ERP"],"correct":[3],"explanation":"Outbound Messaging garantisce consegna affidabile ed è immediato dopo il cambio di stato senza rischi di timeout callout."},{"id":132,"text":"132. ... Which two methods should be considered?\nChoose 2 answers","options":["A. Create a new text field to contain a hashed value ... define it as External ID.","B. Create an indexed formula field ... so that a search can be done...","C. Create a new formula field ... and use it as External ID.","D. Create no new fields, but define the three fields ... as External IDs..."],"correct":[0,1],"explanation":"Gli External ID devono essere campi STATICI, non formula → quindi hashing o campo indicizzato per ricerca."},{"id":133,"text":"133. What are the two reasons an existing custom field cannot be marked as External ID?\nChoose 2 Answers.","options":["A. Maximum number of External IDs allowed on an object has been reached.","B. Maximum number of fields of an object has been reached.","C. Maximum number of skinny tables has been reached.","D. Maximum number of Indexes allowed has been reached."],"correct":[0,3],"explanation":"Un External ID crea un indice; se già hai troppi indici o troppi campi External ID, non puoi aggiungerlo."},{"id":134,"text":"134. Universal Containers (UC) has a legacy application... How should an architect solve this problem?","options":["A. Leverage canvas to display the legacy application within Salesforce.","B. Use the Streaming API to receive order updates in real time.","C. Migrate the legacy application to Heroku and Integrate the database.","D. Create a web-tab in Salesforce directly to the legacy application."],"correct":[0],"explanation":"Canvas permette embedded UI con single sign-on implicito, senza credenziali separate e senza API del sistema legacy."},{"id":135,"text":"135. Universal containers would like to restrict access to Salesforce to only clients on their network.\nWhich two mechanisms should an Integration Architect utilize?\nChoose 2 answers","options":["A. Configure Login IP Ranges on any profiles used by Integration","B. Use a login flow to validate the IP and request a 2nd factor if incorrect","C. Use a trigger to change the user's profile if their IP is not trusted.","D. Enable the \"Lock sessions to the IP address from which they originated\" setting"],"correct":[0,1],"explanation":"IP ranges su profili limitano accessi; login flow può bloccare o richiedere 2FA per IP non autorizzati."},{"id":136,"text":"136. What are three capabilities of Salesforce to Salesforce(S2S)?\nChoose 3 answers","options":["A. Share reports and dashboards between Salesforce orgs.","B. Automatically publish data from the publisher org.","C. Manually consume data into the consumer org.","D. Integrate data between Salesforce orgs via pre-built web service adapters.","E. Publish data from the publisher's Account object to the consumer's Customer c object."],"correct":[1,2,4],"explanation":"S2S consente pubblicazione automatica, consumo manuale e mappatura tra oggetti diversi (es. Account → Customer__c)."}];
+
+        // Variabili globali
+        let questions = [];
+        let originalQuestionOrder = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let startTime = new Date();
+        let randomQuestions = false;
+        let randomAnswers = false;
+
+        // Inizializzazione
+        function initQuiz() {
+            // Crea una copia delle domande originali
+            questions = originalQuestions.map(q => ({
+                ...q,
+                options: [...q.options],
+                correct: [...q.correct],
+                originalCorrect: [...q.correct],
+                originalOptions: [...q.options]
+            }));
+            
+            // Salva l'ordine originale delle domande
+            originalQuestionOrder = [...questions];
+            
+            // Applica randomizzazione se attiva
+            if (randomQuestions) {
+                shuffleArray(questions);
+            }
+            
+            if (randomAnswers) {
+                questions.forEach(question => randomizeAnswers(question));
+            }
+            
+            currentQuestionIndex = 0;
+            userAnswers = new Array(questions.length).fill(null).map(() => []);
+            startTime = new Date();
+            
+            document.getElementById('totalQuestions').textContent = questions.length;
+            document.getElementById('correctAnswers').textContent = '0';
+            
+            showQuestion();
+            updateNavigation();
+            updateProgress();
+        }
+
+        // Mostra la domanda corrente
+        function showQuestion() {
+            const question = questions[currentQuestionIndex];
+            const isMultiple = question.correct.length > 1;
+            
+            document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('questionText').textContent = question.text;
+            document.getElementById('questionType').textContent = 
+                isMultiple ? 'Risposta Multipla' : 'Risposta Singola';
+            
+            // Genera le opzioni
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            // Nascondi la spiegazione se visibile
+            const explanationBox = document.getElementById('explanationBox');
+            if (explanationBox) {
+                explanationBox.classList.add('hidden');
+                explanationBox.textContent = '';
+            }
+
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                
+                const inputType = isMultiple ? 'checkbox' : 'radio';
+                const inputName = `question_${question.id}`;
+                const isChecked = userAnswers[currentQuestionIndex].includes(index);
+                
+                optionDiv.innerHTML = `
+                    <input type="${inputType}" 
+                           id="option_${index}" 
+                           name="${inputName}" 
+                           value="${index}"
+                           ${isChecked ? 'checked' : ''}
+                           onchange="handleAnswerChange(${index}, this.checked)">
+                    <label for="option_${index}" class="option-label">
+                        <div class="checkmark"></div>
+                        ${option}
+                    </label>
+                `;
+                
+                optionsContainer.appendChild(optionDiv);
+            });
+        }
+        function goToQuestion() {
+            const input = document.getElementById("gotoInput");
+            const number = parseInt(input.value);
+
+            if (!isNaN(number) && number >= 1 && number <= questions.length) {
+                currentQuestionIndex = number - 1;
+                showQuestion();
+                updateNavigation();
+                updateProgress();
+                document.getElementById('quizContainer').classList.add('fade-in');
+                setTimeout(() => {
+                    document.getElementById('quizContainer').classList.remove('fade-in');
+                }, 500);
+            } else {
+                alert("Inserisci un numero valido tra 1 e " + questions.length);
+            }
+
+            input.value = ''; // reset campo input
+        }
+
+
+        // Gestisce il cambiamento delle risposte
+        function handleAnswerChange(optionIndex, isChecked) {
+            const question = questions[currentQuestionIndex];
+            const isMultiple = question.correct.length > 1;
+            const optionsContainer = document.getElementById('optionsContainer');
+
+            if (isMultiple) {
+                if (isChecked) {
+                    if (!userAnswers[currentQuestionIndex].includes(optionIndex)) {
+                        userAnswers[currentQuestionIndex].push(optionIndex);
+                    }
+                } else {
+                    userAnswers[currentQuestionIndex] = userAnswers[currentQuestionIndex]
+                        .filter(answer => answer !== optionIndex);
+                }
+            } else {
+                if (isChecked) {
+                    userAnswers[currentQuestionIndex] = [optionIndex];
+                }
+            }
+
+            // Rimuovi tutte le classi di evidenziazione precedenti
+            optionsContainer.querySelectorAll('.option-label').forEach(label => {
+                label.classList.remove('correct');
+                label.classList.remove('incorrect');
+            });
+
+            // Verifica e colora
+            userAnswers[currentQuestionIndex].forEach(selectedIdx => {
+                const label = document.querySelector(`#option_${selectedIdx} + .option-label`);
+                if (question.correct.includes(selectedIdx)) {
+                    label.classList.add('correct');
+                } else {
+                    label.classList.add('incorrect');
+                }
+            });
+        }
+
+        // Naviga alla domanda successiva
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+                updateNavigation();
+                updateProgress();
+                
+                // Animazione
+                document.getElementById('quizContainer').classList.add('fade-in');
+                setTimeout(() => {
+                    document.getElementById('quizContainer').classList.remove('fade-in');
+                }, 500);
+            } else {
+                showResults();
+            }
+        }
+
+        // Naviga alla domanda precedente
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion();
+                updateNavigation();
+                updateProgress();
+                
+                // Animazione
+                document.getElementById('quizContainer').classList.add('fade-in');
+                setTimeout(() => {
+                    document.getElementById('quizContainer').classList.remove('fade-in');
+                }, 500);
+            }
+        }
+
+        // Aggiorna i pulsanti di navigazione
+        function updateNavigation() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            prevBtn.disabled = currentQuestionIndex === 0;
+            
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.innerHTML = '<i class="fas fa-check"></i> Termina Quiz';
+            } else {
+                nextBtn.innerHTML = 'Prossima <i class="fas fa-arrow-right"></i>';
+            }
+        }
+
+        // Aggiorna la barra di progresso
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Calcola il punteggio
+        function calculateScore() {
+            let correct = 0;
+            
+            for (let i = 0; i < questions.length; i++) {
+                const question = questions[i];
+                const userAnswer = userAnswers[i].sort();
+                const correctAnswer = question.correct.sort();
+                
+                // Confronta gli array di risposte
+                if (JSON.stringify(userAnswer) === JSON.stringify(correctAnswer)) {
+                    correct++;
+                }
+            }
+            
+            return {
+                correct: correct,
+                total: questions.length,
+                percentage: Math.round((correct / questions.length) * 100)
+            };
+        }
+
+        // Mostra i risultati
+        function showResults() {
+            const score = calculateScore();
+            const endTime = new Date();
+            const timeSpent = Math.round((endTime - startTime) / 1000);
+            
+            document.getElementById('quizContainer').classList.add('hidden');
+            document.querySelector('.navigation').classList.add('hidden');
+            document.querySelector('.controls').classList.add('hidden');
+            
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.classList.remove('hidden');
+            
+            // Aggiorna il punteggio
+            const scoreElement = document.getElementById('finalScore');
+            scoreElement.textContent = score.percentage + '%';
+            
+            // Colora il punteggio in base al risultato
+            if (score.percentage >= 80) {
+                scoreElement.className = 'score';
+            } else if (score.percentage >= 60) {
+                scoreElement.className = 'score medium';
+            } else {
+                scoreElement.className = 'score low';
+            }
+            
+            // Aggiorna le statistiche nell'header
+            document.getElementById('correctAnswers').textContent = score.correct;
+            
+            // Genera i dettagli dei risultati
+            const detailsContainer = document.getElementById('resultsDetails');
+            detailsContainer.innerHTML = `
+                <div class="result-card">
+                    <div class="result-title">Punteggio Finale</div>
+                    <div>${score.correct}/${score.total} (${score.percentage}%)</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">Tempo Impiegato</div>
+                    <div>${Math.floor(timeSpent / 60)}m ${timeSpent % 60}s</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-title">Risposte Corrette</div>
+                    <div>${score.correct}</div>
+                </div>
+                <div class="result-card ${score.total - score.correct > 0 ? 'incorrect' : ''}">
+                    <div class="result-title">Risposte Sbagliate</div>
+                    <div>${score.total - score.correct}</div>
+                </div>
+            `;
+            
+            // Effetto di celebrazione se il punteggio è alto
+            if (score.percentage >= 80) {
+                createCelebration();
+            }
+        }
+
+        // Crea effetto di celebrazione
+        function createCelebration() {
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: absolute;
+                    width: 10px;
+                    height: 10px;
+                    background: ${['#4CAF50', '#2196F3', '#FF9800', '#E91E63'][Math.floor(Math.random() * 4)]};
+                    left: ${Math.random() * 100}%;
+                    top: -10px;
+                    border-radius: 50%;
+                    animation: confetti-fall ${2 + Math.random() * 3}s linear forwards;
+                `;
+                celebration.appendChild(confetti);
+            }
+            
+            document.body.appendChild(celebration);
+            
+            // Rimuovi l'effetto dopo 5 secondi
+            setTimeout(() => {
+                celebration.remove();
+            }, 5000);
+            
+            // CSS per l'animazione dei coriandoli
+            if (!document.getElementById('confetti-style')) {
+                const style = document.createElement('style');
+                style.id = 'confetti-style';
+                style.textContent = `
+                    @keyframes confetti-fall {
+                        to {
+                            transform: translateY(100vh) rotate(720deg);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // Riavvia il quiz
+        function restartQuiz() {
+            document.getElementById('resultsContainer').classList.add('hidden');
+            document.getElementById('quizContainer').classList.remove('hidden');
+            document.querySelector('.navigation').classList.remove('hidden');
+            document.querySelector('.controls').classList.remove('hidden');
+            
+            // Reset delle impostazioni di randomizzazione
+            randomQuestions = false;
+            randomAnswers = false;
+            document.getElementById('randomQuestionsBtn').classList.remove('active');
+            document.getElementById('randomQuestionsBtn').innerHTML = '<i class="fas fa-random"></i> Domande Random';
+            document.getElementById('randomAnswersBtn').classList.remove('active');
+            document.getElementById('randomAnswersBtn').innerHTML = '<i class="fas fa-shuffle"></i> Risposte Random';
+            
+            initQuiz();
+        }
+
+        // Inizializza il quiz al caricamento della pagina
+        window.onload = function() {
+            initQuiz();
+        };
+
+        // Funzioni per la randomizzazione
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function randomizeAnswers(question) {
+            // Crea un array di indici delle opzioni
+            const indices = question.originalOptions.map((_, index) => index);
+            
+            // Mescola gli indici
+            shuffleArray(indices);
+            
+            // Riordina le opzioni secondo gli indici mescolati
+            question.options = indices.map(index => question.originalOptions[index]);
+            
+            // Aggiorna gli indici delle risposte corrette
+            question.correct = question.originalCorrect.map(correctIndex => {
+                return indices.indexOf(correctIndex);
+            });
+        }
+
+        // Toggle per domande random
+        function toggleRandomQuestions() {
+            randomQuestions = !randomQuestions;
+            const btn = document.getElementById('randomQuestionsBtn');
+            
+            if (randomQuestions) {
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fas fa-random"></i> Domande Random ON';
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="fas fa-random"></i> Domande Random';
+            }
+            
+            // Riavvia il quiz con le nuove impostazioni
+            initQuiz();
+        }
+
+        // Toggle per risposte random
+        function toggleRandomAnswers() {
+            randomAnswers = !randomAnswers;
+            const btn = document.getElementById('randomAnswersBtn');
+            
+            if (randomAnswers) {
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fas fa-shuffle"></i> Risposte Random ON';
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="fas fa-shuffle"></i> Risposte Random';
+            }
+            
+            // Riavvia il quiz con le nuove impostazioni
+            initQuiz();
+        }
+        function showCorrectAnswer() {
+            const question = questions[currentQuestionIndex];
+            const optionsContainer = document.getElementById('optionsContainer');
+            const explanationBox = document.getElementById('explanationBox');
+
+            // Rimuove evidenziazioni precedenti
+            optionsContainer.querySelectorAll('.option-label').forEach((label, idx) => {
+                label.classList.remove('correct', 'incorrect');
+                if (question.correct.includes(idx)) {
+                    label.classList.add('correct');
+                }
+            });
+
+            // Mostra explanation
+            explanationBox.textContent = question.explanation;
+            explanationBox.classList.remove('hidden');
+        }
+
+    </script>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'it',
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+</body>
+</html>
