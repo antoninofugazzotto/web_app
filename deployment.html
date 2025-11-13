@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz App - Integration Architect</title>
+    <title>Quiz App - Test di Esame</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
     <style>
         * {
@@ -22,9 +22,22 @@
             box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
         }
 
+        .goog-te-gadget-simple {
+            background-color: #f8f9fa !important;
+            border: 1px solid #dadce0 !important;
+            border-radius: 8px !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+        }
+
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+
         body {
+            top: 0px !important;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            /*background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);*/
             min-height: 100vh;
             padding: 20px;
         }
@@ -369,7 +382,7 @@
         @media (max-width: 768px) {
             body {
                 padding: 8px;
-                background: #667eea;
+                /*background: #667eea;*/
             }
             
             .container {
@@ -583,7 +596,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1><i class="fas fa-graduation-cap"></i> Quiz Development & Deployment</h1>
+            <h1><i class="fas fa-graduation-cap"></i>Development Lifecycle and Deployment Architect</h1>
             <div class="progress-container">
                 <div class="progress-bar" id="progressBar"></div>
             </div>
@@ -600,7 +613,9 @@
                     <span class="stat-number" id="correctAnswers">0</span>
                     <span>Corrette</span>
                 </div>
+                <div id="google_translate_element" style="text-align: right; padding: 10px;"></div>
             </div>
+            
         </div>
         <div class="navigation">
             <button class="btn btn-secondary" id="prevBtn" onclick="previousQuestion()" disabled>
@@ -1102,6 +1117,17 @@
         }
 
     </script>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+            pageLanguage: 'en',
+            includedLanguages: 'it',
+            autoDisplay: false,
+            layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+        }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </body>
-
 </html>
+
