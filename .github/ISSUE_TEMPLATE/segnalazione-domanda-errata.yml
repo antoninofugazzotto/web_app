@@ -1,0 +1,26 @@
+name: Segnalazione domanda errata
+description: Segnala un errore in una domanda del quiz
+title: "Domanda errata #"
+labels: ["quiz", "bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Grazie per la segnalazione 🙏  
+        I dati principali della domanda sono già compilati automaticamente dal quiz.
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Descrizione del problema
+      description: Spiega cosa non è corretto nella domanda o nelle risposte
+      placeholder: "La risposta indicata come corretta non è valida perché..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: correzione
+    attributes:
+      label: Proposta di correzione
+      description: Suggerisci come correggere la domanda o le risposte
+      placeholder: "La risposta corretta dovrebbe essere..."
