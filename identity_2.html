@@ -645,9 +645,15 @@ ${(q.correct ?? []).join(', ')}
 
   // ⬇️ CAMBIA QUI
   const GITHUB_REPO = 'antoninofugazzotto/web_app';
+  const TEMPLATE = 'segnalazione-domanda-errata.yml';
 
-  const url = `https://github.com/${GITHUB_REPO}/issues/new?title=${title}&body=${body}`;
-  window.open(url, '_blank');
+  const url =
+  `https://github.com/${GITHUB_REPO}/issues/new` +
+  `?template=${TEMPLATE}` +
+  `&title=${title}` +
+  `&body=${body}`;
+
+window.open(url, '_blank');
 }
 
 
