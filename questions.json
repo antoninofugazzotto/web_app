@@ -382,7 +382,7 @@
          "Use Login Discovery"
       ],
       "correct":[
-         2
+         3
       ],
       "explanation":"Login Discovery allows the administrator to configure a custom login page that collects additional information from users, such as phone number, and use it for identity verification. Login Discovery can also be used to route users to different identity providers based on their input. References: Login Discovery, Customize Your Experience Cloud Site Login Process",
       "id":27
