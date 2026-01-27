@@ -545,20 +545,6 @@
       "id":38
    },
    {
-      "text":"Universal Containers (UC) has a Customer Community that uses Facebook for Authentication. UC would like to ensure that Changes in the Facebook profile are reflected on the appropriate Customer Community user: How can this requirement be met?",
-      "options":[
-         "Use the updateUser method on the registration Handler Class.",
-         "Develop a scheduled job that calls out to Facebook on anightly basis.",
-         "Use information in the signed Request that is received from facebook.",
-         "Use SAML Just-In-Time Provisioning between Facebook and Salesforce."
-      ],
-      "correct":[
-         0
-      ],
-      "explanation":"The best option for UC to ensure that changes in the Facebook profile are reflected onthe appropriate customer community user is to use the updateUser method on the registration handler class. A registration handler class is an Apex class that implements the Auth.RegistrationHandler interface and defines the logic for creating or updating auser account when a user logs in with an external authentication provider, such as Facebook. The updateUser method is a method in the registration handler class that takes a user ID and a JSON string as parameters and updates the user record with the information from the JSON string. This method can be used to update the user's profile, email, name, or other attributes based on the changes in the Facebook profile. The other options are not optimal for this scenario. Developing a scheduled job that calls out to Facebook on a nightly basis would introduce a delay in updating the user information and require custom code and API integration. Using information in the signed request that is received from Facebook would only provide limited information about the user, such as name, email, and locale, and not reflect any changes made after the initial login. Using SAML Just-in-Time provisioning between Facebook and Salesforce would require UC to configure Facebook as a SAML identity provider, which is not supportedby Facebook. References: [Create a Registration Handler Class], [Auth.RegistrationHandler Interface], [Facebook Signed Request], [Facebook as SAML Identity Provider]",
-      "id":39
-   },
-   {
       "text":"Universal Containers (UC) currently uses Salesforce Sales Cloud and an external billing application. Both Salesforce andthe billing application are accessed several times a day to manage customers. UC would like to configure single sign-on and leverageSalesforce as the identity provider. Additionally, UC would like the billing application to be accessible from Salesforce.A redirect is acceptable.\nWhich two Salesforce tools should an identity architect recommend to satisfy the requirements? Choose 2 answers",
       "options":[
          "salesforce Canvas",
@@ -568,7 +554,7 @@
       ],
       "correct":[
          0,
-         3
+         2
       ],
       "explanation":"Salesforce Canvas is a tool that allows external applications to be embedded into Salesforce as iframes, which can provide a seamless user experience. App Launcher is a feature that allows users to access connected apps from a single location in Salesforce. To enable single sign-on anduse Salesforce as the identity provider, the external billing application needs to be configured as a connected app and use an OAuth 2.0 or SAML protocol. Identity Connect is not relevant for this scenario, as it is a tool for synchronizing user data between Salesforce and Active Directory. References: Salesforce Canvas Developer Guide, App Launcher, Connected Apps",
       "id":40
@@ -624,8 +610,8 @@
          "Apex coding skills are needed for registration handler to create and update users."
       ],
       "correct":[
-         1,
-         3
+         0,
+         1
       ],
       "explanation":"Authentication provider configuration and Apex coding skills are two recommendations that the Salesforce IAM architect should make to the IT Lead. Authentication providers are used to configure social sign-on providers, such as Facebook, Twitter, and any OpenID Connect compliant provider. Apex coding skills are needed for registration handlers, which are custom classes that create and update users based on social sign-on data. References: Authentication Providers, Registration Handlers",
       "id":44
@@ -710,7 +696,7 @@
          "Call OpenID Connect (OIDC)-userinfo endpoint with a valid access token."
       ],
       "correct":[
-         2
+         0
       ],
       "explanation":"To automate provisioning and deprovisioning of users into Salesforce from an external system, the identity architect should run a registration handler on incoming OAuth responses. A registration handler is a class that implements the Auth.RegistrationHandler interface and defines how to create or update users in Salesforce based on the information from an external identity provider. OAuth is a protocol that allows users to authorize an external application to access Salesforce resources on their behalf. By running a registration handler on incoming OAuth responses, theidentity architect can automate user provisioning and deprovisioning based on the OAuth attributes. References: Registration Handler, Authorize Apps with OAuth",
       "id":50
@@ -738,7 +724,7 @@
          "The userhas not been granted the \"Enable single Sign-on\" permission"
       ],
       "correct":[
-         1
+         2
       ],
       "explanation":"B is correct because the user has not configured the Salesforce1 mobile app to use My Domain for login, which is the likely cause of the issue. The My Domain URL is used to redirect theuser to the identity provider' s login page and initiate the SP-Initiated SAML flow. If the user does not configure the Salesforce1 mobile app to use My Domain for login, they will be prompted for Salesforce credentials instead of being shown the IDP loginpage. A is incorrect because the “Redirect to Identity Provider” option has been selected in the My Domain configuration, which is not the cause of the issue. The “Redirect to Identity Provider” option determines whether users are redirected to the identity provider's login page automatically or after clicking a button. C is incorrect because the “Redirect to Identity Provider” option has not been selected in the SAML configuration, which is not the cause of the issue. The “Redirect to Identity Provider” option determines whether users are redirected to the identity provider's login page automatically or after clicking a button. D is incorrect because the user has been granted the “Enable Single Sign-On” permission, which is not the cause of the issue. The “Enable Single Sign-On” permission allows users to use SSO with connected apps or external systems. Verified References: [My Domain URL], [SP-Initiated SAML Flow], [Redirect to Identity Provider Option], [Enable Single Sign-On Permission]",
       "id":52
