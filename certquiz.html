@@ -871,41 +871,48 @@ body {
     try {
       const { data, error } = await sb.auth.signUp({ email, password: pw });
       if (error) throw error;
-      // Register in approved_users as pending
-      if (data.user) {
-        await sb.from('approved_users').insert({
-          user_id: data.user.id,
-          email: email,
-          status: 'pending',
-        });
-      }
+      // The DB trigger on auth.users will auto-insert into approved_users as 'pending'
+      // Sign out if there's a session — user must wait for admin approval
+      if (data.session) await sb.auth.signOut();
       showOk('Registrazione inviata. Un amministratore deve approvare il tuo account prima che tu possa accedere.');
-      // Sign out immediately — can't use the app until approved
-      await sb.auth.signOut();
     } catch (e) { showErr(e.message); }
   });
 
   async function onAuth(u) {
     user = u;
 
-    // Check admin role
-    const { data: roleData } = await sb.from('user_roles').select('role').eq('user_id', u.id).single();
-    isAdmin = roleData?.role === 'admin';
-
-    // If not admin, check approval status
-    if (!isAdmin) {
-      const { data: approval } = await sb.from('approved_users').select('status').eq('user_id', u.id).single();
-      if (!approval || approval.status !== 'approved') {
-        const msg = !approval
-          ? 'Account non trovato nel sistema di approvazione. Contatta un amministratore.'
-          : approval.status === 'pending'
-            ? 'Il tuo account e\' in attesa di approvazione da parte di un amministratore.'
-            : 'Il tuo account non e\' stato approvato.';
-        await sb.auth.signOut();
-        user = null;
-        showErr(msg);
-        return;
+    try {
+      // Check admin role
+      const { data: roleData, error: roleErr } = await sb.from('user_roles').select('role').eq('user_id', u.id).single();
+      if (roleErr && roleErr.code !== 'PGRST116') {
+        // PGRST116 = no rows found, that's ok (not admin). Other errors are real.
+        throw roleErr;
       }
+      isAdmin = roleData?.role === 'admin';
+
+      // If not admin, check approval status
+      if (!isAdmin) {
+        const { data: approval, error: appErr } = await sb.from('approved_users').select('status').eq('user_id', u.id).single();
+        if (appErr && appErr.code !== 'PGRST116') throw appErr;
+
+        if (!approval || approval.status !== 'approved') {
+          const msg = !approval
+            ? 'Account in fase di registrazione. Attendi l\'approvazione di un amministratore.'
+            : approval.status === 'pending'
+              ? 'Il tuo account e\' in attesa di approvazione da parte di un amministratore.'
+              : 'Il tuo account non e\' stato approvato.';
+          await sb.auth.signOut();
+          user = null;
+          showErr(msg);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('onAuth check failed:', e);
+      await sb.auth.signOut();
+      user = null;
+      showErr('Errore di autenticazione. Riprova ad accedere.');
+      return;
     }
 
     $$('#ab1,#ab2,#ab1m,#ab2m').forEach(b => isAdmin ? show(b) : hide(b));
@@ -1443,9 +1450,22 @@ body {
   (async () => {
     if (initSupa()) {
       try {
-        const { data: { session } } = await sb.auth.getSession();
-        if (session?.user) await onAuth(session.user);
-      } catch (e) { console.warn('Session check failed:', e); }
+        const { data: { session }, error } = await sb.auth.getSession();
+        if (error) throw error;
+        if (session?.user) {
+          // Verify the session is still valid with a lightweight call
+          const { error: testErr } = await sb.from('user_roles').select('role').eq('user_id', session.user.id).maybeSingle();
+          if (testErr && (testErr.message?.includes('JWT') || testErr.code === '401' || testErr.message?.includes('401'))) {
+            // Token expired or invalid — clear and stay on login
+            await sb.auth.signOut();
+          } else {
+            await onAuth(session.user);
+          }
+        }
+      } catch (e) {
+        console.warn('Session restore failed:', e);
+        try { await sb.auth.signOut(); } catch(_) {}
+      }
     }
   })();
 
