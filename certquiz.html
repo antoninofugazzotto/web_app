@@ -493,6 +493,53 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+/* ===== APPROVAL PANEL ===== */
+.approval-section h2 {
+  font-family: var(--font-display); font-size: 22px;
+  font-weight: 700; letter-spacing: -0.3px; margin-bottom: 6px;
+}
+.approval-section > p { color: var(--text-2); margin-bottom: 20px; font-size: 14px; }
+
+.approval-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 18px;
+  margin-bottom: 10px; flex-wrap: wrap;
+}
+
+.approval-card-info { flex: 1; min-width: 180px; }
+
+.approval-card-email {
+  font-size: 14px; font-weight: 500; color: var(--text-0);
+}
+
+.approval-card-date {
+  font-size: 12px; color: var(--text-3); margin-top: 2px;
+}
+
+.approval-card-status {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 3px 9px; border-radius: 4px;
+}
+.approval-card-status.pending { color: var(--amber); background: var(--amber-bg); }
+.approval-card-status.approved { color: var(--green); background: var(--green-bg); }
+.approval-card-status.rejected { color: var(--red); background: var(--red-bg); }
+
+.approval-card-actions { display: flex; gap: 6px; }
+
+.btn-approve {
+  background: var(--green); color: var(--bg-0); font-weight: 700;
+  padding: 6px 14px; font-size: 12px;
+}
+.btn-approve:hover { background: #4ae09a; }
+
+.btn-reject {
+  background: var(--red-bg); color: var(--red);
+  border: 1px solid var(--red-border);
+  padding: 6px 14px; font-size: 12px;
+}
+.btn-reject:hover { background: rgba(240,107,107,0.16); }
+
 /* ===== HAMBURGER & MOBILE MENU ===== */
 .hamburger {
   display: none;
@@ -582,6 +629,10 @@ body {
 
   /* Modal */
   .modal { padding: 24px 20px; }
+
+  /* Approval */
+  .approval-card { flex-direction: column; align-items: stretch; gap: 10px; }
+  .approval-card-actions { justify-content: flex-end; }
 }
 </style>
 </head>
@@ -656,6 +707,13 @@ body {
     <h2>Quiz disponibili</h2>
     <p>Seleziona un quiz per iniziare la preparazione alla certificazione.</p>
     <div class="quiz-grid" id="quizGrid"></div>
+
+    <!-- Admin: approval panel -->
+    <div class="approval-section hidden" id="approvalSection">
+      <h2 style="margin-top:48px;">Gestione utenti</h2>
+      <p>Approva o rifiuta le richieste di registrazione.</p>
+      <div id="approvalList"></div>
+    </div>
   </div>
 </div>
 
@@ -813,18 +871,43 @@ body {
     try {
       const { data, error } = await sb.auth.signUp({ email, password: pw });
       if (error) throw error;
-      if (data.user && !data.session) {
-        showOk('Controlla la tua email per confermare la registrazione.');
-      } else {
-        await onAuth(data.user);
+      // Register in approved_users as pending
+      if (data.user) {
+        await sb.from('approved_users').insert({
+          user_id: data.user.id,
+          email: email,
+          status: 'pending',
+        });
       }
+      showOk('Registrazione inviata. Un amministratore deve approvare il tuo account prima che tu possa accedere.');
+      // Sign out immediately — can't use the app until approved
+      await sb.auth.signOut();
     } catch (e) { showErr(e.message); }
   });
 
   async function onAuth(u) {
     user = u;
-    const { data } = await sb.from('user_roles').select('role').eq('user_id', u.id).single();
-    isAdmin = data?.role === 'admin';
+
+    // Check admin role
+    const { data: roleData } = await sb.from('user_roles').select('role').eq('user_id', u.id).single();
+    isAdmin = roleData?.role === 'admin';
+
+    // If not admin, check approval status
+    if (!isAdmin) {
+      const { data: approval } = await sb.from('approved_users').select('status').eq('user_id', u.id).single();
+      if (!approval || approval.status !== 'approved') {
+        const msg = !approval
+          ? 'Account non trovato nel sistema di approvazione. Contatta un amministratore.'
+          : approval.status === 'pending'
+            ? 'Il tuo account e\' in attesa di approvazione da parte di un amministratore.'
+            : 'Il tuo account non e\' stato approvato.';
+        await sb.auth.signOut();
+        user = null;
+        showErr(msg);
+        return;
+      }
+    }
+
     $$('#ab1,#ab2,#ab1m,#ab2m').forEach(b => isAdmin ? show(b) : hide(b));
     $$('#ub1,#ub2').forEach(b => b.textContent = u.email);
     $$('#ub1m,#ub2m').forEach(b => b.textContent = u.email);
@@ -896,6 +979,86 @@ body {
       }
     } catch (e) {
       grid.innerHTML = `<p style="color:var(--red)">Errore: ${esc(e.message)}</p>`;
+    }
+
+    // Admin: load approval requests
+    if (isAdmin) {
+      show($('#approvalSection'));
+      loadApprovals();
+    } else {
+      hide($('#approvalSection'));
+    }
+  }
+
+  // ===== ADMIN: USER APPROVAL =====
+  async function loadApprovals() {
+    const list = $('#approvalList');
+    list.innerHTML = '<div class="loader" style="padding:20px;"><div class="spin"></div></div>';
+
+    try {
+      const { data, error } = await sb.from('approved_users').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+
+      if (!data?.length) {
+        list.innerHTML = '<p style="color:var(--text-3);font-size:13px;padding:8px 0;">Nessuna richiesta.</p>';
+        return;
+      }
+
+      list.innerHTML = '';
+      data.forEach(u => {
+        const card = document.createElement('div');
+        card.className = 'approval-card';
+        card.id = `apc-${u.id}`;
+
+        const date = new Date(u.created_at).toLocaleDateString('it-IT', {
+          day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+
+        let actions = '';
+        if (u.status === 'pending') {
+          actions = `
+            <button class="btn btn-sm btn-approve" data-approve="${u.id}">Approva</button>
+            <button class="btn btn-sm btn-reject" data-reject="${u.id}">Rifiuta</button>`;
+        } else if (u.status === 'approved') {
+          actions = `<button class="btn btn-sm btn-reject" data-reject="${u.id}">Revoca</button>`;
+        } else {
+          actions = `<button class="btn btn-sm btn-approve" data-approve="${u.id}">Approva</button>`;
+        }
+
+        card.innerHTML = `
+          <div class="approval-card-info">
+            <div class="approval-card-email">${esc(u.email)}</div>
+            <div class="approval-card-date">${date}</div>
+          </div>
+          <span class="approval-card-status ${u.status}">${u.status === 'pending' ? 'In attesa' : u.status === 'approved' ? 'Approvato' : 'Rifiutato'}</span>
+          <div class="approval-card-actions">${actions}</div>`;
+
+        list.appendChild(card);
+      });
+
+      // Bind approve/reject buttons
+      $$('[data-approve]').forEach(b => b.addEventListener('click', async function() {
+        await updateApproval(this.dataset.approve, 'approved');
+      }));
+      $$('[data-reject]').forEach(b => b.addEventListener('click', async function() {
+        await updateApproval(this.dataset.reject, 'rejected');
+      }));
+
+    } catch (e) {
+      list.innerHTML = `<p style="color:var(--red);font-size:13px;">Errore: ${esc(e.message)}</p>`;
+    }
+  }
+
+  async function updateApproval(id, status) {
+    try {
+      const { error } = await sb.from('approved_users')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+      toast(status === 'approved' ? 'Utente approvato' : 'Utente rifiutato');
+      loadApprovals();
+    } catch (e) {
+      toast('Errore: ' + e.message);
     }
   }
 
