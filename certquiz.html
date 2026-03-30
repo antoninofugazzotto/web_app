@@ -55,6 +55,35 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+:root[data-theme="light"] {
+  --bg-0: #f5f7fb;
+  --bg-1: rgba(255,255,255,0.92);
+  --bg-2: #ffffff;
+  --bg-3: #eef2f7;
+  --bg-hover: #e4e8f1;
+  --bg-input: #ffffff;
+  --border: #d2dae5;
+  --border-focus: #4A6CF7;
+  --text-0: #0f172a;
+  --text-1: #334155;
+  --text-2: #475569;
+  --text-3: #64748b;
+  --accent: #2563eb;
+  --accent-h: #1d4ed8;
+  --accent-sub: rgba(37,99,235,0.10);
+  --green: #0f9d58;
+  --green-bg: rgba(15,157,88,0.1);
+  --green-border: rgba(15,157,88,0.25);
+  --red: #dc2626;
+  --red-bg: rgba(220,38,38,0.08);
+  --red-border: rgba(220,38,38,0.25);
+  --amber: #d97706;
+  --amber-bg: rgba(217,119,6,0.08);
+  --amber-border: rgba(217,119,6,0.25);
+  --shadow-card: 0 2px 12px rgba(15,23,42,0.08);
 }
 
 /* ===== UTILITIES ===== */
@@ -311,7 +340,7 @@ body {
 }
 
 .q-text {
-  font-size: 20px; font-weight: 500; line-height: 1.7;
+  font-size: 18px; font-weight: 500; line-height: 1.7;
   margin-bottom: 18px; color: var(--text-0);
 }
 
@@ -645,11 +674,11 @@ body {
   .quiz-top { margin-bottom: 16px; }
   .quiz-top h2 { font-size: 18px; }
   .q-card { padding: 20px 16px; }
-  .q-text { font-size: 20px; line-height: 1.7; margin-bottom: 16px; }
+  .q-text { font-size: 17px; line-height: 1.7; margin-bottom: 16px; }
   .q-num { font-size: 11px; flex-wrap: wrap; gap: 6px; }
   .opt { padding: 12px 14px; gap: 10px; }
   .opt-marker { width: 22px; height: 22px; font-size: 11px; }
-  .opt-label { font-size: 17px; line-height: 1.6; }
+  .opt-label { font-size: 15px; line-height: 1.6; }
   .q-explanation { font-size: 14px; padding: 14px 16px; line-height: 1.65; }
 
   /* Admin bar inside question */
@@ -725,6 +754,7 @@ body {
     <div class="header-right header-desktop">
       <span class="badge badge-admin hidden" id="ab1">ADMIN</span>
       <span class="badge-user" id="ub1"></span>
+      <button class="btn-logout btn-sm" id="themeToggle1" type="button" style="border-color:var(--text-3);">Light</button>
       <button class="btn-logout" id="cfgBtn1" style="border-color:var(--text-3);">Impostazioni</button>
       <button class="btn-logout" id="logoutBtn1">Esci</button>
     </div>
@@ -737,6 +767,7 @@ body {
       <span class="badge badge-admin hidden" id="ab1m">ADMIN</span>
       <span id="ub1m" style="color:var(--text-2);font-size:13px;"></span>
     </div>
+    <button class="mobile-menu-item" id="themeToggle1m">Light</button>
     <button class="mobile-menu-item" id="cfgBtn1m">Impostazioni</button>
     <button class="mobile-menu-item mobile-menu-logout" id="logoutBtn1m">Esci</button>
   </div>
@@ -761,6 +792,7 @@ body {
     <div class="header-right header-desktop">
       <span class="badge badge-admin hidden" id="ab2">ADMIN</span>
       <span class="badge-user" id="ub2"></span>
+      <button class="btn-logout btn-sm" id="themeToggle2" type="button" style="border-color:var(--text-3);">Light</button>
       <button class="btn-logout" id="cfgBtn2" style="border-color:var(--text-3);">Impostazioni</button>
       <button class="btn-logout" id="logoutBtn2">Esci</button>
     </div>
@@ -773,6 +805,7 @@ body {
       <span class="badge badge-admin hidden" id="ab2m">ADMIN</span>
       <span id="ub2m" style="color:var(--text-2);font-size:13px;"></span>
     </div>
+    <button class="mobile-menu-item" id="themeToggle2m">Light</button>
     <button class="mobile-menu-item" id="navCatalogM">Catalogo</button>
     <button class="mobile-menu-item" id="cfgBtn2m">Impostazioni</button>
     <button class="mobile-menu-item mobile-menu-logout" id="logoutBtn2m">Esci</button>
@@ -831,6 +864,11 @@ body {
     set key(v) { localStorage.setItem('cq_key', v); },
   };
 
+  const themeConfig = {
+    get mode() { return localStorage.getItem('cq_theme') || 'dark'; },
+    set mode(v) { localStorage.setItem('cq_theme', v); }
+  };
+
   let _supaUrl = '';
   let _supaKey = '';
 
@@ -842,6 +880,23 @@ body {
     _supaKey = cfg.key;
     sb = window.supabase.createClient(cfg.url, cfg.key);
     return true;
+  }
+
+  function applyTheme(mode) {
+    const themeName = mode === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = themeName;
+    themeConfig.mode = themeName;
+    const buttonLabel = themeName === 'light' ? 'Dark' : 'Light';
+    $$('#themeToggle1, #themeToggle2, #themeToggle1m, #themeToggle2m').forEach(btn => {
+      if (btn) {
+        btn.textContent = buttonLabel;
+        btn.setAttribute('aria-label', themeName === 'light' ? 'Passa a tema scuro' : 'Passa a tema chiaro');
+      }
+    });
+  }
+
+  function toggleTheme() {
+    applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
   }
 
   // ===== DOM REFS =====
@@ -1101,6 +1156,12 @@ body {
     toast('Configurazione salvata');
   });
   $('#cfgClose').addEventListener('click', closeCfg);
+
+  $$('#themeToggle1,#themeToggle2,#themeToggle1m,#themeToggle2m').forEach(btn => {
+    if (btn) btn.addEventListener('click', toggleTheme);
+  });
+
+  applyTheme(themeConfig.mode);
 
   // ===== CATALOG =====
   async function loadCatalog() {
