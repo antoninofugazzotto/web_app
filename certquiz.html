@@ -409,6 +409,7 @@ body {
   background: var(--bg-3); border-radius: var(--radius);
   font-size: 13px; color: var(--text-1); line-height: 1.7;
   display: none; border-left: 3px solid var(--accent);
+  white-space: pre-line;
 }
 .q-explanation.show { display: block; }
 
@@ -959,8 +960,12 @@ body {
 
   async function saveQuizProgress(quizId, lastQuestionId, lastIndex, completed) {
     if (!sb || !user || !quizId) return;
-    const nextIndex = Math.max(lastIndex || 0, progressState.lastIndex || 0);
-    const shouldSave = completed || quizId !== progressState.quizId || nextIndex > (progressState.lastIndex || 0);
+    const nextIndex = Math.max(0, lastIndex || 0);
+    const sameQuiz = quizId === progressState.quizId;
+    const shouldSave = !sameQuiz ||
+      nextIndex !== (progressState.lastIndex || 0) ||
+      (lastQuestionId || null) !== (progressState.lastQuestionId || null) ||
+      !!completed !== !!progressState.completed;
     if (!shouldSave) return;
 
     const payload = {
@@ -982,7 +987,7 @@ body {
       progressState = {
         quizId,
         lastQuestionId: data?.last_question_id || lastQuestionId || null,
-        lastIndex: data?.last_question_index || nextIndex,
+        lastIndex: data?.last_question_index ?? nextIndex,
         completed: !!data?.completed,
       };
     } catch (e) {
@@ -1864,8 +1869,6 @@ body {
     const text = $(`#qe-${qid}`).innerText.trim();
     const opts = [];
     for (let i = 0; i < n; i++) opts.push($(`#oe-${qid}-${i}`).value.trim());
-    const marked = [];
-    for (let i = 0; i < n; i++) if ($(`#ck-${qid}-${i}`).checked) marked.push(String.fromCharCode(65 + i));
 
     const el = $(`#air-${qid}`);
     el.className = 'ai-result show wait';
@@ -1886,7 +1889,6 @@ body {
         body: JSON.stringify({
           question: text,
           options: opts,
-          marked_correct: marked,
         }),
       });
 
