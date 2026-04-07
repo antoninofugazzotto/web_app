@@ -834,6 +834,13 @@ body {
       <label>Supabase Anon Key</label>
       <input class="form-input" type="text" id="cfgKey" placeholder="eyJhbGciOi...">
     </div>
+    <div class="form-group">
+      <label for="cfgShuffle">Ordina risposte in modo casuale</label>
+      <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+        <input type="checkbox" id="cfgShuffle">
+        <span style="font-size:13px; color: var(--text-2);">Shuffle delle opzioni durante il quiz</span>
+      </div>
+    </div>
     <div style="display:flex; gap:10px; margin-top:22px;">
       <button class="btn btn-primary" style="flex:1" id="cfgSave">Salva</button>
       <button class="btn btn-ghost" style="flex:1" id="cfgClose">Annulla</button>
@@ -864,6 +871,8 @@ body {
     set url(v) { localStorage.setItem('cq_url', v); },
     get key() { return localStorage.getItem('cq_key') || ''; },
     set key(v) { localStorage.setItem('cq_key', v); },
+    get shuffleAnswers() { return localStorage.getItem('cq_shuffle_answers') === 'true'; },
+    set shuffleAnswers(v) { localStorage.setItem('cq_shuffle_answers', v ? 'true' : 'false'); },
   };
 
   const themeConfig = {
@@ -899,6 +908,15 @@ body {
 
   function toggleTheme() {
     applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
+  }
+
+  function shuffleArray(arr) {
+    const result = [...arr];
+    for (let i = result.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
   }
 
   // ===== DOM REFS =====
@@ -1145,6 +1163,7 @@ body {
   function openCfg() {
     $('#cfgUrl').value = cfg.url;
     $('#cfgKey').value = cfg.key;
+    $('#cfgShuffle').checked = cfg.shuffleAnswers;
     $('#cfgModal').classList.add('open');
   }
   function closeCfg() { $('#cfgModal').classList.remove('open'); }
@@ -1153,6 +1172,7 @@ body {
   $('#cfgSave').addEventListener('click', () => {
     cfg.url = $('#cfgUrl').value.trim();
     cfg.key = $('#cfgKey').value.trim();
+    cfg.shuffleAnswers = $('#cfgShuffle').checked;
     initSupa();
     closeCfg();
     toast('Configurazione salvata');
@@ -1349,6 +1369,7 @@ body {
       const opts = q.options || [];
       const corr = Array.isArray(q.correct_answers) ? q.correct_answers : [q.correct_answers];
       const multi = corr.length > 1;
+      const order = cfg.shuffleAnswers ? shuffleArray(opts.map((_, oi) => oi)) : opts.map((_, oi) => oi);
 
       h += `<div class="q-card" id="qc-${q.id}">
         <div class="q-num" style="display:flex;align-items:center;justify-content:space-between;">
@@ -1358,11 +1379,12 @@ body {
         <div class="q-text" id="qt-${q.id}">${esc(q.question_text)}</div>
         <div class="opts" id="ol-${q.id}">`;
 
-      opts.forEach((o, oi) => {
-        const L = String.fromCharCode(65 + oi);
-        h += `<div class="opt" id="o-${q.id}-${oi}" data-qid="${q.id}" data-oi="${oi}" data-multi="${multi}">
+      order.forEach((origOi, displayIndex) => {
+        const L = String.fromCharCode(65 + displayIndex);
+        const optionText = opts[origOi];
+        h += `<div class="opt" id="o-${q.id}-${origOi}" data-qid="${q.id}" data-oi="${origOi}" data-multi="${multi}">
           <div class="opt-marker">${L}</div>
-          <div class="opt-label" id="ol-${q.id}-${oi}">${esc(o)}</div>
+          <div class="opt-label" id="ol-${q.id}-${origOi}">${esc(optionText)}</div>
         </div>`;
       });
 
