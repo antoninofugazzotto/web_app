@@ -518,6 +518,12 @@ body {
 }
 
 .modal h2 { font-size: 17px; font-weight: 600; margin-bottom: 22px; }
+#resumeModal .modal p {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-top: -6px;
+}
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; }
@@ -848,6 +854,18 @@ body {
   </div>
 </div>
 
+<!-- ==================== RESUME MODAL ==================== -->
+<div class="modal-bg" id="resumeModal">
+  <div class="modal">
+    <h2>Riprendi quiz?</h2>
+    <p id="resumeText">Hai già iniziato questo quiz. Vuoi continuare da dove avevi lasciato?</p>
+    <div style="display:flex; gap:10px; margin-top:22px;">
+      <button class="btn btn-primary" style="flex:1" id="resumeContinue">Continua</button>
+      <button class="btn btn-ghost" style="flex:1" id="resumeRestart">Ricomincia</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- ==================== APPLICATION LOGIC ==================== -->
@@ -864,6 +882,13 @@ body {
   let submitted = false;
   let currentQuizId = null;
   let currentQuizTitle = '';
+  let progressState = {
+    quizId: null,
+    lastQuestionId: null,
+    lastIndex: 0,
+    completed: false,
+  };
+  let resumeContext = null;
 
   // ===== CONFIG =====
   const cfg = {
@@ -917,6 +942,85 @@ body {
       [result[i], result[j]] = [result[j], result[i]];
     }
     return result;
+  }
+
+  // ===== QUIZ PROGRESS (SUPABASE) =====
+  async function fetchQuizProgress(quizId) {
+    if (!sb || !user) return null;
+    const { data, error } = await sb
+      .from('quiz_progress')
+      .select('last_question_id,last_question_index,completed')
+      .eq('user_id', user.id)
+      .eq('quiz_id', quizId)
+      .maybeSingle();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data || null;
+  }
+
+  async function saveQuizProgress(quizId, lastQuestionId, lastIndex, completed) {
+    if (!sb || !user || !quizId) return;
+    const nextIndex = Math.max(lastIndex || 0, progressState.lastIndex || 0);
+    const shouldSave = completed || quizId !== progressState.quizId || nextIndex > (progressState.lastIndex || 0);
+    if (!shouldSave) return;
+
+    const payload = {
+      user_id: user.id,
+      quiz_id: quizId,
+      last_question_id: lastQuestionId || null,
+      last_question_index: nextIndex,
+      completed: !!completed,
+      updated_at: new Date().toISOString(),
+    };
+
+    try {
+      const { data, error } = await sb
+        .from('quiz_progress')
+        .upsert(payload, { onConflict: 'user_id,quiz_id' })
+        .select('last_question_id,last_question_index,completed')
+        .maybeSingle();
+      if (error) throw error;
+      progressState = {
+        quizId,
+        lastQuestionId: data?.last_question_id || lastQuestionId || null,
+        lastIndex: data?.last_question_index || nextIndex,
+        completed: !!data?.completed,
+      };
+    } catch (e) {
+      console.warn('Progress save failed:', e);
+    }
+  }
+
+  async function clearQuizProgress(quizId) {
+    if (!sb || !user || !quizId) return;
+    try {
+      const { error } = await sb
+        .from('quiz_progress')
+        .upsert({
+          user_id: user.id,
+          quiz_id: quizId,
+          last_question_id: null,
+          last_question_index: 0,
+          completed: false,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,quiz_id' });
+      if (error) throw error;
+      if (progressState.quizId === quizId) {
+        progressState.lastQuestionId = null;
+        progressState.lastIndex = 0;
+        progressState.completed = false;
+      }
+    } catch (e) {
+      console.warn('Progress reset failed:', e);
+    }
+  }
+
+  function setProgressState(quizId, lastQuestionId, lastIndex, completed) {
+    progressState = {
+      quizId,
+      lastQuestionId: lastQuestionId || null,
+      lastIndex: Math.max(0, lastIndex || 0),
+      completed: !!completed,
+    };
   }
 
   // ===== DOM REFS =====
@@ -1168,6 +1272,20 @@ body {
   }
   function closeCfg() { $('#cfgModal').classList.remove('open'); }
 
+  // ===== RESUME MODAL =====
+  function openResumeModal(ctx) {
+    resumeContext = ctx;
+    const label = ctx?.lastIndex ? `Hai già iniziato questo quiz. Vuoi continuare dalla domanda ${ctx.lastIndex}?` :
+      'Hai già iniziato questo quiz. Vuoi continuare da dove avevi lasciato?';
+    $('#resumeText').textContent = label;
+    $('#resumeModal').classList.add('open');
+  }
+
+  function closeResumeModal() {
+    resumeContext = null;
+    $('#resumeModal').classList.remove('open');
+  }
+
   $('#openCfgLink').addEventListener('click', e => { e.preventDefault(); openCfg(); });
   $('#cfgSave').addEventListener('click', () => {
     cfg.url = $('#cfgUrl').value.trim();
@@ -1179,11 +1297,54 @@ body {
   });
   $('#cfgClose').addEventListener('click', closeCfg);
 
+  $('#resumeContinue').addEventListener('click', () => {
+    const ctx = resumeContext;
+    closeResumeModal();
+    if (ctx) openQuiz(ctx.quizId, ctx.title, { resumeIndex: ctx.lastIndex });
+  });
+  $('#resumeRestart').addEventListener('click', async () => {
+    const ctx = resumeContext;
+    closeResumeModal();
+    if (!ctx) return;
+    await clearQuizProgress(ctx.quizId);
+    openQuiz(ctx.quizId, ctx.title, { resetProgress: true });
+  });
+  $('#resumeModal').addEventListener('click', e => {
+    if (e.target && e.target.id === 'resumeModal') closeResumeModal();
+  });
+
   $$('#themeToggle1,#themeToggle2,#themeToggle1m,#themeToggle2m').forEach(btn => {
     if (btn) btn.addEventListener('click', toggleTheme);
   });
 
   applyTheme(themeConfig.mode);
+
+  async function handleQuizCardClick(quizId, title) {
+    if (!sb || !user) {
+      openQuiz(quizId, title);
+      return;
+    }
+
+    try {
+      const progress = await fetchQuizProgress(quizId);
+      if (progress && !progress.completed && (progress.last_question_index || 0) > 0) {
+        openResumeModal({
+          quizId,
+          title,
+          lastIndex: progress.last_question_index || 1,
+        });
+        return;
+      }
+
+      if (progress?.completed) {
+        await clearQuizProgress(quizId);
+      }
+    } catch (e) {
+      console.warn('Progress check failed:', e);
+    }
+
+    openQuiz(quizId, title);
+  }
 
   // ===== CATALOG =====
   async function loadCatalog() {
@@ -1199,7 +1360,7 @@ body {
         const { count } = await sb.from('questions').select('id', { count: 'exact', head: true }).eq('quiz_id', q.id);
         const card = document.createElement('div');
         card.className = 'quiz-card';
-        card.addEventListener('click', () => openQuiz(q.id, q.title));
+        card.addEventListener('click', () => handleQuizCardClick(q.id, q.title));
         card.innerHTML = `
           <div class="quiz-card-cat">${esc(q.category || 'Salesforce')}</div>
           <h3>${esc(q.title)}</h3>
@@ -1331,12 +1492,14 @@ body {
   }
 
   // ===== QUIZ =====
-  async function openQuiz(quizId, title) {
+  async function openQuiz(quizId, title, opts = {}) {
     currentQuizId = quizId;
     currentQuizTitle = title;
     answers = {};
     submitted = false;
     revealed = {};
+    const resumeIndex = opts.resetProgress ? 0 : Math.max(0, opts.resumeIndex || 0);
+    setProgressState(quizId, null, resumeIndex, false);
     nav('quiz');
 
     const body = $('#quizBody');
@@ -1349,6 +1512,16 @@ body {
       if (error) throw error;
       questions = data || [];
       renderQuiz();
+      const clamped = Math.min(resumeIndex, questions.length || resumeIndex);
+      if (clamped !== resumeIndex) setProgressState(quizId, null, clamped, false);
+      if (clamped > 1) {
+        const q = questions[clamped - 1];
+        const el = q ? $(`#qc-${q.id}`) : null;
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          toast('Ripreso dalla domanda ' + clamped);
+        }
+      }
     } catch (e) {
       body.innerHTML = `<p style="color:var(--red)">Errore: ${esc(e.message)}</p>`;
     }
@@ -1479,6 +1652,14 @@ body {
   // Track which questions have been revealed
   let revealed = {};
 
+  function recordProgress(qid) {
+    if (!currentQuizId) return;
+    if (submitted) return;
+    const idx = questions.findIndex(x => x.id === qid);
+    if (idx < 0) return;
+    saveQuizProgress(currentQuizId, qid, idx + 1, false);
+  }
+
   function selectOpt(qid, oi, multi) {
     const q = questions.find(x => x.id === qid);
     if (!q) return;
@@ -1518,6 +1699,7 @@ body {
       }
     }
     updateProgress();
+    recordProgress(qid);
   }
 
   function revealAnswer(qid) {
@@ -1555,6 +1737,7 @@ body {
     // Lock
     revealed[qid] = true;
     updateProgress();
+    recordProgress(qid);
   }
 
   function showResultBadge(qid, ok) {
@@ -1574,6 +1757,7 @@ body {
   }
 
   function submitQuiz() {
+    submitted = true;
     // Reveal all unrevealed questions
     questions.forEach(q => {
       if (!revealed[q.id]) revealAnswer(q.id);
@@ -1582,7 +1766,6 @@ body {
       if (revBtn) revBtn.remove();
     });
 
-    submitted = true;
     let correct = 0;
 
     questions.forEach(q => {
@@ -1604,7 +1787,13 @@ body {
         <button class="btn btn-primary" id="retryBtn">Riprova</button>
       </div>`;
 
-    res.querySelector('#retryBtn').onclick = () => openQuiz(currentQuizId, currentQuizTitle);
+    const lastQ = questions[questions.length - 1];
+    saveQuizProgress(currentQuizId, lastQ?.id || null, questions.length, true);
+
+    res.querySelector('#retryBtn').onclick = async () => {
+      await clearQuizProgress(currentQuizId);
+      openQuiz(currentQuizId, currentQuizTitle, { resetProgress: true });
+    };
 
     $('#btnSubmit').textContent = 'Vedi risultati';
     $('#btnSubmit').onclick = () => res.scrollIntoView({ behavior: 'smooth' });
