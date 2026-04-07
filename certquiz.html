@@ -363,6 +363,17 @@ body {
   border-color: var(--red); color: var(--red);
   background: var(--red-bg);
 }
+.copy-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; padding: 0;
+  border-radius: 0;
+  border: none; background: transparent;
+  color: var(--text-2);
+  cursor: pointer; transition: all 0.15s var(--ease);
+}
+.copy-btn svg { width: 20px; height: 20px; }
+.copy-btn rect { stroke: currentColor; fill: none; stroke-width: 1.9; }
+.copy-btn:hover { color: var(--text-0); }
 
 /* Question card */
 .q-card {
@@ -1125,6 +1136,36 @@ body {
     });
   }
 
+  function buildCopyText(qid) {
+    const q = questions.find(x => String(x.id) === String(qid));
+    const qText = q?.question_text || $(`#qt-${qid}`)?.textContent || '';
+    const optRows = [];
+    $$('#ol-' + qid + ' .opt').forEach(opt => {
+      const marker = opt.querySelector('.opt-marker')?.textContent?.trim() || '';
+      const label = opt.querySelector('.opt-label')?.textContent?.trim() || '';
+      if (marker || label) optRows.push(`${marker}. ${label}`.trim());
+    });
+    return `${qText}\n\n${optRows.join('\n')}`.trim();
+  }
+
+  async function copyQuestion(qid) {
+    const text = buildCopyText(qid);
+    if (!text) { toast('Niente da copiare'); return; }
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    toast('Copiato negli appunti');
+  }
+
   // ===== DOM REFS =====
   const $ = (s, p) => (p || document).querySelector(s);
   const $$ = (s, p) => [...(p || document).querySelectorAll(s)];
@@ -1663,6 +1704,13 @@ body {
             <button class="flag-btn ${isFlagged ? 'active' : ''}" data-flag="${q.id}" type="button" aria-pressed="${isFlagged ? 'true' : 'false'}" aria-label="${flagLabel}" title="${flagLabel}">
               <span class="sr-only">${flagLabel}</span>
             </button>
+            <button class="copy-btn" data-copy="${q.id}" type="button" aria-label="Copia domanda" title="Copia domanda">
+              <span class="sr-only">Copia domanda</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="7" y="7" width="10" height="10" rx="2"></rect>
+                <rect x="4" y="4" width="10" height="10" rx="2"></rect>
+              </svg>
+            </button>
             ${isAdmin ? `<button class="btn btn-ghost btn-sm" data-edit="${q.id}" data-n="${opts.length}" style="padding:4px 10px;font-size:11px;">Modifica</button>` : ''}
           </div>
         </div>
@@ -1784,6 +1832,15 @@ body {
         updateFlagUI(qid);
         updateFlagCount();
         if (flaggedOnly) applyFlagFilter();
+        toast('Errore: ' + e.message);
+      }
+    }));
+
+    // Bind copy buttons
+    $$('[data-copy]').forEach(b => b.addEventListener('click', async function() {
+      try {
+        await copyQuestion(this.dataset.copy);
+      } catch (e) {
         toast('Errore: ' + e.message);
       }
     }));
