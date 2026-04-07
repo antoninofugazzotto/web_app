@@ -1582,6 +1582,10 @@ body {
               <label style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;">Testo domanda</label>
               <div class="q-text" contenteditable="true" id="qe-${q.id}" style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;outline:none;min-height:50px;font-size:14px;">${esc(q.question_text)}</div>
             </div>`;
+        h += `<div style="width:100%;margin-bottom:10px;">
+              <label style="font-size:11px;color:var(--text-2);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;">Spiegazione soluzione</label>
+              <textarea class="form-input" id="qexpedit-${q.id}" rows="4" style="min-height:80px;resize:vertical;">${esc(q.explanation || '')}</textarea>
+            </div>`;
         opts.forEach((o, oi) => {
           const L = String.fromCharCode(65 + oi);
           h += `<div style="display:flex;align-items:center;gap:8px;width:100%;margin-bottom:6px;">
@@ -1806,6 +1810,7 @@ body {
   // ===== ADMIN: SAVE =====
   async function saveQ(qid, n) {
     const text = $(`#qe-${qid}`).innerText.trim();
+    const explanation = $(`#qexpedit-${qid}`).value.trim();
     const opts = [];
     for (let i = 0; i < n; i++) opts.push($(`#oe-${qid}-${i}`).value.trim());
     const corr = [];
@@ -1816,15 +1821,37 @@ body {
         question_text: text,
         options: opts,
         correct_answers: corr,
+        explanation: explanation || null,
       }).eq('id', qid);
       if (error) throw error;
       const q = questions.find(x => x.id === qid);
-      if (q) { q.question_text = text; q.options = opts; q.correct_answers = corr; }
+      if (q) {
+        q.question_text = text;
+        q.options = opts;
+        q.correct_answers = corr;
+        q.explanation = explanation || '';
+      }
       // Update the read-only view
       $(`#qt-${qid}`).textContent = text;
       for (let i = 0; i < n; i++) {
         const lbl = $(`#ol-${qid}-${i}`);
         if (lbl) lbl.textContent = opts[i];
+      }
+      const expElId = `qexp-${qid}`;
+      let expEl = $(`#${expElId}`);
+      if (explanation) {
+        if (!expEl) {
+          expEl = document.createElement('div');
+          expEl.className = 'q-explanation';
+          expEl.id = expElId;
+          expEl.textContent = explanation;
+          const panel = $(`#ap-${qid}`);
+          if (panel && panel.parentNode) panel.parentNode.insertBefore(expEl, panel);
+        } else {
+          expEl.textContent = explanation;
+        }
+      } else if (expEl) {
+        expEl.remove();
       }
       toast('Domanda salvata');
     } catch (e) { toast('Errore: ' + e.message); }
