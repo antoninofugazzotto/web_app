@@ -90,6 +90,16 @@ body {
 
 /* ===== UTILITIES ===== */
 .hidden { display: none !important; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
 
 /* ===== PAGES ===== */
 .page { display: none; min-height: 100vh; min-height: 100svh; opacity: 0; transition: opacity 0.25s var(--ease); }
@@ -326,6 +336,33 @@ body {
 }
 
 .progress-label { font-size: 12px; color: var(--text-2); white-space: nowrap; font-weight: 500; }
+
+.quiz-filter {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 20px;
+}
+.flag-count {
+  font-size: 12px; color: var(--text-3);
+}
+.flag-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  width: 28px; height: 28px; padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-2); font-size: 11px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s var(--ease);
+  justify-content: center;
+}
+.flag-btn::before {
+  content: '⚑';
+  font-size: 14px;
+  line-height: 1;
+}
+.flag-btn:hover { border-color: var(--text-2); color: var(--text-0); }
+.flag-btn.active {
+  border-color: var(--red); color: var(--red);
+  background: var(--red-bg);
+}
 
 /* Question card */
 .q-card {
@@ -890,6 +927,8 @@ body {
     completed: false,
   };
   let resumeContext = null;
+  let flagged = new Set();
+  let flaggedOnly = false;
 
   // ===== CONFIG =====
   const cfg = {
@@ -1026,6 +1065,64 @@ body {
       lastIndex: Math.max(0, lastIndex || 0),
       completed: !!completed,
     };
+  }
+
+  // ===== FLAGGED QUESTIONS =====
+  async function loadFlagged(quizId) {
+    if (!sb || !user) { flagged = new Set(); return; }
+    const { data, error } = await sb
+      .from('user_flagged_questions')
+      .select('question_id')
+      .eq('user_id', user.id)
+      .eq('quiz_id', quizId);
+    if (error && error.code !== 'PGRST116') throw error;
+    flagged = new Set((data || []).map(r => String(r.question_id)));
+  }
+
+  async function setFlag(qid, on) {
+    if (!sb || !user || !currentQuizId) return;
+    if (on) {
+      const { error } = await sb.from('user_flagged_questions').upsert({
+        user_id: user.id,
+        quiz_id: currentQuizId,
+        question_id: qid,
+      }, { onConflict: 'user_id,question_id' });
+      if (error) throw error;
+    } else {
+      const { error } = await sb.from('user_flagged_questions')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('question_id', qid);
+      if (error) throw error;
+    }
+  }
+
+  function updateFlagUI(qid) {
+    const btn = $(`[data-flag="${qid}"]`);
+    if (!btn) return;
+    const isOn = flagged.has(String(qid));
+    btn.classList.toggle('active', isOn);
+    btn.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+    const label = isOn ? 'Rimuovi segno' : 'Segna per ripasso';
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('title', label);
+    const sr = btn.querySelector('.sr-only');
+    if (sr) sr.textContent = label;
+  }
+
+  function updateFlagCount() {
+    const el = $('#flagCount');
+    if (el) el.textContent = `${flagged.size} segnate`;
+  }
+
+  function applyFlagFilter() {
+    const btn = $('#flagToggleBtn');
+    if (btn) btn.textContent = flaggedOnly ? 'Tutte le domande' : 'Solo segnate';
+    $$('.q-card').forEach(card => {
+      const qid = card.id?.replace('qc-', '');
+      const showCard = !flaggedOnly || flagged.has(String(qid));
+      card.classList.toggle('hidden', !showCard);
+    });
   }
 
   // ===== DOM REFS =====
@@ -1503,6 +1600,7 @@ body {
     answers = {};
     submitted = false;
     revealed = {};
+    flaggedOnly = false;
     const resumeIndex = opts.resetProgress ? 0 : Math.max(0, opts.resumeIndex || 0);
     setProgressState(quizId, null, resumeIndex, false);
     nav('quiz');
@@ -1516,7 +1614,10 @@ body {
       const { data, error } = await sb.from('questions').select('*').eq('quiz_id', quizId).order('position');
       if (error) throw error;
       questions = data || [];
+      try { await loadFlagged(quizId); } catch (e) { console.warn('Load flagged failed:', e); flagged = new Set(); }
       renderQuiz();
+      updateFlagCount();
+      applyFlagFilter();
       const clamped = Math.min(resumeIndex, questions.length || resumeIndex);
       if (clamped !== resumeIndex) setProgressState(quizId, null, clamped, false);
       if (clamped > 1) {
@@ -1541,6 +1642,10 @@ body {
       <div class="quiz-progress">
         <div class="progress-track"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
         <span class="progress-label" id="pLabel">0 / ${questions.length}</span>
+      </div>
+      <div class="quiz-filter">
+        <button class="btn btn-ghost btn-sm" id="flagToggleBtn">Solo segnate</button>
+        <span class="flag-count" id="flagCount">0 segnate</span>
       </div>`;
 
     questions.forEach((q, i) => {
@@ -1548,11 +1653,18 @@ body {
       const corr = Array.isArray(q.correct_answers) ? q.correct_answers : [q.correct_answers];
       const multi = corr.length > 1;
       const order = cfg.shuffleAnswers ? shuffleArray(opts.map((_, oi) => oi)) : opts.map((_, oi) => oi);
+      const isFlagged = flagged.has(String(q.id));
+      const flagLabel = isFlagged ? 'Rimuovi segno' : 'Segna per ripasso';
 
       h += `<div class="q-card" id="qc-${q.id}">
         <div class="q-num" style="display:flex;align-items:center;justify-content:space-between;">
           <span>Domanda ${i + 1} di ${questions.length}${multi ? ' &mdash; Seleziona ' + corr.length + ' risposte' : ''}</span>
-          ${isAdmin ? `<button class="btn btn-ghost btn-sm" data-edit="${q.id}" data-n="${opts.length}" style="padding:4px 10px;font-size:11px;">Modifica</button>` : ''}
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="flag-btn ${isFlagged ? 'active' : ''}" data-flag="${q.id}" type="button" aria-pressed="${isFlagged ? 'true' : 'false'}" aria-label="${flagLabel}" title="${flagLabel}">
+              <span class="sr-only">${flagLabel}</span>
+            </button>
+            ${isAdmin ? `<button class="btn btn-ghost btn-sm" data-edit="${q.id}" data-n="${opts.length}" style="padding:4px 10px;font-size:11px;">Modifica</button>` : ''}
+          </div>
         </div>
         <div class="q-text" id="qt-${q.id}">${esc(q.question_text)}</div>
         <div class="opts" id="ol-${q.id}">`;
@@ -1652,6 +1764,36 @@ body {
       $$('[data-ai]').forEach(b => b.addEventListener('click', function() {
         verifyAI(this.dataset.ai, parseInt(this.dataset.n));
       }));
+    }
+
+    // Bind flag buttons
+    $$('[data-flag]').forEach(b => b.addEventListener('click', async function() {
+      const qid = String(this.dataset.flag);
+      const wantOn = !flagged.has(qid);
+      if (wantOn) flagged.add(qid);
+      else flagged.delete(qid);
+      updateFlagUI(qid);
+      updateFlagCount();
+      if (flaggedOnly) applyFlagFilter();
+      try {
+        await setFlag(qid, wantOn);
+      } catch (e) {
+        // Revert on error
+        if (wantOn) flagged.delete(qid);
+        else flagged.add(qid);
+        updateFlagUI(qid);
+        updateFlagCount();
+        if (flaggedOnly) applyFlagFilter();
+        toast('Errore: ' + e.message);
+      }
+    }));
+
+    const flagToggleBtn = $('#flagToggleBtn');
+    if (flagToggleBtn) {
+      flagToggleBtn.addEventListener('click', () => {
+        flaggedOnly = !flaggedOnly;
+        applyFlagFilter();
+      });
     }
 
     // Bind footer go-to question
