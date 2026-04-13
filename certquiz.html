@@ -940,6 +940,8 @@ body {
   let resumeContext = null;
   let flagged = new Set();
   let flaggedOnly = false;
+  let isExamMode = false;
+  let originalQuizState = null;
 
   // ===== CONFIG =====
   const cfg = {
@@ -1526,6 +1528,76 @@ body {
     }
   }
 
+  // ===== EXAM SIMULATION =====
+  async function startExamSimulation() {
+    const btn = $('#btnSimulaEsame');
+    btn.disabled = true;
+    btn.textContent = 'Caricamento...';
+
+    try {
+      const { data, error } = await sb.from('questions').select('*');
+      if (error) throw error;
+
+      const pool = data || [];
+      if (pool.length === 0) { toast('Nessuna domanda disponibile.'); return; }
+
+      // Save current quiz state to restore later
+      originalQuizState = {
+        quizId: currentQuizId,
+        title: currentQuizTitle,
+        questions: questions.slice(),
+        flagged: new Set(flagged),
+      };
+
+      // Pick up to 60 random questions
+      const shuffled = pool.slice().sort(() => Math.random() - 0.5);
+      const picked = shuffled.slice(0, Math.min(60, shuffled.length));
+
+      isExamMode = true;
+      currentQuizId = null;
+      currentQuizTitle = `Simulazione Esame — ${originalQuizState.title}`;
+      answers = {};
+      submitted = false;
+      revealed = {};
+      translated = {};
+      flaggedOnly = false;
+      flagged = new Set();
+      questions = picked;
+
+      $('#btnSubmit').textContent = 'Verifica Risposte';
+      $('#btnSubmit').onclick = submitQuiz;
+      renderQuiz();
+      updateFlagCount();
+      applyFlagFilter();
+    } catch (e) {
+      toast('Errore: ' + e.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function exitExamSimulation() {
+    if (!originalQuizState) return;
+
+    isExamMode = false;
+    currentQuizId = originalQuizState.quizId;
+    currentQuizTitle = originalQuizState.title;
+    questions = originalQuizState.questions;
+    flagged = originalQuizState.flagged;
+    originalQuizState = null;
+    answers = {};
+    submitted = false;
+    revealed = {};
+    translated = {};
+    flaggedOnly = false;
+
+    $('#btnSubmit').textContent = 'Verifica Risposte';
+    $('#btnSubmit').onclick = submitQuiz;
+    renderQuiz();
+    updateFlagCount();
+    applyFlagFilter();
+  }
+
   // ===== ADMIN: USER APPROVAL =====
   async function loadApprovals() {
     const list = $('#approvalList');
@@ -1641,6 +1713,9 @@ body {
     answers = {};
     submitted = false;
     revealed = {};
+    translated = {};
+    isExamMode = false;
+    originalQuizState = null;
     flaggedOnly = false;
     const resumeIndex = opts.resetProgress ? 0 : Math.max(0, opts.resumeIndex || 0);
     setProgressState(quizId, null, resumeIndex, false);
@@ -1687,6 +1762,7 @@ body {
       <div class="quiz-filter">
         <button class="btn btn-ghost btn-sm" id="flagToggleBtn">Solo segnate</button>
         <span class="flag-count" id="flagCount">0 segnate</span>
+        <button class="btn btn-ghost btn-sm" id="btnSimulaEsame" style="margin-left:auto;">${isExamMode ? 'Modalità Studio' : 'Simula Esame'}</button>
       </div>`;
 
     questions.forEach((q, i) => {
@@ -1784,6 +1860,9 @@ body {
       const multi = this.dataset.multi === 'true';
       selectOpt(qid, oi, multi);
     }));
+
+    // Bind "Simula Esame / Modalità Studio" button
+    $('#btnSimulaEsame').addEventListener('click', isExamMode ? exitExamSimulation : startExamSimulation);
 
     // Bind "Mostra Corretta" buttons
     $$('[data-reveal]').forEach(b => b.addEventListener('click', function() {
