@@ -1712,6 +1712,7 @@ body {
               </svg>
             </button>
             ${isAdmin ? `<button class="btn btn-ghost btn-sm" data-edit="${q.id}" data-n="${opts.length}" style="padding:4px 10px;font-size:11px;">Modifica</button>` : ''}
+            <button class="btn btn-ghost btn-sm translate-btn" data-translate="${q.id}" style="padding:4px 10px;font-size:11px;">Italiano</button>
           </div>
         </div>
         <div class="q-text" id="qt-${q.id}">${esc(q.question_text)}</div>
@@ -1790,6 +1791,11 @@ body {
       this.remove();
     }));
 
+    // Bind "Italiano / Inglese" buttons
+    $$('[data-translate]').forEach(b => b.addEventListener('click', function() {
+      translateQuestion(this.dataset.translate);
+    }));
+
     // Bind admin buttons
     if (isAdmin) {
       // Edit toggle
@@ -1859,6 +1865,9 @@ body {
 
   // Track which questions have been revealed
   let revealed = {};
+
+  // Track which questions are currently showing Italian translation
+  let translated = {};
 
   function recordProgress(qid) {
     if (!currentQuizId) return;
@@ -2103,6 +2112,79 @@ body {
       el.className = 'ai-result show ko';
       el.innerHTML = 'Errore: ' + esc(e.message);
     }
+  }
+
+  // ===== TRANSLATE QUESTION =====
+  async function translateQuestion(qid) {
+    const btn = $(`[data-translate="${qid}"]`);
+    if (!btn) return;
+
+    if (translated[qid]) {
+      restoreQuestion(qid);
+      return;
+    }
+
+    const q = questions.find(x => x.id === qid);
+    if (!q) return;
+
+    btn.disabled = true;
+    btn.textContent = '...';
+
+    const tx = async (text) => {
+      if (!text) return '';
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=it&dt=t&q=${encodeURIComponent(text)}`;
+      const r = await fetch(url);
+      const d = await r.json();
+      return d[0].map(x => x[0]).join('');
+    };
+
+    try {
+      const allTexts = [q.question_text, ...(q.options || [])];
+      if (q.explanation) allTexts.push(q.explanation);
+
+      const results = await Promise.all(allTexts.map(t => tx(t)));
+
+      const tQuestion = results[0];
+      const tOptions = results.slice(1, 1 + (q.options || []).length);
+      const tExplanation = q.explanation ? results[1 + (q.options || []).length] : '';
+
+      $(`#qt-${qid}`).textContent = tQuestion;
+      (q.options || []).forEach((_, oi) => {
+        const el = $(`#ol-${qid}-${oi}`);
+        if (el) el.textContent = tOptions[oi] || '';
+      });
+      if (tExplanation) {
+        const expEl = $(`#qexp-${qid}`);
+        if (expEl) expEl.textContent = tExplanation;
+      }
+
+      translated[qid] = true;
+      btn.textContent = 'Inglese';
+      btn.disabled = false;
+    } catch (e) {
+      btn.textContent = 'Italiano';
+      btn.disabled = false;
+      toast('Traduzione non disponibile');
+    }
+  }
+
+  function restoreQuestion(qid) {
+    const btn = $(`[data-translate="${qid}"]`);
+    const q = questions.find(x => x.id === qid);
+    if (!q) return;
+
+    $(`#qt-${qid}`).textContent = q.question_text;
+    (q.options || []).forEach((opt, oi) => {
+      const el = $(`#ol-${qid}-${oi}`);
+      if (el) el.textContent = opt;
+    });
+    if (q.explanation) {
+      const expEl = $(`#qexp-${qid}`);
+      if (expEl) expEl.textContent = q.explanation;
+    }
+
+    delete translated[qid];
+    if (btn) btn.textContent = 'Italiano';
   }
 
   // ===== BACK / SUBMIT BUTTONS =====
