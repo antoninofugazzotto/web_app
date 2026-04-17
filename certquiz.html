@@ -337,10 +337,6 @@ body {
 
 .progress-label { font-size: 12px; color: var(--text-2); white-space: nowrap; font-weight: 500; }
 
-.quiz-filter {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 20px;
-}
 .flag-count {
   font-size: 12px; color: var(--text-3);
 }
@@ -516,16 +512,18 @@ body {
 
 /* Bottom bar */
 .bottom-bar {
-  position: fixed; left: 0; right: 0; bottom: env(safe-area-inset-bottom, 0);
+  position: fixed; left: 0; right: 0; bottom: 0;
   background: var(--bg-1); border-top: 1px solid var(--border);
   padding: 14px 28px calc(14px + env(safe-area-inset-bottom, 0)); display: flex;
   align-items: center; justify-content: center; gap: 12px;
-  z-index: 100; backdrop-filter: blur(12px);
+  z-index: 200; backdrop-filter: blur(12px);
+  transform: translateY(0); transition: transform .15s var(--ease);
+  will-change: transform;
 }
 
 /* Toast */
 .toast {
-  position: fixed; bottom: 76px; left: 50%;
+  position: fixed; bottom: 88px; left: 50%;
   transform: translateX(-50%) translateY(14px);
   background: var(--bg-3); border: 1px solid var(--border);
   color: var(--text-0); padding: 10px 22px;
@@ -535,6 +533,82 @@ body {
   pointer-events: none;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+
+/* ===== BOTTOM SHEET ===== */
+.sheet-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s var(--ease); z-index: 400;
+}
+.sheet-bg.show { opacity: 1; pointer-events: auto; }
+
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: var(--bg-1); border-radius: 18px 18px 0 0;
+  padding: 0 16px calc(20px + env(safe-area-inset-bottom, 0));
+  transform: translateY(100%); transition: transform .28s var(--ease);
+  z-index: 410; max-height: 90vh; overflow-y: auto;
+}
+.sheet.show { transform: translateY(0); }
+
+.sheet-handle {
+  width: 42px; height: 4px; border-radius: 2px;
+  background: var(--border); margin: 12px auto 16px;
+}
+
+.sheet h3 {
+  font-family: var(--font-display); font-size: 16px; font-weight: 700;
+  margin-bottom: 14px; padding: 0 4px; letter-spacing: -.2px;
+}
+
+.mode-card {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; padding: 14px 16px;
+  background: var(--bg-2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg); margin-bottom: 10px;
+  cursor: pointer; transition: all .15s var(--ease);
+  text-align: left; font-family: var(--font); color: var(--text-0);
+  -webkit-tap-highlight-color: transparent;
+}
+.mode-card:hover { border-color: var(--text-3); background: var(--bg-hover); }
+.mode-card.active { border-color: var(--accent); background: var(--accent-sub); }
+.mode-card:disabled { opacity: .45; cursor: not-allowed; }
+
+.mode-card-icon {
+  font-size: 22px; line-height: 1; flex-shrink: 0;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-3); border-radius: var(--radius);
+}
+.mode-card-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.mode-card-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.mode-card-desc { font-size: 12px; color: var(--text-2); line-height: 1.4; }
+
+.mode-card-check {
+  width: 18px; height: 18px; flex-shrink: 0; border-radius: 50%;
+  border: 2px solid var(--border); transition: all .15s var(--ease);
+}
+.mode-card.active .mode-card-check {
+  border-color: var(--accent); background: var(--accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='8' viewBox='0 0 10 8'%3E%3Cpath d='M1 4l3 3 5-6' stroke='%23fff' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: center;
+}
+
+/* ===== EXAM TIMER ===== */
+.exam-timer {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 20px;
+  background: var(--bg-3); border: 1px solid var(--border);
+  font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums;
+  color: var(--text-1); letter-spacing: .2px;
+}
+.exam-timer.warning { color: var(--amber); border-color: var(--amber-border); background: var(--amber-bg); }
+.exam-timer.danger {
+  color: var(--red); border-color: var(--red-border); background: var(--red-bg);
+  animation: pulse-danger 1s ease-in-out infinite;
+}
+@keyframes pulse-danger { 0%,100% { opacity:1; } 50% { opacity:.65; } }
 
 /* Spinner */
 .spin {
@@ -850,6 +924,7 @@ body {
       <span class="badge badge-admin hidden" id="ab2">ADMIN</span>
       <span class="badge-user" id="ub2"></span>
       <button class="btn-logout btn-sm" id="themeToggle2" type="button" style="border-color:var(--text-3);">Light</button>
+      <button class="btn-logout btn-sm" id="modeFab" style="border-color:var(--text-3);">☰ <span id="modeFabLabel">Studio</span></button>
       <button class="btn-logout" id="cfgBtn2" style="border-color:var(--text-3);">Impostazioni</button>
       <button class="btn-logout" id="logoutBtn2">Esci</button>
     </div>
@@ -863,6 +938,7 @@ body {
       <span id="ub2m" style="color:var(--text-2);font-size:13px;"></span>
     </div>
     <button class="mobile-menu-item" id="themeToggle2m">Light</button>
+    <button class="mobile-menu-item" id="modeFabM">☰ Modalità: <span id="modeFabLabelM">Studio</span></button>
     <button class="mobile-menu-item" id="navCatalogM">Catalogo</button>
     <button class="mobile-menu-item" id="cfgBtn2m">Impostazioni</button>
     <button class="mobile-menu-item mobile-menu-logout" id="logoutBtn2m">Esci</button>
@@ -915,6 +991,42 @@ body {
   </div>
 </div>
 
+<!-- ==================== MODE SHEET ==================== -->
+<div class="sheet-bg" id="modeSheetBg"></div>
+<div class="sheet" id="modeSheet" role="dialog" aria-modal="true" aria-labelledby="modeSheetTitle">
+  <div class="sheet-handle"></div>
+  <h3 id="modeSheetTitle">Modalità quiz</h3>
+
+  <button class="mode-card" data-mode="study">
+    <span class="mode-card-icon">📖</span>
+    <span class="mode-card-body">
+      <span class="mode-card-title">Studio completo</span>
+      <span class="mode-card-desc">Tutte le domande del quiz corrente</span>
+    </span>
+    <span class="mode-card-check" aria-hidden="true"></span>
+  </button>
+
+  <button class="mode-card" data-mode="flagged">
+    <span class="mode-card-icon">⚑</span>
+    <span class="mode-card-body">
+      <span class="mode-card-title">Solo segnate &nbsp;<span class="flag-count" id="sheetFlagCount">0</span></span>
+      <span class="mode-card-desc">Ripassa le domande che hai segnato</span>
+    </span>
+    <span class="mode-card-check" aria-hidden="true"></span>
+  </button>
+
+  <button class="mode-card" data-mode="exam">
+    <span class="mode-card-icon">⏱</span>
+    <span class="mode-card-body">
+      <span class="mode-card-title">Simulazione esame</span>
+      <span class="mode-card-desc">60 domande casuali da tutto il catalogo · 90 min</span>
+    </span>
+    <span class="mode-card-check" aria-hidden="true"></span>
+  </button>
+
+  <button class="btn btn-ghost btn-sm" id="modeSheetClose" style="width:100%;margin-top:4px;">Chiudi</button>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- ==================== APPLICATION LOGIC ==================== -->
@@ -942,6 +1054,10 @@ body {
   let flaggedOnly = false;
   let isExamMode = false;
   let originalQuizState = null;
+  let currentMode = 'study';
+  const examDurationMs = 90 * 60 * 1000;
+  let examStartTs = null;
+  let examTimerId = null;
 
   // ===== CONFIG =====
   const cfg = {
@@ -1124,18 +1240,119 @@ body {
   }
 
   function updateFlagCount() {
-    const el = $('#flagCount');
-    if (el) el.textContent = `${flagged.size} segnate`;
+    const el = $('#sheetFlagCount');
+    if (el) el.textContent = flagged.size;
   }
 
   function applyFlagFilter() {
-    const btn = $('#flagToggleBtn');
-    if (btn) btn.textContent = flaggedOnly ? 'Tutte le domande' : 'Solo segnate';
     $$('.q-card').forEach(card => {
       const qid = card.id?.replace('qc-', '');
       const showCard = !flaggedOnly || flagged.has(String(qid));
       card.classList.toggle('hidden', !showCard);
     });
+  }
+
+  // ===== EXAM TIMER =====
+  function stopExamTimer() {
+    if (examTimerId) { clearInterval(examTimerId); examTimerId = null; }
+    examStartTs = null;
+    const timerEl = $('#examTimer');
+    if (timerEl) timerEl.classList.add('hidden');
+  }
+
+  function startExamTimer() {
+    examStartTs = Date.now();
+    const timerEl = $('#examTimer');
+    if (timerEl) timerEl.classList.remove('hidden');
+    examTimerId = setInterval(tickExamTimer, 1000);
+    tickExamTimer();
+  }
+
+  function tickExamTimer() {
+    const left = examDurationMs - (Date.now() - examStartTs);
+    if (left <= 0) {
+      stopExamTimer();
+      toast('Tempo scaduto — invio risposte');
+      submitQuiz();
+      return;
+    }
+    const totalSec = Math.ceil(left / 1000);
+    const mm = Math.floor(totalSec / 60);
+    const ss = totalSec % 60;
+    const fmt = `${mm}:${ss.toString().padStart(2, '0')}`;
+    const timerVal = $('#examTimerVal');
+    if (timerVal) timerVal.textContent = fmt;
+    const timerEl = $('#examTimer');
+    if (timerEl) {
+      timerEl.classList.remove('warning', 'danger');
+      if (left < 2 * 60 * 1000) timerEl.classList.add('danger');
+      else if (left < 10 * 60 * 1000) timerEl.classList.add('warning');
+    }
+    const fabLabel = $('#modeFabLabel'); if (fabLabel) fabLabel.textContent = `Esame ${fmt}`;
+    const fabLabelM = $('#modeFabLabelM'); if (fabLabelM) fabLabelM.textContent = `Esame ${fmt}`;
+  }
+
+  // ===== MODE SHEET =====
+  function updateFabLabel() {
+    if (currentMode === 'exam' && examStartTs) return; // tickExamTimer gestisce il label
+    const labels = { study: 'Studio', flagged: 'Segnate', exam: 'Esame' };
+    const text = labels[currentMode] || 'Studio';
+    const el = $('#modeFabLabel'); if (el) el.textContent = text;
+    const elM = $('#modeFabLabelM'); if (elM) elM.textContent = text;
+  }
+
+  function updateModeSheet() {
+    $$('.mode-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.mode === currentMode);
+    });
+    const countEl = $('#sheetFlagCount');
+    if (countEl) countEl.textContent = flagged.size;
+    const flagCard = $('[data-mode="flagged"]');
+    if (flagCard) {
+      const effectiveCount = isExamMode ? (originalQuizState?.flagged?.size ?? 0) : flagged.size;
+      flagCard.disabled = (effectiveCount === 0);
+    }
+  }
+
+  function openModeSheet() {
+    updateModeSheet();
+    $('#modeSheetBg').classList.add('show');
+    $('#modeSheet').classList.add('show');
+    const firstCard = $('#modeSheet .mode-card:not(:disabled)');
+    if (firstCard) firstCard.focus();
+  }
+
+  function closeModeSheet() {
+    $('#modeSheetBg').classList.remove('show');
+    $('#modeSheet').classList.remove('show');
+    const fab = $('#modeFab');
+    if (fab) fab.focus();
+  }
+
+  async function setMode(mode) {
+    const effectiveFlagCount = isExamMode ? (originalQuizState?.flagged?.size ?? 0) : flagged.size;
+    if (mode === 'flagged' && effectiveFlagCount === 0) {
+      toast('Nessuna domanda segnata');
+      closeModeSheet();
+      return;
+    }
+    closeModeSheet();
+    stopExamTimer();
+
+    if (mode === 'study') {
+      if (isExamMode) exitExamSimulation();
+      else { flaggedOnly = false; applyFlagFilter(); }
+      currentMode = 'study';
+    } else if (mode === 'flagged') {
+      if (isExamMode) exitExamSimulation();
+      flaggedOnly = true;
+      currentMode = 'flagged';
+      applyFlagFilter();
+    } else if (mode === 'exam') {
+      currentMode = 'exam';
+      await startExamSimulation();
+    }
+    updateFabLabel();
   }
 
   function buildCopyText(qid) {
@@ -1530,18 +1747,16 @@ body {
 
   // ===== EXAM SIMULATION =====
   async function startExamSimulation() {
-    const btn = $('#btnSimulaEsame');
-    btn.disabled = true;
-    btn.textContent = 'Caricamento...';
+    const fab = $('#modeFab'); if (fab) fab.disabled = true;
+    const fabM = $('#modeFabM'); if (fabM) fabM.disabled = true;
 
     try {
       const { data, error } = await sb.from('questions').select('*');
       if (error) throw error;
 
       const pool = data || [];
-      if (pool.length === 0) { toast('Nessuna domanda disponibile.'); return; }
+      if (pool.length === 0) { toast('Nessuna domanda disponibile.'); currentMode = 'study'; updateFabLabel(); return; }
 
-      // Save current quiz state to restore later
       originalQuizState = {
         quizId: currentQuizId,
         title: currentQuizTitle,
@@ -1549,7 +1764,6 @@ body {
         flagged: new Set(flagged),
       };
 
-      // Pick up to 60 random questions
       const shuffled = pool.slice().sort(() => Math.random() - 0.5);
       const picked = shuffled.slice(0, Math.min(60, shuffled.length));
 
@@ -1569,16 +1783,21 @@ body {
       renderQuiz();
       updateFlagCount();
       applyFlagFilter();
+      startExamTimer();
     } catch (e) {
       toast('Errore: ' + e.message);
+      currentMode = 'study';
+      updateFabLabel();
     } finally {
-      btn.disabled = false;
+      if (fab) fab.disabled = false;
+      if (fabM) fabM.disabled = false;
     }
   }
 
   function exitExamSimulation() {
     if (!originalQuizState) return;
 
+    stopExamTimer();
     isExamMode = false;
     currentQuizId = originalQuizState.quizId;
     currentQuizTitle = originalQuizState.title;
@@ -1717,6 +1936,9 @@ body {
     isExamMode = false;
     originalQuizState = null;
     flaggedOnly = false;
+    currentMode = 'study';
+    stopExamTimer();
+    updateFabLabel();
     const resumeIndex = opts.resetProgress ? 0 : Math.max(0, opts.resumeIndex || 0);
     setProgressState(quizId, null, resumeIndex, false);
     nav('quiz');
@@ -1754,15 +1976,11 @@ body {
     let h = `
       <div class="quiz-top">
         <h2>${esc(currentQuizTitle)}</h2>
+        <span class="exam-timer hidden" id="examTimer">⏱ <span id="examTimerVal">90:00</span></span>
       </div>
       <div class="quiz-progress">
         <div class="progress-track"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
         <span class="progress-label" id="pLabel">0 / ${questions.length}</span>
-      </div>
-      <div class="quiz-filter">
-        <button class="btn btn-ghost btn-sm" id="flagToggleBtn">Solo segnate</button>
-        <span class="flag-count" id="flagCount">0 segnate</span>
-        <button class="btn btn-ghost btn-sm" id="btnSimulaEsame" style="margin-left:auto;">${isExamMode ? 'Modalità Studio' : 'Simula Esame'}</button>
       </div>`;
 
     questions.forEach((q, i) => {
@@ -1861,9 +2079,6 @@ body {
       selectOpt(qid, oi, multi);
     }));
 
-    // Bind "Simula Esame / Modalità Studio" button
-    $('#btnSimulaEsame').addEventListener('click', isExamMode ? exitExamSimulation : startExamSimulation);
-
     // Bind "Mostra Corretta" buttons
     $$('[data-reveal]').forEach(b => b.addEventListener('click', function() {
       revealAnswer(this.dataset.reveal);
@@ -1929,14 +2144,6 @@ body {
         toast('Errore: ' + e.message);
       }
     }));
-
-    const flagToggleBtn = $('#flagToggleBtn');
-    if (flagToggleBtn) {
-      flagToggleBtn.addEventListener('click', () => {
-        flaggedOnly = !flaggedOnly;
-        applyFlagFilter();
-      });
-    }
 
     // Bind footer go-to question
     bindGotoFooter();
@@ -2053,6 +2260,7 @@ body {
   }
 
   function submitQuiz() {
+    stopExamTimer();
     submitted = true;
     // Reveal all unrevealed questions
     questions.forEach(q => {
@@ -2287,6 +2495,34 @@ body {
     clearTimeout(t._tm);
     t._tm = setTimeout(() => t.classList.remove('show'), 2800);
   }
+
+  // ===== MODE FAB + SHEET BINDINGS =====
+  $('#modeFab').addEventListener('click', openModeSheet);
+  $('#modeFabM').addEventListener('click', () => { closeAllMenus(); openModeSheet(); });
+  $('#modeSheetBg').addEventListener('click', closeModeSheet);
+  $('#modeSheetClose').addEventListener('click', closeModeSheet);
+  $$('.mode-card').forEach(card => {
+    card.addEventListener('click', async function() {
+      await setMode(this.dataset.mode);
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $('#modeSheet')?.classList.contains('show')) closeModeSheet();
+  });
+
+  // ===== VISUAL VIEWPORT FIX (Chrome mobile URL bar) =====
+  (function syncViewport() {
+    if (!window.visualViewport) return;
+    const bar = document.getElementById('bottomBar');
+    function update() {
+      const vv = window.visualViewport;
+      const gap = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      if (bar) bar.style.transform = `translateY(${-gap}px)`;
+    }
+    window.visualViewport.addEventListener('resize', update);
+    window.visualViewport.addEventListener('scroll', update);
+    update();
+  })();
 
   // ===== INIT =====
   (async () => {
