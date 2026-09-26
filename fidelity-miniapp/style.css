@@ -121,3 +121,7 @@ body.showing { background: #fff; }
   background: rgba(20,20,22,.92); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px;
   max-width: calc(100% - 32px); z-index: 10;
 }
+
+.add-btn { font-size: 28px; font-weight: 300; }
+.empty-cta { max-width: 280px; margin: 18px auto 0; }
+.warn { background: rgba(237,161,0,.14); color: var(--text); border-radius: 12px; padding: 10px 12px; font-size: 14px; margin: 0 0 12px; }

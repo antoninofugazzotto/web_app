@@ -66,3 +66,11 @@ Apri `http://localhost:8000`: fuori da Telegram l'app funziona in *modalità tes
 - Carte condivise in famiglia → serve un piccolo backend (verificando `initData` lato server).
 - Foto della carta come copertina (richiede storage esterno: il CloudStorage accetta al massimo 4 KB per carta).
 - Suggerimento della carta in base alla posizione vicino al negozio.
+
+## Se qualcosa non va
+
+Apri il menu **⋯ → Backup e info**: in fondo trovi le *Informazioni tecniche*.
+
+- **"Telegram non risponde"** (banner giallo): l'app funziona lo stesso ma salva solo sul dispositivo. Di solito l'URL in BotFather (Main App / Menu Button) non corrisponde esattamente al sito: stesso `https://`, stesso dominio, stesso percorso. Correggilo e riapri l'app.
+- **"initData vuoto"**: la pagina è stata aperta fuori da Telegram (browser), oppure da un link normale invece che dal pulsante del bot.
+- **Pagina vecchia dopo un aggiornamento**: chiudi e riapri la Mini App; su desktop, se serve, riavvia Telegram.

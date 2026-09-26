@@ -9,8 +9,8 @@
   const tg = window.Telegram && window.Telegram.WebApp;
   const inTG = !!(tg && tg.initData);
   const tgVer = (v) => inTG && typeof tg.isVersionAtLeast === 'function' && tg.isVersionAtLeast(v);
+  let nativeOK = false; // diventa true solo quando Telegram risponde davvero (vedi init)
   if (inTG) {
-    document.documentElement.classList.add('tg');
     tg.ready();
     tg.expand();
     try { if (tgVer('7.7')) tg.disableVerticalSwipes(); } catch (_) {}
@@ -54,16 +54,20 @@
   let toastT;
   const toast = (msg) => { const t = $('#toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.add('hidden'), 2200); };
   const confirmBox = (msg) => new Promise(res => {
-    if (tgVer('6.2')) tg.showConfirm(msg, ok => res(!!ok)); else res(window.confirm(msg));
+    if (nativeOK && tgVer('6.2')) tg.showConfirm(msg, ok => res(!!ok)); else res(window.confirm(msg));
   });
 
   // ---------- Storage ----------
   const PREFIX = 'c_';
   const LS_KEY = 'fidelity_cards_v1';
-  const useCloud = tgVer('6.9') && tg.CloudStorage;
+  let useCloud = !!(tgVer('6.9') && tg.CloudStorage);
+  let storageNote = useCloud ? 'cloud Telegram' : (inTG ? 'locale (versione Telegram senza CloudStorage)' : 'locale (fuori da Telegram)');
   const mem = {};
   const cloud = (method, ...args) => new Promise((resolve, reject) => {
-    tg.CloudStorage[method](...args, (err, val) => err ? reject(new Error(String(err))) : resolve(val));
+    const t = setTimeout(() => reject(new Error('Telegram non risponde (' + method + ')')), 6000);
+    try {
+      tg.CloudStorage[method](...args, (err, val) => { clearTimeout(t); err ? reject(new Error(String(err))) : resolve(val); });
+    } catch (e) { clearTimeout(t); reject(e); }
   });
   const lsRead = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch (_) { return { ...mem }; } };
   const lsWrite = (obj) => { try { localStorage.setItem(LS_KEY, JSON.stringify(obj)); } catch (_) { Object.assign(mem, obj); } };
@@ -144,7 +148,7 @@
     setChrome(view);
   }
   function back() {
-    if (stack.length <= 1) { if (inTG) tg.close(); return; }
+    if (stack.length <= 1) { if (nativeOK) tg.close(); return; }
     stack.pop();
     const v = stack[stack.length - 1];
     show(v, false);
@@ -153,9 +157,9 @@
   }
   function goHome() { stack.length = 1; show('list', false); renderList(); }
 
-  const MAIN = { list: 'Aggiungi carta', form: 'Salva carta' };
+  const MAIN = { form: 'Salva carta' };
   function setChrome(view) {
-    if (!inTG) return;
+    if (!inTG || !nativeOK) return;
     const white = view === 'show';
     try {
       if (tgVer('6.1')) {
@@ -173,10 +177,14 @@
     if (v === 'list') startAdd();
     else if (v === 'form') saveForm();
   }
-  if (inTG) {
-    tg.MainButton.onClick(onMain);
-    if (tgVer('6.1')) tg.BackButton.onClick(back);
+  function enableNative() {
+    nativeOK = true;
+    document.documentElement.classList.add('tg');
+    try { tg.MainButton.onClick(onMain); if (tgVer('6.1')) tg.BackButton.onClick(back); } catch (_) {}
+    setChrome(stack[stack.length - 1]);
   }
+  $('#btn-add').addEventListener('click', () => { tap(); startAdd(); });
+  $('#btn-add-empty').addEventListener('click', () => { tap(); startAdd(); });
   document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', back));
   document.querySelectorAll('[data-main]').forEach(b => b.addEventListener('click', (e) => { e.preventDefault(); onMain(); }));
 
@@ -349,7 +357,7 @@
     const card = { ...draft, name, number, format, note: $('#f-note').value.trim(), id: draft.id || newId(), updated: Date.now() };
     if (!card.created) card.created = Date.now();
     saving = true;
-    if (inTG) tg.MainButton.showProgress();
+    if (nativeOK) tg.MainButton.showProgress();
     try {
       await Store.put(card);
       const i = cards.findIndex(c => c.id === card.id);
@@ -361,7 +369,7 @@
       haptic('error'); toast('Salvataggio non riuscito: ' + e.message);
     } finally {
       saving = false;
-      if (inTG) tg.MainButton.hideProgress();
+      if (nativeOK) tg.MainButton.hideProgress();
     }
   }
 
@@ -371,7 +379,8 @@
     $('#export-box').value = JSON.stringify(data, null, 1);
     $('#storage-info').textContent = useCloud
       ? `${cards.length} carte salvate nel cloud di Telegram: le ritrovi su tutti i tuoi dispositivi.`
-      : `${cards.length} carte salvate solo in questo browser (modalità test fuori da Telegram).`;
+      : `${cards.length} carte salvate solo su questo dispositivo (${storageNote}).`;
+    $('#diag').textContent = diagnostics();
     $('#backup-msg').textContent = '';
     show('backup');
   });
@@ -399,10 +408,30 @@
   });
 
   // ---------- Avvio ----------
+  function diagnostics() {
+    return [
+      'Telegram: ' + (inTG ? 'sì, versione ' + tg.version + ' su ' + tg.platform : (tg ? 'SDK caricato ma initData vuoto (aperta fuori da Telegram?)' : 'SDK non caricato')),
+      'Pulsanti nativi: ' + (nativeOK ? 'attivi' : 'non attivi'),
+      'Archivio: ' + storageNote,
+      'Origine: ' + location.origin + location.pathname,
+    ].join('\n');
+  }
+  function warn(msg) { const w = $('#warn'); w.textContent = msg; w.classList.remove('hidden'); }
+
   (async function init() {
     show('list', false);
-    try { cards = await Store.all(); }
-    catch (e) { toast('Impossibile leggere le carte: ' + e.message); cards = []; }
+    renderList(); // mostra subito lista vuota e pulsante di aggiunta
+    try {
+      cards = await Store.all();
+      if (inTG) enableNative();
+    } catch (e) {
+      // Telegram non risponde: si continua in locale, con i pulsanti della pagina
+      useCloud = false;
+      storageNote = 'locale, perché il cloud Telegram non ha risposto: ' + e.message;
+      cards = Object.values(lsRead());
+      warn('Telegram non risponde: le carte vengono salvate solo su questo dispositivo. Controlla che l\'URL impostato in BotFather sia esattamente quello del sito.');
+      console.warn(diagnostics());
+    }
     renderList();
     // test / debug hook (inerte in produzione)
     window.__fidelity = { Store, drawBarcode, FORMATS, get cards() { return cards; } };
