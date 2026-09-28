@@ -299,62 +299,148 @@
     haptic('success'); toast('Carta eliminata'); current = null; goHome();
   });
 
-  // ---------- Scansione ----------
-  let scanner = null;
-  const SUPPORTED = () => {
-    const F = window.Html5QrcodeSupportedFormats || (window.__Html5QrcodeLibrary__ && window.__Html5QrcodeLibrary__.Html5QrcodeSupportedFormats);
-    return F ? FORMATS.map(f => F[f.zx]).filter(v => v !== undefined) : undefined;
+  // ---------- Scansione (ZXing C++ in WebAssembly) ----------
+  const ZX_FORMATS = ['Codabar', 'Code39', 'Code93', 'Code128', 'EAN8', 'EAN13', 'ITF', 'UPCA', 'UPCE', 'QRCode', 'DataMatrix', 'PDF417', 'Aztec'];
+  const ZX_TO_BCID = {
+    CODABAR: 'rationalizedCodabar', CODE39: 'code39', CODE93: 'code93', CODE128: 'code128', EAN8: 'ean8', EAN13: 'ean13',
+    ITF: 'interleaved2of5', ITF14: 'interleaved2of5', UPCA: 'upca', UPCE: 'upce', QRCODE: 'qrcode', MICROQRCODE: 'qrcode',
+    DATAMATRIX: 'datamatrix', PDF417: 'pdf417', AZTEC: 'azteccode',
   };
-  function makeScanner() {
-    const Lib = window.__Html5QrcodeLibrary__;
-    return new Lib.Html5Qrcode('reader', { formatsToSupport: SUPPORTED(), useBarCodeDetectorIfSupported: true, verbose: false });
+  const bcidFromZx = (name) => ZX_TO_BCID[String(name || '').toUpperCase().replace(/[^A-Z0-9]/g, '')] || 'code128';
+  let zxReady = null;
+  function zx() {
+    if (!zxReady) {
+      const Z = window.ZXingWASM;
+      if (!Z) return Promise.reject(new Error('libreria di scansione non caricata'));
+      zxReady = Promise.resolve(Z.prepareZXingModule({
+        overrides: { locateFile: (p, prefix) => p.endsWith('.wasm') ? new URL('vendor/' + p, location.href).href : prefix + p },
+        fireImmediately: true,
+      })).then(() => Z);
+    }
+    return zxReady;
   }
+  async function decode(imageData, opts = {}) {
+    const Z = await zx();
+    const res = await Z.readBarcodes(imageData, { formats: ZX_FORMATS, tryHarder: true, tryRotate: true, tryInvert: true, maxNumberOfSymbols: 1, ...opts });
+    const r = res.find(x => x.isValid && x.text);
+    if (!r) return null;
+    let bcid = bcidFromZx(r.format), text = r.text;
+    if (bcid === 'ean13' && /^0\d{12}$/.test(text)) { bcid = 'upca'; text = text.slice(1); } // UPC-A letto come EAN-13
+    return { text, bcid, format: r.format };
+  }
+
+  const cam = { stream: null, timer: null, busy: false, last: null, hits: 0, canvas: document.createElement('canvas'), torch: false };
   function startAdd() {
     current = null;
     show('scan');
     startScanner();
   }
+  function camError(err) {
+    const n = err && err.name;
+    if (n === 'NotAllowedError' || n === 'SecurityError') return 'Permesso fotocamera negato. Consenti la fotocamera a Telegram nelle impostazioni del telefono, oppure usa una foto.';
+    if (n === 'NotFoundError' || n === 'OverconstrainedError') return 'Nessuna fotocamera trovata su questo dispositivo. Usa una foto o inserisci il numero a mano.';
+    if (n === 'NotReadableError') return 'La fotocamera è usata da un\'altra app. Chiudila e riprova.';
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return 'Qui la fotocamera live non è disponibile. Usa "Scatta o scegli una foto".';
+    return 'Fotocamera non disponibile (' + (n || err.message || err) + '). Usa una foto o inserisci il numero a mano.';
+  }
   async function startScanner() {
-    $('#scan-status').textContent = 'Avvio fotocamera…';
+    const status = $('#scan-status');
+    status.textContent = 'Avvio fotocamera…';
+    $('#btn-torch').classList.add('hidden');
+    zx().catch(() => {}); // precarica il motore mentre parte la fotocamera
     try {
-      scanner = makeScanner();
-      await scanner.start(
-        { facingMode: 'environment' },
-        { fps: 12, qrbox: (w, h) => ({ width: Math.floor(w * 0.9), height: Math.floor(Math.min(h, w) * 0.55) }), aspectRatio: 1.333 },
-        (text, result) => onScanned(text, result),
-        () => {}
-      );
-      $('#scan-status').textContent = 'Inquadra il codice a barre della carta, ben illuminato e dritto.';
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no-media');
+      cam.stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      });
+      if (stack[stack.length - 1] !== 'scan') { stopScanner(); return; }
+      const v = $('#scan-video');
+      v.srcObject = cam.stream;
+      await v.play().catch(() => {});
+      const track = cam.stream.getVideoTracks()[0];
+      try {
+        const caps = track.getCapabilities ? track.getCapabilities() : {};
+        if (caps.focusMode && caps.focusMode.includes('continuous')) await track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] });
+        if (caps.torch) $('#btn-torch').classList.remove('hidden');
+      } catch (_) {}
+      status.textContent = 'Inquadra il codice dentro il riquadro, con la linea rossa che lo attraversa.';
+      cam.last = null; cam.hits = 0;
+      cam.timer = setInterval(scanFrame, 150);
     } catch (err) {
-      $('#scan-status').textContent = 'Fotocamera non disponibile qui. Usa una foto o inserisci il numero a mano.';
-      scanner = null;
+      status.textContent = camError(err);
+      stopScanner();
     }
   }
-  async function stopScanner() {
-    if (!scanner) return;
-    const s = scanner; scanner = null;
-    try { if (s.isScanning) await s.stop(); s.clear(); } catch (_) {}
+  async function scanFrame() {
+    const v = $('#scan-video');
+    if (cam.busy || !cam.stream || v.readyState < 2 || !v.videoWidth) return;
+    cam.busy = true;
+    try {
+      // area centrale (quella del riquadro), ridotta a max 1280 px di larghezza
+      const vw = v.videoWidth, vh = v.videoHeight;
+      const sx = Math.round(vw * 0.04), sw = vw - 2 * sx, sy = Math.round(vh * 0.2), sh = vh - 2 * sy;
+      const scale = Math.min(1, 1280 / sw);
+      const c = cam.canvas; c.width = Math.round(sw * scale); c.height = Math.round(sh * scale);
+      const ctx = c.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(v, sx, sy, sw, sh, 0, 0, c.width, c.height);
+      const r = await decode(ctx.getImageData(0, 0, c.width, c.height), { tryInvert: false });
+      if (!r || !cam.stream) return;
+      // per i codici lineari chiediamo due letture uguali di fila: evita letture sbagliate
+      const linear = fmtByBcid(r.bcid).linear;
+      if (linear && cam.last !== r.text) { cam.last = r.text; cam.hits = 1; return; }
+      cam.hits++;
+      if (!linear || cam.hits >= 2) onScanned(r);
+    } catch (e) {
+      if (!zxReady || String(e.message).includes('libreria')) $('#scan-status').textContent = 'Motore di scansione non caricato: ' + e.message;
+    } finally { cam.busy = false; }
   }
-  function onScanned(text, result) {
-    const zx = result && result.result && result.result.format && result.result.format.formatName;
-    const f = fmtByZx(zx) || FORMATS[0];
+  function stopScanner() {
+    clearInterval(cam.timer); cam.timer = null;
+    if (cam.stream) { cam.stream.getTracks().forEach(t => t.stop()); cam.stream = null; }
+    const v = $('#scan-video'); if (v) v.srcObject = null;
+    cam.torch = false; $('#btn-torch').classList.remove('on');
+  }
+  $('#btn-torch').addEventListener('click', async () => {
+    const track = cam.stream && cam.stream.getVideoTracks()[0]; if (!track) return;
+    cam.torch = !cam.torch;
+    try { await track.applyConstraints({ advanced: [{ torch: cam.torch }] }); $('#btn-torch').classList.toggle('on', cam.torch); } catch (_) {}
+  });
+  function onScanned(r) {
     haptic('success');
     stopScanner();
-    openForm(null, { number: text, format: f.bcid }, true);
+    openForm(null, { number: r.text, format: r.bcid }, true);
+  }
+  async function imageDataFrom(file, maxSide) {
+    let bmp;
+    try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch (_) {
+      bmp = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = URL.createObjectURL(file); });
+    }
+    const w = bmp.width, h = bmp.height, s = Math.min(1, maxSide / Math.max(w, h));
+    const c = document.createElement('canvas'); c.width = Math.round(w * s); c.height = Math.round(h * s);
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(bmp, 0, 0, c.width, c.height);
+    return ctx.getImageData(0, 0, c.width, c.height);
   }
   $('#scan-file').addEventListener('change', async (e) => {
     const file = e.target.files && e.target.files[0]; e.target.value = '';
     if (!file) return;
+    stopScanner();
     $('#scan-status').textContent = 'Analizzo la foto…';
-    await stopScanner();
     try {
-      const s = makeScanner();
-      const r = await s.scanFileV2(file, false);
-      try { s.clear(); } catch (_) {}
-      onScanned(r.decodedText, r);
+      let r = null;
+      for (const side of [1600, 2400, 1000, 4096]) {  // più risoluzioni: i codici piccoli o sfocati escono in una di queste
+        r = await decode(await imageDataFrom(file, side), { tryDownscale: true });
+        if (r) break;
+      }
+      if (!r) throw new Error('nessun codice');
+      onScanned(r);
     } catch (err) {
       haptic('error');
-      $('#scan-status').textContent = 'Nessun codice trovato nella foto. Riprova più da vicino, oppure inserisci il numero a mano.';
+      $('#scan-status').textContent = err.message === 'nessun codice'
+        ? 'Nessun codice trovato nella foto. Fotografa solo il codice a barre, dritto, a fuoco e senza riflessi, oppure inserisci il numero a mano.'
+        : 'Errore durante l\'analisi della foto: ' + err.message;
     }
   });
   $('#btn-manual').addEventListener('click', () => { stopScanner(); openForm(null, {}, true); });
@@ -513,6 +599,6 @@
     renderList();
     renderStatus();
     Data.sync();                  // poi allinea con il cloud in background
-    window.__fidelity = { Data, Sync, drawBarcode, FORMATS, get cards() { return cards; } };
+    window.__fidelity = { Data, Sync, drawBarcode, decode, imageDataFrom, FORMATS, get cards() { return cards; } };
   })();
 })();

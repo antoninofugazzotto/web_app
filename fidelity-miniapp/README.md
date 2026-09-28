@@ -23,7 +23,7 @@ style.css           stile (usa i colori del tema Telegram)
 app.js              logica: storage, scanner, generazione codici
 vendor/             librerie incluse, nessuna CDN esterna
   bwip-js-min.js       generazione codici (MIT)
-  html5-qrcode.min.js  scansione da fotocamera/foto (Apache-2.0)
+  zxing-reader.js + zxing_reader.wasm  scansione da fotocamera/foto, ZXing C++ in WebAssembly (MIT)
 ```
 
 ## Pubblicazione (15 minuti)
@@ -57,7 +57,7 @@ Apri `http://localhost:8000`: fuori da Telegram l'app funziona in *modalità tes
 - **Dati legati al bot**: il CloudStorage è per utente *e per bot*. Se cambi bot, le carte non ti seguono: fai prima un backup dal menu ⋯ e reimportalo.
 - **Limiti**: fino a 1024 chiavi per utente (una carta = una chiave), più che sufficienti.
 - **Privacy**: i dati stanno sui server Telegram, non cifrati end-to-end. Per numeri di fidelity card va bene; non usarla per dati sensibili.
-- **Scansione**: lo scanner integrato di Telegram legge solo QR, per questo l'app usa la fotocamera tramite `html5-qrcode`. Su Android funziona bene; su iOS la fotocamera live dentro Telegram può non partire: usa **"Scatta o scegli una foto"**. Code 93 e Codabar vengono generati correttamente per la cassa, ma lo scanner dell'app potrebbe non riconoscerli: in quel caso inserisci il numero a mano.
+- **Scansione**: lo scanner integrato di Telegram legge solo QR, per questo l'app usa la fotocamera con il motore ZXing (WebAssembly), che legge tutti i formati supportati. Tieni il codice dentro il riquadro con la linea rossa che lo attraversa; se c'è poca luce usa il pulsante torcia (se il telefono lo supporta). Se la fotocamera live non parte dentro Telegram (capita su iPhone), usa **"Scatta o scegli una foto"**: meglio una foto ravvicinata del solo codice, dritta e senza riflessi.
 - **Codici dinamici**: le carte che cambiano codice nell'app del negozio non si possono copiare; quelle fisiche con numero fisso sì.
 - **In cassa**: la pagina non può alzare la luminosità da sola; alzala tu. Se il lettore non legge, verifica il formato (spesso EAN-13 ↔ Code 128).
 
