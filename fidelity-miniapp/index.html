@@ -17,7 +17,7 @@
       <button class="icon-btn add-btn" id="btn-add" aria-label="Aggiungi carta">＋</button>
       <button class="icon-btn" id="btn-backup" aria-label="Backup e info">⋯</button>
     </header>
-    <p id="warn" class="warn hidden"></p>
+    <p id="sync-status" class="sync"></p>
     <div class="search-wrap">
       <input id="search" type="search" placeholder="Cerca negozio…" autocomplete="off">
     </div>
@@ -116,8 +116,9 @@
       <button class="secondary" id="btn-import">Importa carte</button>
       <p id="backup-msg" class="hint"></p>
       <label>Informazioni tecniche
-        <textarea id="diag" rows="4" readonly></textarea>
+        <textarea id="diag" rows="7" readonly></textarea>
       </label>
+      <button class="secondary" id="btn-retry">Prova la connessione a Telegram</button>
     </div>
   </section>
 

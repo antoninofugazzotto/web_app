@@ -124,4 +124,6 @@ body.showing { background: #fff; }
 
 .add-btn { font-size: 28px; font-weight: 300; }
 .empty-cta { max-width: 280px; margin: 18px auto 0; }
-.warn { background: rgba(237,161,0,.14); color: var(--text); border-radius: 12px; padding: 10px 12px; font-size: 14px; margin: 0 0 12px; }
+.sync { font-size: 13px; margin: -4px 0 12px; color: var(--hint); }
+.sync.err { background: rgba(237,161,0,.14); color: var(--text); border-radius: 12px; padding: 10px 12px; cursor: pointer; margin-top: 0; }
+.sync.local { color: var(--hint); }

@@ -57,43 +57,100 @@
     if (nativeOK && tgVer('6.2')) tg.showConfirm(msg, ok => res(!!ok)); else res(window.confirm(msg));
   });
 
-  // ---------- Storage ----------
+  // ---------- Storage (local-first + sincronizzazione cloud) ----------
+  // Ogni modifica va subito nel dispositivo (localStorage), poi viene inviata al
+  // CloudStorage di Telegram in background. Se Telegram è lento o non risponde,
+  // le carte restano comunque salvate e la sincronizzazione riprova più tardi.
   const PREFIX = 'c_';
-  const LS_KEY = 'fidelity_cards_v1';
-  let useCloud = !!(tgVer('6.9') && tg.CloudStorage);
-  let storageNote = useCloud ? 'cloud Telegram' : (inTG ? 'locale (versione Telegram senza CloudStorage)' : 'locale (fuori da Telegram)');
+  const LS_KEY = 'fidelity_cards_v1';        // id -> carta (anche "tombstone" {deleted:true})
+  const LS_PENDING = 'fidelity_pending_v1';   // id da inviare al cloud
+  const LS_MIGRATED = 'fidelity_v2';
+  const cloudCapable = !!(tgVer('6.9') && tg.CloudStorage);
+  const CLOUD_TIMEOUT = 10000;
   const mem = {};
+  const lsGet = (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch (_) { return mem[k] ?? def; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) { mem[k] = v; } };
+
   const cloud = (method, ...args) => new Promise((resolve, reject) => {
-    const t = setTimeout(() => reject(new Error('Telegram non risponde (' + method + ')')), 6000);
+    const t = setTimeout(() => reject(new Error('nessuna risposta da Telegram in ' + (CLOUD_TIMEOUT / 1000) + 's (' + method + ')')), CLOUD_TIMEOUT);
     try {
       tg.CloudStorage[method](...args, (err, val) => { clearTimeout(t); err ? reject(new Error(String(err))) : resolve(val); });
     } catch (e) { clearTimeout(t); reject(e); }
   });
-  const lsRead = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch (_) { return { ...mem }; } };
-  const lsWrite = (obj) => { try { localStorage.setItem(LS_KEY, JSON.stringify(obj)); } catch (_) { Object.assign(mem, obj); } };
 
-  const Store = {
-    async all() {
-      if (useCloud) {
-        const keys = (await cloud('getKeys')).filter(k => k.startsWith(PREFIX));
-        const out = [];
-        for (let i = 0; i < keys.length; i += 50) {
-          const vals = await cloud('getItems', keys.slice(i, i + 50));
-          for (const k of Object.keys(vals)) { try { out.push(JSON.parse(vals[k])); } catch (_) {} }
+  const Sync = {
+    state: cloudCapable ? 'syncing' : 'local',   // syncing | ok | error | local
+    lastError: '', lastPingMs: null, lastOkAt: null, running: null,
+    onChange: () => {},
+  };
+  let db = lsGet(LS_KEY, {});
+  let pending = new Set(lsGet(LS_PENDING, []));
+  // Migrazione dalla versione precedente: le carte locali non ancora nel cloud vanno inviate
+  if (!lsGet(LS_MIGRATED, false)) { Object.keys(db).forEach(id => pending.add(id)); lsSet(LS_MIGRATED, true); }
+  const persist = () => { lsSet(LS_KEY, db); lsSet(LS_PENDING, [...pending]); };
+  persist();
+
+  const Data = {
+    list: () => Object.values(db).filter(c => c && !c.deleted),
+    save(card) {
+      card.updated = Date.now();
+      db[card.id] = card; pending.add(card.id); persist();
+      Data.syncSoon();
+    },
+    remove(id) {
+      db[id] = { id, deleted: true, updated: Date.now() }; pending.add(id); persist();
+      Data.syncSoon();
+    },
+    pendingCount: () => pending.size,
+    syncSoon() { clearTimeout(Data._t); Data._t = setTimeout(() => Data.sync(), 300); },
+    async sync() {
+      if (!cloudCapable) { Sync.state = 'local'; Sync.onChange(); return; }
+      if (Sync.running) return Sync.running;
+      Sync.running = (async () => {
+        Sync.state = 'syncing'; Sync.onChange();
+        try {
+          const t0 = performance.now();
+          // 1) invia le modifiche locali
+          for (const id of [...pending]) {
+            const c = db[id];
+            if (!c || c.deleted) await cloud('removeItem', PREFIX + id);
+            else {
+              const json = JSON.stringify(c);
+              if (json.length > 4000) throw new Error('carta "' + c.name + '" troppo lunga per il cloud');
+              await cloud('setItem', PREFIX + id, json);
+            }
+            pending.delete(id);
+            if (c && c.deleted) delete db[id];
+            persist();
+          }
+          // 2) scarica e unisci
+          const keys = (await cloud('getKeys')).filter(k => k.startsWith(PREFIX));
+          const remote = {};
+          for (let i = 0; i < keys.length; i += 50) {
+            const vals = await cloud('getItems', keys.slice(i, i + 50));
+            for (const k of Object.keys(vals)) { try { const c = JSON.parse(vals[k]); if (c && c.id) remote[c.id] = c; } catch (_) {} }
+          }
+          for (const id of Object.keys(remote)) {
+            const l = db[id], r = remote[id];
+            if (pending.has(id)) continue;
+            if (!l || (r.updated | 0) >= (l.updated | 0)) db[id] = r;
+          }
+          for (const id of Object.keys(db)) {
+            if (!remote[id] && !pending.has(id)) delete db[id]; // eliminata da un altro dispositivo
+          }
+          persist();
+          Sync.lastPingMs = Math.round(performance.now() - t0);
+          Sync.lastOkAt = new Date();
+          Sync.state = 'ok'; Sync.lastError = '';
+          if (!nativeOK && inTG) enableNative();
+        } catch (e) {
+          Sync.state = 'error'; Sync.lastError = e.message || String(e);
+          console.warn('Sync error', e);
+        } finally {
+          Sync.running = null; Sync.onChange();
         }
-        return out;
-      }
-      return Object.values(lsRead());
-    },
-    async put(card) {
-      const json = JSON.stringify(card);
-      if (json.length > 4000) throw new Error('Dati della carta troppo lunghi');
-      if (useCloud) return cloud('setItem', PREFIX + card.id, json);
-      const all = lsRead(); all[card.id] = card; lsWrite(all);
-    },
-    async del(id) {
-      if (useCloud) return cloud('removeItem', PREFIX + id);
-      const all = lsRead(); delete all[id]; lsWrite(all);
+      })();
+      return Sync.running;
     },
   };
 
@@ -217,7 +274,7 @@
     renderShow();
     current.uses = (current.uses | 0) + 1;
     current.lastUsed = Date.now();
-    Store.put(current).catch(() => {});
+    Data.save(current);
   }
   function renderShow() {
     const c = current;
@@ -232,16 +289,14 @@
   }
   $('#btn-fav').addEventListener('click', async () => {
     current.fav = !current.fav; tap(); renderShow();
-    try { await Store.put(current); } catch (e) { toast('Salvataggio non riuscito'); }
+    Data.save(current);
   });
   $('#btn-edit').addEventListener('click', () => openForm(current));
   $('#btn-delete').addEventListener('click', async () => {
     if (!(await confirmBox(`Eliminare la carta "${current.name}"?`))) return;
-    try {
-      await Store.del(current.id);
-      cards = cards.filter(c => c.id !== current.id);
-      haptic('success'); toast('Carta eliminata'); current = null; goHome();
-    } catch (e) { haptic('error'); toast('Eliminazione non riuscita'); }
+    Data.remove(current.id);
+    cards = Data.list();
+    haptic('success'); toast('Carta eliminata'); current = null; goHome();
   });
 
   // ---------- Scansione ----------
@@ -357,11 +412,9 @@
     const card = { ...draft, name, number, format, note: $('#f-note').value.trim(), id: draft.id || newId(), updated: Date.now() };
     if (!card.created) card.created = Date.now();
     saving = true;
-    if (nativeOK) tg.MainButton.showProgress();
     try {
-      await Store.put(card);
-      const i = cards.findIndex(c => c.id === card.id);
-      if (i >= 0) cards[i] = card; else cards.push(card);
+      Data.save(card);
+      cards = Data.list();
       haptic('success'); toast('Carta salvata');
       current = card;
       goHome();
@@ -369,7 +422,6 @@
       haptic('error'); toast('Salvataggio non riuscito: ' + e.message);
     } finally {
       saving = false;
-      if (nativeOK) tg.MainButton.hideProgress();
     }
   }
 
@@ -377,10 +429,7 @@
   $('#btn-backup').addEventListener('click', () => {
     const data = sortCards(cards).map(({ name, number, format, color, note, fav }) => ({ name, number, format, color, note, fav }));
     $('#export-box').value = JSON.stringify(data, null, 1);
-    $('#storage-info').textContent = useCloud
-      ? `${cards.length} carte salvate nel cloud di Telegram: le ritrovi su tutti i tuoi dispositivi.`
-      : `${cards.length} carte salvate solo su questo dispositivo (${storageNote}).`;
-    $('#diag').textContent = diagnostics();
+    renderBackupInfo();
     $('#backup-msg').textContent = '';
     show('backup');
   });
@@ -401,39 +450,69 @@
       if (!name || !number || validate(format, number) || cards.some(c => c.number === numberFull && c.name === name)) { skip++; continue; }
       const card = { id: newId(), name, number: numberFull, format, color: COLORS.includes(raw.color) ? raw.color : COLORS[hash(number) % COLORS.length],
         note: String(raw.note || '').slice(0, 120), fav: !!raw.fav, uses: 0, created: Date.now() };
-      try { await Store.put(card); cards.push(card); ok++; } catch (_) { skip++; }
+      Data.save(card); cards = Data.list(); ok++;
     }
     $('#backup-msg').textContent = `Importate ${ok} carte` + (skip ? `, ${skip} saltate (duplicate o non valide).` : '.');
     haptic(ok ? 'success' : 'warning');
   });
 
-  // ---------- Avvio ----------
+  // ---------- Stato sincronizzazione ----------
+  function transport() {
+    if (window.TelegramWebviewProxy) return 'app mobile';
+    if (window.external && 'notify' in window.external) return 'desktop (external)';
+    if (window.parent && window.parent !== window) return 'iframe (Telegram Web)';
+    return 'nessuno';
+  }
   function diagnostics() {
+    const u = inTG && tg.initDataUnsafe && tg.initDataUnsafe.user;
     return [
-      'Telegram: ' + (inTG ? 'sì, versione ' + tg.version + ' su ' + tg.platform : (tg ? 'SDK caricato ma initData vuoto (aperta fuori da Telegram?)' : 'SDK non caricato')),
+      'Telegram: ' + (inTG ? 'versione ' + tg.version + ', piattaforma ' + tg.platform : (tg ? 'initData vuoto (aperta fuori da Telegram?)' : 'SDK non caricato')),
+      'Canale: ' + transport() + ' · utente: ' + (u ? 'sì' : 'no'),
+      'Cloud: ' + ({ ok: 'OK', syncing: 'sincronizzazione in corso', error: 'ERRORE', local: 'non disponibile' }[Sync.state])
+        + (Sync.lastPingMs != null ? ' (' + Sync.lastPingMs + ' ms)' : '')
+        + (Sync.lastError ? ' — ' + Sync.lastError : ''),
+      'Da sincronizzare: ' + Data.pendingCount(),
       'Pulsanti nativi: ' + (nativeOK ? 'attivi' : 'non attivi'),
-      'Archivio: ' + storageNote,
       'Origine: ' + location.origin + location.pathname,
     ].join('\n');
   }
-  function warn(msg) { const w = $('#warn'); w.textContent = msg; w.classList.remove('hidden'); }
+  function renderStatus() {
+    const el = $('#sync-status');
+    const n = Data.pendingCount();
+    const map = {
+      ok: ['ok', '☁︎ Sincronizzate con Telegram'],
+      syncing: ['busy', '⟳ Sincronizzazione…'],
+      error: ['err', '⚠︎ Salvate su questo dispositivo, non ancora su Telegram' + (n ? ' (' + n + ')' : '') + ' · tocca per riprovare'],
+      local: ['local', inTG ? '⚠︎ Questa versione di Telegram non supporta il cloud: carte solo su questo dispositivo' : 'Modalità test: carte salvate in questo browser'],
+    };
+    const [cls, text] = map[Sync.state];
+    el.className = 'sync ' + cls; el.textContent = text;
+    if (!$('#view-backup').classList.contains('hidden')) renderBackupInfo();
+  }
+  function renderBackupInfo() {
+    $('#storage-info').textContent = `${cards.length} carte. ` + (Sync.state === 'ok'
+      ? 'Sono salvate nel cloud di Telegram: le ritrovi su tutti i tuoi dispositivi.'
+      : 'Sono salvate su questo dispositivo' + (cloudCapable ? '; verranno inviate al cloud di Telegram appena risponde.' : '.'));
+    $('#diag').value = diagnostics();
+  }
+  Sync.onChange = () => {
+    const before = JSON.stringify(cards.map(c => [c.id, c.updated]));
+    cards = Data.list();
+    if (JSON.stringify(cards.map(c => [c.id, c.updated])) !== before && stack[stack.length - 1] === 'list') renderList();
+    renderStatus();
+  };
+  $('#sync-status').addEventListener('click', () => { if (Sync.state === 'error') Data.sync(); });
+  $('#btn-retry').addEventListener('click', async () => { $('#diag').value = 'Test in corso…'; await Data.sync(); renderBackupInfo(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && (Sync.state === 'error' || Data.pendingCount())) Data.sync(); });
+  setInterval(() => { if (Sync.state === 'error' && Data.pendingCount()) Data.sync(); }, 30000);
 
-  (async function init() {
+  // ---------- Avvio ----------
+  (function init() {
+    cards = Data.list();          // subito, dal dispositivo
     show('list', false);
-    renderList(); // mostra subito lista vuota e pulsante di aggiunta
-    try {
-      cards = await Store.all();
-      if (inTG) enableNative();
-    } catch (e) {
-      // Telegram non risponde: si continua in locale, con i pulsanti della pagina
-      useCloud = false;
-      storageNote = 'locale, perché il cloud Telegram non ha risposto: ' + e.message;
-      cards = Object.values(lsRead());
-      warn('Telegram non risponde: le carte vengono salvate solo su questo dispositivo. Controlla che l\'URL impostato in BotFather sia esattamente quello del sito.');
-      console.warn(diagnostics());
-    }
     renderList();
-    // test / debug hook (inerte in produzione)
-    window.__fidelity = { Store, drawBarcode, FORMATS, get cards() { return cards; } };
+    renderStatus();
+    Data.sync();                  // poi allinea con il cloud in background
+    window.__fidelity = { Data, Sync, drawBarcode, FORMATS, get cards() { return cards; } };
   })();
 })();
